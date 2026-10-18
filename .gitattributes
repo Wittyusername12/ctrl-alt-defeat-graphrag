@@ -1,0 +1,17 @@
+# Text files are stored and checked out with LF line endings on every machine,
+# whatever core.autocrlf says, so a file is byte-identical on Windows and Linux.
+* text=auto eol=lf
+
+# Windows batch files need CRLF line endings to run correctly
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Data files are never converted: character offsets and file hashes depend on the exact bytes
+*.json -text
+*.jsonl -text
+*.txt -text
+*.ttl -text
+
+# Binary files
+*.png binary
+*.pdf binary
