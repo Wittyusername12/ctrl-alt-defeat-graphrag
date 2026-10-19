@@ -1,0 +1,70 @@
+% Shared layout for the CTRL ALT DEFEAT documents (compile with xelatex).
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{DejaVu Sans Mono}[Scale=0.80]
+\usepackage[letterpaper, top=0.72in, bottom=0.78in, left=0.8in, right=0.8in,
+            headheight=13pt, headsep=9pt, footskip=22pt]{geometry}
+\usepackage{microtype}
+\linespread{1.02}
+\usepackage{xcolor}
+\definecolor{ink}{HTML}{1F2A44}
+\definecolor{accent}{HTML}{3B5B92}
+\definecolor{attc}{HTML}{3B5B92}
+\definecolor{attf}{HTML}{E8EFF9}
+\definecolor{txtc}{HTML}{B5651D}
+\definecolor{txtf}{HTML}{FDF0E2}
+\definecolor{evalc}{HTML}{3C7A50}
+\definecolor{evalf}{HTML}{E6F3EA}
+\definecolor{rulec}{HTML}{C9D3E3}
+\definecolor{shade}{HTML}{F4F7FB}
+\usepackage{titlesec}
+\titleformat{\section}{\sffamily\bfseries\large\color{ink}}{\thesection}{0.55em}{}
+\titlespacing*{\section}{0pt}{8pt}{2pt}
+\titleformat{\subsection}[runin]{\sffamily\bfseries\normalsize\color{ink}}{\thesubsection}{0.45em}{}[.]
+\titlespacing*{\subsection}{0pt}{4pt}{0.55em}
+\usepackage{enumitem}
+\setlist{nosep, leftmargin=1.15em, topsep=1pt, itemsep=1pt}
+\usepackage{booktabs, tabularx, array, multirow, makecell}
+\renewcommand{\arraystretch}{1.12}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup{font={small,sf}, labelfont={bf,color=ink}, skip=3pt}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, fit, backgrounds}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize, columns=fullflexible, keepspaces=true, breaklines=true,
+        frame=single, rulecolor=\color{rulec}, backgroundcolor=\color{shade}, framesep=3pt,
+        xleftmargin=3pt, xrightmargin=3pt, aboveskip=3pt, belowskip=3pt, showstringspaces=false,
+        breakatwhitespace=true, upquote=true}
+\usepackage{fancyhdr, lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\sffamily\footnotesize\color{ink}CTRL ALT DEFEAT \textbullet\ \doctitle}
+\fancyhead[R]{\sffamily\footnotesize\color{ink}CS 6338 Knowledge Engineering}
+\fancyfoot[C]{\sffamily\footnotesize\color{ink}Page \thepage\ of \pageref{LastPage}}
+\fancypagestyle{first}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[C]{\sffamily\footnotesize\color{ink}Page \thepage\ of \pageref{LastPage}}}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\newcommand{\code}[1]{\texttt{#1}}
+\renewcommand{\cite}[1]{[#1]}
+% A small rounded label for the subsystem numbers in the figures
+\newcommand{\badge}[1]{\tikz[baseline=(b.base)]\node[circle, fill=ink, text=white, inner sep=1pt,
+  minimum size=9pt, font=\sffamily\bfseries\tiny](b){#1};}
+\tikzset{
+  box/.style={draw, rounded corners=2.5pt, align=center, inner sep=3pt, font=\sffamily\scriptsize, line width=0.6pt,
+    execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000\relax}},
+  txtbox/.style={box, draw=txtc, fill=txtf},
+  attbox/.style={box, draw=attc, fill=attf},
+  evalbox/.style={box, draw=evalc, fill=evalf},
+  plainbox/.style={box, draw=ink!60, fill=white},
+  flow/.style={-{Stealth[length=4pt, width=3.4pt]}, line width=0.6pt, draw=ink!75},
+  rel/.style={-{Stealth[length=4pt, width=3.4pt]}, line width=0.6pt},
+  lab/.style={font=\sffamily\tiny, fill=white, inner sep=0.8pt},
+}

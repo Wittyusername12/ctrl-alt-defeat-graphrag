@@ -29,6 +29,7 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `data/` | the data files, their licences and their SHA-256 list (see `data/README.md`) |
 | `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine |
 | `tests/` | `pytest` tests |
+| `docs/milestones/` | the proposal and design document (PDF and LaTeX sources) |
 
 ## What you need
 
