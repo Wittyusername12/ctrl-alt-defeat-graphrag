@@ -8,7 +8,8 @@ Checks, in order:
   2. Packages: every package in requirements.txt is installed at the pinned version.
   3. .env in the repository folder: every name listed in .env.example has a value.
      Secret values are never printed, only their length.
-  4. Neo4j: the server at NEO4J_URI accepts NEO4J_USER and NEO4J_PASSWORD; prints its version.
+  4. Neo4j: the server at NEO4J_URI accepts NEO4J_USER and NEO4J_PASSWORD; prints its version,
+     its edition, and the default Cypher version of the database named by NEO4J_DATABASE.
   5. Plugins: the APOC and Graph Data Science versions, and the procedures the project calls.
 
 The last line starts with RESULT. Exit code 0 when nothing is wrong, 1 otherwise.
@@ -169,6 +170,27 @@ def read_env() -> dict[str, str]:
     return env
 
 
+def show_default_language(driver, database: str) -> None:
+    """Print the default Cypher version of the database: the version used by a query with no version line.
+
+    Neo4j 2025.06 and later report it in the defaultLanguage column of SHOW DATABASES. The project's own
+    queries all start with an explicit version line, so this line is for the record, never a problem.
+    """
+    from neo4j.exceptions import ClientError
+    try:
+        with driver.session(database="system") as session:
+            languages = sorted({str(record["defaultLanguage"])
+                                for record in session.run("SHOW DATABASES YIELD name, defaultLanguage")
+                                if record["name"] == database})
+    except ClientError as exc:
+        note(f"the default Cypher version could not be read ({exc.code})")
+        return
+    if languages:
+        note(f"default Cypher version of database {database!r}: {', '.join(languages)}")
+    else:
+        note(f"SHOW DATABASES does not list database {database!r}, so its default Cypher version is unknown")
+
+
 def check_neo4j(env: dict[str, str]) -> None:
     print("\n4. Neo4j")
     try:
@@ -192,6 +214,7 @@ def check_neo4j(env: dict[str, str]) -> None:
                                           "RETURN name, versions, edition"):
                     ok(f"{record['name']} {', '.join(record['versions'])}, {record['edition']} edition, "
                        f"database {database!r}")
+                show_default_language(driver, database)
                 print("\n5. Plugins")
                 for label, query in (("APOC", "RETURN apoc.version() AS version"),
                                      ("Graph Data Science", "RETURN gds.version() AS version")):
