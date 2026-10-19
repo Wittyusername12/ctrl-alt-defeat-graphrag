@@ -65,7 +65,7 @@ def retrieval_query(use_procedure: bool) -> str:
     return head + (f"MATCH (r:`{REPORT}`)-[:`{HAS_CHUNK}`]->(c)\n"
                    f"RETURN c.`{KEY[CHUNK]}` AS chunk_id, c.text AS text, r.`{KEY[REPORT]}` AS report_id, "
                    f"r.title AS title, r.vendor AS vendor, r.date AS date, score, "
-                   f"vector.similarity.cosine(c.`{EMBEDDING}`, $embedding) AS exact\n"
+                   f"vector.similarity.cosine(c.`{EMBEDDING}`, $embedding) AS similarity\n"
                    f"ORDER BY score DESC")
 
 
@@ -230,7 +230,9 @@ def show(result: dict) -> list[str]:
     title = "GraphRAG (chunks + graph)" if result["mode"] == "graph" else "Text-only baseline (chunks only)"
     print(f"\n=== {title}")
     for row in result["chunks"]:
-        print(f"  chunk {row['chunk_id']}: index score {row['score']:.4f}, exact cosine {row['exact']:.4f}")
+        # Neo4j reports cosine similarity on a 0-1 scale, (1 + cosine) / 2; checked against the saved embeddings.
+        print(f"  chunk {row['chunk_id']}: index score {row['score']:.4f}; recomputed similarity "
+              f"{row['similarity']:.4f} on Neo4j's 0-1 scale, cosine {2 * row['similarity'] - 1:.4f}")
     if result["mode"] == "graph":
         print(f"  {len(result['seeds'])} seed nodes from the chunks' mentions; personalized PageRank kept "
               f"{len(result['nodes'])} nodes; {len(result['fact_lines'])} facts in the context")

@@ -72,7 +72,8 @@ def _load(path: Path) -> dict | None:
 
 def _save(path: Path, record: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(record, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    # newline="\n": the same bytes on Windows and Linux (replies saved before 19 Oct have Windows line endings)
+    path.write_text(json.dumps(record, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
 
 
 def _call_openai(function, **arguments):
