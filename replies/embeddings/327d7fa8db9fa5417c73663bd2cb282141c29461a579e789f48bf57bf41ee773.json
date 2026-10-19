@@ -1,0 +1,23 @@
+{
+ "key": "327d7fa8db9fa5417c73663bd2cb282141c29461a579e789f48bf57bf41ee773",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2020-06-02_mustang-panda-recent-activity-dll"
+ },
+ "created": "2026-10-19T05:05:34+00:00",
+ "seconds": 0.73,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "89ce64a12ac6e33406c23afc67775d9ccf7a372bd751ad8345c5d59cb587b194",
+  "bf69ee96e8020564ef689fc0ee43a210f8ebe6b66b2dc6b84a2b4a539e4d96d9",
+  "3149e7add47025f85f2e8ba73fcdc5f60b15a1c4f633a4ab84250257dd8141f8",
+  "30178b41eaad36ade042a85b30a4d86cb58896d54f000c4f404e944ac57805cd",
+  "6b38ba328cbcf56438762e9c50f66d2022fd3e477e3995d2538bf111b2ea6800",
+  "66e33984da8f093fdb22f393ed05d1cf05af52633501d9e7c744956aae7fa8fe"
+ ]
+}

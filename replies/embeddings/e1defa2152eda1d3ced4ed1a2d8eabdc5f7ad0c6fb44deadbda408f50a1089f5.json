@@ -1,0 +1,19 @@
+{
+ "key": "e1defa2152eda1d3ced4ed1a2d8eabdc5f7ad0c6fb44deadbda408f50a1089f5",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2020-06-02_mustang-panda-recent-activity-dll"
+ },
+ "created": "2026-10-19T05:05:35+00:00",
+ "seconds": 0.74,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "7ae1f5aceae6b8ea34d2dd9f6008fca79d1ecbf7416f6db12e55b37fc82918cd",
+  "ee5c3e9aead4cddf0cdff09989eb5aa4596634a14d879986f9cdbbda440d005e"
+ ]
+}
