@@ -729,6 +729,7 @@ def check_in_neo4j(queries: dict) -> list[str]:
     try:
         driver, database = db.connect()
     except db.SetupError as exc:
+        print(f"  PROBLEM  {exc}")
         return [str(exc)]
     with driver:
         for question in queries["questions"]:
