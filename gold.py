@@ -192,7 +192,7 @@ def gold_by_report(gold: dict, split: str | None = None) -> dict[str, set[str]]:
 
 # (question id, pattern, report IDs, the ATT&CK entry the question names, if any). Chosen by hand from the gold
 # facts of the test reports (never from system output) to cover ten question patterns, all five vendors and
-# 20 of the 34 test reports, with answers of 1 to 8 items. For the "largest number" questions, the leader is the
+# 20 of the 34 test reports, with answers of 1 to 6 items (at most MAX_ANSWER_ITEMS allowed). For the "largest number" questions, the leader is the
 # same whether or not relationships recorded for sub-techniques are counted.
 QUESTIONS = (
     ("Q01", "mitigations_top", ("intel471_2021-12-09_emotet-returns-december-2021",), None),
