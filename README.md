@@ -4,7 +4,7 @@ Term project for CS 6338 Knowledge Engineering, Angelo State University. Team CT
 
 The system answers questions about cyber threat reports. A knowledge graph in Neo4j joins MITRE ATT&CK v20.0 (Enterprise) with the AnnoCTR threat reports. A language model answers from retrieved report text plus the graph, and every answer cites the report chunks and graph edges it used. The same pipeline without the graph is the text-only baseline.
 
-**Status:** skeleton stage. One report runs through every stage: ATT&CK loading, extraction, linking, loading, and question answering with and without the graph.
+**Status:** skeleton stage. One report runs through every stage: ATT&CK loading, extraction, linking, loading, and question answering with and without the graph. The benchmark (gold triples, evaluation questions) and the scorer are in place.
 
 ## Repository layout
 
@@ -21,6 +21,9 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `extract.py` | the model lists techniques, tactics, groups, software and "uses" relations in each chunk, each with its evidence sentence; code checks every item and counts each reason for dropping one |
 | `link.py` | links each mention to ATT&CK (exact name, tie-break rules, then embedding similarity) and loads the report, its chunks and the links into Neo4j |
 | `rag.py` | answers a question from the most similar chunks plus the graph around the entities they mention (ranked by personalized PageRank), citing `[chunk:…]` and `[edge:…]`; the same question without the graph is the baseline |
+| `gold.py` | writes the benchmark: the experts' facts as gold triples, and 24 multi-hop questions with answers computed from those facts and ATT&CK; `--neo4j` recomputes every answer with Cypher in Neo4j |
+| `score.py` | precision, recall and F1 of the system's facts in Neo4j against the gold triples, at sub-technique and parent-technique level |
+| `benchmark/` | `gold_triples.json` and `eval_queries.json`, written by `gold.py` only (see `benchmark/README.md`) |
 | `replies/` | saved model replies and embeddings; committing them makes every rerun identical |
 | `data/` | the data files, their licences and their SHA-256 list (see `data/README.md`) |
 | `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine |
@@ -85,6 +88,17 @@ Keep the repository and the virtual environment outside any folder that OneDrive
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe extract.py
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe link.py
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe rag.py
+    ```
+
+## Benchmark and scoring (Command Prompt, in the repository folder, with the Neo4j instance started)
+
+11. Check the benchmark: `--check` rebuilds both benchmark files and compares them with the files in `benchmark/`; `--neo4j` also runs each question's Cypher query in Neo4j and compares its answer with the file's. Running `gold.py` with neither option rewrites both files from the data:
+    ```
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe gold.py --neo4j
+    ```
+12. Score the system's facts in Neo4j against the gold triples, for named reports or for a whole split (`--split dev` or `--split test`):
+    ```
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe score.py lab52_2020-06-02_mustang-panda-recent-activity-dll
     ```
 
 ## Tests

@@ -81,7 +81,12 @@ def linking_rows(split: str) -> tuple[dict, ...]:
 
 
 def expert_labels(report_id: str) -> list[dict]:
-    """The experts' ATT&CK-linked mentions in one report: mention text, entity type and ATT&CK ID."""
+    """The experts' ATT&CK-linked mentions in one report, in file order.
+
+    Each label: the mention text, the entity type, the ATT&CK ID as the expert linked it, the title of the
+    linked entry, whether the mention names the concept (AnnoCTR class CE, explicit) or only describes it
+    (class CI, implicit), and AnnoCTR's context around the mention.
+    """
     labels = []
     for row in linking_rows(split_of(report_id)):
         if row["document"] != report_id:
@@ -89,18 +94,23 @@ def expert_labels(report_id: str) -> list[dict]:
         attack_id = attack_id_from_link(row["label_link"])
         if attack_id:
             labels.append({"mention": row["mention"], "entity_type": row["entity_type"], "attack_id": attack_id,
-                           "label_title": row["label_title"]})
+                           "label_title": row["label_title"], "explicit": row["entity_class"] == "CE",
+                           "context": (row["_context_left"] + row["mention"] + row["_context_right"]).strip()})
     return labels
 
 
-def expert_facts(report_id: str, live_ids: set[str], replaced_by: dict[str, str]) -> set[str]:
-    """The ATT&CK IDs the experts linked in a report, mapped to ATT&CK v20.0.
+def v20_id(attack_id: str, live_ids: set[str], replaced_by: dict[str, str]) -> str | None:
+    """The ATT&CK v20.0 ID for an expert's label: the ID itself when live, the ID that revoked it when revoked,
+    None when the ID is not in the v20.0 Enterprise file."""
+    attack_id = replaced_by.get(attack_id, attack_id)
+    return attack_id if attack_id in live_ids else None
 
-    An ID revoked in v20.0 is replaced by the ID that revoked it; an ID absent from v20.0 is dropped.
-    """
+
+def expert_facts(report_id: str, live_ids: set[str], replaced_by: dict[str, str]) -> set[str]:
+    """The ATT&CK IDs the experts linked in a report, mapped to ATT&CK v20.0 by v20_id (absent IDs dropped)."""
     facts = set()
     for label in expert_labels(report_id):
-        attack_id = replaced_by.get(label["attack_id"], label["attack_id"])
-        if attack_id in live_ids:
+        attack_id = v20_id(label["attack_id"], live_ids, replaced_by)
+        if attack_id:
             facts.add(attack_id)
     return facts

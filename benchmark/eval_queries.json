@@ -1,0 +1,1848 @@
+{
+  "about": "Multi-hop evaluation questions of the CTRL ALT DEFEAT GraphRAG project, written by gold.py; never edited by hand.",
+  "licence": "Adapted from AnnoCTR (Lange et al., LREC-COLING 2024; Copyright (c) 2023 Robert Bosch GmbH and its subsidiaries), licensed CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/); this file is shared under the same licence. ATT&CK names and relationships: (c) 2026 The MITRE Corporation, reproduced and distributed with the permission of The MITRE Corporation. Changes: see benchmark/README.md.",
+  "rules": [
+    "Every question is about the test reports, which the knowledge graph holds beside ATT&CK v20.0.",
+    "Answers are computed by gold.py from benchmark/gold_triples.json (test split) and the ATT&CK v20.0 Enterprise file, never from the system's own graph.",
+    "A relationship that ATT&CK records for a sub-technique counts for its parent technique, because the experts' labels name parent techniques only.",
+    "'cypher' computes the same answer inside Neo4j from the ATT&CK part of the graph, with the gold facts passed as 'parameters'; gold.py --neo4j runs every query and compares the answers.",
+    "'reference_answer' states the answer in words (RAGAS context recall needs one); 'supporting_facts' lists the gold facts and the ATT&CK relationship IDs (as cited in answers: [edge:<id>]) the answer rests on.",
+    "'checked_on_attack_website', where present, names the attack.mitre.org page whose list was compared with the answer item by item, the date, and what the page lists."
+  ],
+  "patterns": {
+    "mitigations_top": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-MITIGATES- Mitigation, counted per mitigation",
+    "tactics": "Report -MENTIONS-> Technique -PART_OF_TACTIC-> Tactic",
+    "group_software": "Report -MENTIONS-> Group -USES-> Software <-MENTIONS- Report",
+    "groups_using_report_software": "Report -MENTIONS-> Group -USES-> Software <-MENTIONS- Report",
+    "group_techniques": "Report -MENTIONS-> Group -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+    "groups_most_techniques": "Report -MENTIONS-> Group -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report, counted per group",
+    "software_techniques": "Report -MENTIONS-> Software -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+    "software_techniques_missing": "Report -MENTIONS-> Technique with no path Software -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> that Technique",
+    "shared_techniques": "Report A -MENTIONS-> Technique <-MENTIONS- Report B",
+    "groups_all_techniques": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-USES- Group, for every technique of the report"
+  },
+  "questions": [
+    {
+      "id": "Q01",
+      "pattern": "mitigations_top",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-MITIGATES- Mitigation, counted per mitigation",
+      "reports": [
+        "intel471_2021-12-09_emotet-returns-december-2021"
+      ],
+      "question": "Which MITRE ATT&CK mitigations address the largest number of the techniques described in Intel 471's December 2021 report “How the new Emotet differs from previous versions”?",
+      "answer": [
+        {
+          "attack_id": "M1047",
+          "name": "Audit",
+          "support": [
+            "T1027",
+            "T1059",
+            "T1114",
+            "T1566",
+            "T1606"
+          ]
+        }
+      ],
+      "reference_answer": "M1047 Audit addresses 5 of the 13 techniques the report describes: T1027 Obfuscated Files or Information, T1059 Command and Scripting Interpreter, T1114 Email Collection, T1566 Phishing and T1606 Forge Web Credentials. No other mitigation addresses more than 4 of them.",
+      "supporting_facts": {
+        "gold": [
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1001",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1027",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1041",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1055",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1057",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1059",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1110",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1114",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1189",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1218",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1566",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1573",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1606"
+        ],
+        "attack": [
+          "attack:MITIGATES:M1047:T1027",
+          "attack:MITIGATES:M1047:T1059",
+          "attack:MITIGATES:M1047:T1114",
+          "attack:MITIGATES:M1047:T1566",
+          "attack:MITIGATES:M1047:T1606"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (m:`Mitigation`)-[:`MITIGATES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques\nWITH m, collect(DISTINCT t.`attack_id`) AS addressed\nWITH max(size(addressed)) AS most, collect({id: m.`attack_id`, addressed: addressed}) AS rows\nUNWIND rows AS row\nWITH row, most WHERE size(row.addressed) = most\nRETURN row.id AS answer, row.addressed AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1001",
+          "T1027",
+          "T1041",
+          "T1055",
+          "T1057",
+          "T1059",
+          "T1110",
+          "T1114",
+          "T1189",
+          "T1218",
+          "T1566",
+          "T1573",
+          "T1606"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q02",
+      "pattern": "mitigations_top",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-MITIGATES- Mitigation, counted per mitigation",
+      "reports": [
+        "lab52_2022-01-10_tokyox-dll-side-loading-an"
+      ],
+      "question": "Which MITRE ATT&CK mitigations address the largest number of the techniques described in Lab52's January 2022 report “TokyoX: DLL side-loading an unknown artifact”?",
+      "answer": [
+        {
+          "attack_id": "M1038",
+          "name": "Execution Prevention",
+          "support": [
+            "T1129",
+            "T1204",
+            "T1546",
+            "T1574"
+          ]
+        },
+        {
+          "attack_id": "M1040",
+          "name": "Behavior Prevention on Endpoint",
+          "support": [
+            "T1055",
+            "T1204",
+            "T1546",
+            "T1574"
+          ]
+        }
+      ],
+      "reference_answer": "M1038 Execution Prevention and M1040 Behavior Prevention on Endpoint each address 4 of the 8 techniques the report describes. M1038 Execution Prevention addresses T1129 Shared Modules, T1204 User Execution, T1546 Event Triggered Execution (through its sub-techniques T1546.002 Screensaver, T1546.006 LC_LOAD_DYLIB Addition, T1546.008 Accessibility Features, T1546.009 AppCert DLLs and T1546.010 AppInit DLLs) and T1574 Hijack Execution Flow. M1040 Behavior Prevention on Endpoint addresses T1055 Process Injection, T1204 User Execution, T1546 Event Triggered Execution (through its sub-technique T1546.003 Windows Management Instrumentation Event Subscription) and T1574 Hijack Execution Flow. No other mitigation addresses more than 3 of them.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1055",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1071",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1129",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1140",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1204",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1546",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1574",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1620"
+        ],
+        "attack": [
+          "attack:MITIGATES:M1038:T1129",
+          "attack:MITIGATES:M1038:T1204",
+          "attack:MITIGATES:M1038:T1546.002",
+          "attack:SUBTECHNIQUE_OF:T1546.002:T1546",
+          "attack:MITIGATES:M1038:T1546.006",
+          "attack:SUBTECHNIQUE_OF:T1546.006:T1546",
+          "attack:MITIGATES:M1038:T1546.008",
+          "attack:SUBTECHNIQUE_OF:T1546.008:T1546",
+          "attack:MITIGATES:M1038:T1546.009",
+          "attack:SUBTECHNIQUE_OF:T1546.009:T1546",
+          "attack:MITIGATES:M1038:T1546.010",
+          "attack:SUBTECHNIQUE_OF:T1546.010:T1546",
+          "attack:MITIGATES:M1038:T1574",
+          "attack:MITIGATES:M1040:T1055",
+          "attack:MITIGATES:M1040:T1204",
+          "attack:MITIGATES:M1040:T1546.003",
+          "attack:SUBTECHNIQUE_OF:T1546.003:T1546",
+          "attack:MITIGATES:M1040:T1574"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (m:`Mitigation`)-[:`MITIGATES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques\nWITH m, collect(DISTINCT t.`attack_id`) AS addressed\nWITH max(size(addressed)) AS most, collect({id: m.`attack_id`, addressed: addressed}) AS rows\nUNWIND rows AS row\nWITH row, most WHERE size(row.addressed) = most\nRETURN row.id AS answer, row.addressed AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1055",
+          "T1071",
+          "T1129",
+          "T1140",
+          "T1204",
+          "T1546",
+          "T1574",
+          "T1620"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q03",
+      "pattern": "mitigations_top",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-MITIGATES- Mitigation, counted per mitigation",
+      "reports": [
+        "proofpoint_2021-10-28_ta575-uses-squid-game-lures"
+      ],
+      "question": "Which MITRE ATT&CK mitigations address the largest number of the techniques described in Proofpoint's October 2021 report “TA575 Uses ‘Squid Game’ Lures to Distribute Dridex malware”?",
+      "answer": [
+        {
+          "attack_id": "M1031",
+          "name": "Network Intrusion Prevention",
+          "support": [
+            "T1105",
+            "T1204",
+            "T1566"
+          ]
+        }
+      ],
+      "reference_answer": "M1031 Network Intrusion Prevention addresses 3 of the 4 techniques the report describes: T1105 Ingress Tool Transfer, T1204 User Execution and T1566 Phishing. No other mitigation addresses more than 2 of them.",
+      "supporting_facts": {
+        "gold": [
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1105",
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1204",
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1486",
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1566"
+        ],
+        "attack": [
+          "attack:MITIGATES:M1031:T1105",
+          "attack:MITIGATES:M1031:T1204",
+          "attack:MITIGATES:M1031:T1566"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (m:`Mitigation`)-[:`MITIGATES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques\nWITH m, collect(DISTINCT t.`attack_id`) AS addressed\nWITH max(size(addressed)) AS most, collect({id: m.`attack_id`, addressed: addressed}) AS rows\nUNWIND rows AS row\nWITH row, most WHERE size(row.addressed) = most\nRETURN row.id AS answer, row.addressed AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1105",
+          "T1204",
+          "T1486",
+          "T1566"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q04",
+      "pattern": "mitigations_top",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-MITIGATES- Mitigation, counted per mitigation",
+      "reports": [
+        "quoteintelligence_2021-02-16_dns-over-https-doh"
+      ],
+      "question": "Which MITRE ATT&CK mitigations address the largest number of the techniques described in QuoIntelligence's February 2021 report “How DNS-over-HTTPS (DoH) has Changed the Threat Landscape For Companies”?",
+      "answer": [
+        {
+          "attack_id": "M1031",
+          "name": "Network Intrusion Prevention",
+          "support": [
+            "T1001",
+            "T1041",
+            "T1557"
+          ]
+        }
+      ],
+      "reference_answer": "M1031 Network Intrusion Prevention addresses 3 of the 3 techniques the report describes: T1001 Data Obfuscation, T1041 Exfiltration Over C2 Channel and T1557 Adversary-in-the-Middle. No other mitigation addresses more than 1 of them.",
+      "supporting_facts": {
+        "gold": [
+          "quoteintelligence_2021-02-16_dns-over-https-doh MENTIONS T1001",
+          "quoteintelligence_2021-02-16_dns-over-https-doh MENTIONS T1041",
+          "quoteintelligence_2021-02-16_dns-over-https-doh MENTIONS T1557"
+        ],
+        "attack": [
+          "attack:MITIGATES:M1031:T1001",
+          "attack:MITIGATES:M1031:T1041",
+          "attack:MITIGATES:M1031:T1557"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (m:`Mitigation`)-[:`MITIGATES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques\nWITH m, collect(DISTINCT t.`attack_id`) AS addressed\nWITH max(size(addressed)) AS most, collect({id: m.`attack_id`, addressed: addressed}) AS rows\nUNWIND rows AS row\nWITH row, most WHERE size(row.addressed) = most\nRETURN row.id AS answer, row.addressed AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1001",
+          "T1041",
+          "T1557"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q05",
+      "pattern": "mitigations_top",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-MITIGATES- Mitigation, counted per mitigation",
+      "reports": [
+        "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double"
+      ],
+      "question": "Which MITRE ATT&CK mitigations address the largest number of the techniques described in Zscaler's October 2021 report “AtomSilo Ransomware Enters the League of Double Extortion”?",
+      "answer": [
+        {
+          "attack_id": "M1040",
+          "name": "Behavior Prevention on Endpoint",
+          "support": [
+            "T1027",
+            "T1036",
+            "T1047",
+            "T1059",
+            "T1486",
+            "T1574"
+          ]
+        }
+      ],
+      "reference_answer": "M1040 Behavior Prevention on Endpoint addresses 6 of the 9 techniques the report describes: T1027 Obfuscated Files or Information, T1036 Masquerading, T1047 Windows Management Instrumentation, T1059 Command and Scripting Interpreter, T1486 Data Encrypted for Impact and T1574 Hijack Execution Flow. No other mitigation addresses more than 5 of them.",
+      "supporting_facts": {
+        "gold": [
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1027",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1036",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1047",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1059",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1078",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1083",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1190",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1486",
+          "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double MENTIONS T1574"
+        ],
+        "attack": [
+          "attack:MITIGATES:M1040:T1027",
+          "attack:MITIGATES:M1040:T1036",
+          "attack:MITIGATES:M1040:T1047",
+          "attack:MITIGATES:M1040:T1059",
+          "attack:MITIGATES:M1040:T1486",
+          "attack:MITIGATES:M1040:T1574"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (m:`Mitigation`)-[:`MITIGATES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques\nWITH m, collect(DISTINCT t.`attack_id`) AS addressed\nWITH max(size(addressed)) AS most, collect({id: m.`attack_id`, addressed: addressed}) AS rows\nUNWIND rows AS row\nWITH row, most WHERE size(row.addressed) = most\nRETURN row.id AS answer, row.addressed AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1027",
+          "T1036",
+          "T1047",
+          "T1059",
+          "T1078",
+          "T1083",
+          "T1190",
+          "T1486",
+          "T1574"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q06",
+      "pattern": "tactics",
+      "hops": "Report -MENTIONS-> Technique -PART_OF_TACTIC-> Tactic",
+      "reports": [
+        "intel471_2021-07-14_how-cybercriminals-create-turbulence-for"
+      ],
+      "question": "Under which MITRE ATT&CK tactics does ATT&CK place the techniques described in Intel 471's July 2021 report “How cybercriminals create turbulence for the transportation industry”?",
+      "answer": [
+        {
+          "attack_id": "TA0001",
+          "name": "Initial Access",
+          "support": [
+            "T1190",
+            "T1195"
+          ]
+        },
+        {
+          "attack_id": "TA0008",
+          "name": "Lateral Movement",
+          "support": [
+            "T1021"
+          ]
+        },
+        {
+          "attack_id": "TA0040",
+          "name": "Impact",
+          "support": [
+            "T1486",
+            "T1491"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK places the report's 5 techniques under 3 tactics: TA0001 Initial Access (T1190 Exploit Public-Facing Application and T1195 Supply Chain Compromise), TA0008 Lateral Movement (T1021 Remote Services) and TA0040 Impact (T1486 Data Encrypted for Impact and T1491 Defacement).",
+      "supporting_facts": {
+        "gold": [
+          "intel471_2021-07-14_how-cybercriminals-create-turbulence-for MENTIONS T1021",
+          "intel471_2021-07-14_how-cybercriminals-create-turbulence-for MENTIONS T1190",
+          "intel471_2021-07-14_how-cybercriminals-create-turbulence-for MENTIONS T1195",
+          "intel471_2021-07-14_how-cybercriminals-create-turbulence-for MENTIONS T1486",
+          "intel471_2021-07-14_how-cybercriminals-create-turbulence-for MENTIONS T1491"
+        ],
+        "attack": [
+          "attack:PART_OF_TACTIC:T1190:TA0001",
+          "attack:PART_OF_TACTIC:T1195:TA0001",
+          "attack:PART_OF_TACTIC:T1021:TA0008",
+          "attack:PART_OF_TACTIC:T1486:TA0040",
+          "attack:PART_OF_TACTIC:T1491:TA0040"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)-[:`PART_OF_TACTIC`]->(a:`Tactic`)\nWHERE t.`attack_id` IN $techniques\nRETURN a.`attack_id` AS answer, collect(DISTINCT t.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1021",
+          "T1190",
+          "T1195",
+          "T1486",
+          "T1491"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q07",
+      "pattern": "tactics",
+      "hops": "Report -MENTIONS-> Technique -PART_OF_TACTIC-> Tactic",
+      "reports": [
+        "lab52_2022-01-12_tokyox-dll-side-loading-an"
+      ],
+      "question": "Under which MITRE ATT&CK tactics does ATT&CK place the techniques described in Lab52's January 2022 report “TokyoX: DLL side-loading an unknown artifact (Part 2)”?",
+      "answer": [
+        {
+          "attack_id": "TA0002",
+          "name": "Execution",
+          "support": [
+            "T1059",
+            "T1574"
+          ]
+        },
+        {
+          "attack_id": "TA0005",
+          "name": "Stealth",
+          "support": [
+            "T1070",
+            "T1574"
+          ]
+        },
+        {
+          "attack_id": "TA0007",
+          "name": "Discovery",
+          "support": [
+            "T1033",
+            "T1049",
+            "T1082",
+            "T1083"
+          ]
+        },
+        {
+          "attack_id": "TA0009",
+          "name": "Collection",
+          "support": [
+            "T1005"
+          ]
+        },
+        {
+          "attack_id": "TA0010",
+          "name": "Exfiltration",
+          "support": [
+            "T1041"
+          ]
+        },
+        {
+          "attack_id": "TA0011",
+          "name": "Command and Control",
+          "support": [
+            "T1105"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK places the report's 10 techniques under 6 tactics: TA0002 Execution (T1059 Command and Scripting Interpreter and T1574 Hijack Execution Flow), TA0005 Stealth (T1070 Indicator Removal and T1574 Hijack Execution Flow), TA0007 Discovery (T1033 System Owner/User Discovery, T1049 System Network Connections Discovery, T1082 System Information Discovery and T1083 File and Directory Discovery), TA0009 Collection (T1005 Data from Local System), TA0010 Exfiltration (T1041 Exfiltration Over C2 Channel) and TA0011 Command and Control (T1105 Ingress Tool Transfer).",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1005",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1033",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1041",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1049",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1059",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1070",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1082",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1083",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1105",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1574"
+        ],
+        "attack": [
+          "attack:PART_OF_TACTIC:T1059:TA0002",
+          "attack:PART_OF_TACTIC:T1574:TA0002",
+          "attack:PART_OF_TACTIC:T1070:TA0005",
+          "attack:PART_OF_TACTIC:T1574:TA0005",
+          "attack:PART_OF_TACTIC:T1033:TA0007",
+          "attack:PART_OF_TACTIC:T1049:TA0007",
+          "attack:PART_OF_TACTIC:T1082:TA0007",
+          "attack:PART_OF_TACTIC:T1083:TA0007",
+          "attack:PART_OF_TACTIC:T1005:TA0009",
+          "attack:PART_OF_TACTIC:T1041:TA0010",
+          "attack:PART_OF_TACTIC:T1105:TA0011"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)-[:`PART_OF_TACTIC`]->(a:`Tactic`)\nWHERE t.`attack_id` IN $techniques\nRETURN a.`attack_id` AS answer, collect(DISTINCT t.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1005",
+          "T1033",
+          "T1041",
+          "T1049",
+          "T1059",
+          "T1070",
+          "T1082",
+          "T1083",
+          "T1105",
+          "T1574"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q08",
+      "pattern": "tactics",
+      "hops": "Report -MENTIONS-> Technique -PART_OF_TACTIC-> Tactic",
+      "reports": [
+        "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns"
+      ],
+      "question": "Under which MITRE ATT&CK tactics does ATT&CK place the techniques described in Proofpoint's December 2021 report “University Targeted Credential Phishing Campaigns Use COVID-19, Omicron Themes”?",
+      "answer": [
+        {
+          "attack_id": "TA0001",
+          "name": "Initial Access",
+          "support": [
+            "T1566"
+          ]
+        },
+        {
+          "attack_id": "TA0006",
+          "name": "Credential Access",
+          "support": [
+            "T1056",
+            "T1111"
+          ]
+        },
+        {
+          "attack_id": "TA0009",
+          "name": "Collection",
+          "support": [
+            "T1056"
+          ]
+        },
+        {
+          "attack_id": "TA0042",
+          "name": "Resource Development",
+          "support": [
+            "T1583",
+            "T1584",
+            "T1586"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK places the report's 6 techniques under 4 tactics: TA0001 Initial Access (T1566 Phishing), TA0006 Credential Access (T1056 Input Capture and T1111 Multi-Factor Authentication Interception), TA0009 Collection (T1056 Input Capture) and TA0042 Resource Development (T1583 Acquire Infrastructure, T1584 Compromise Infrastructure and T1586 Compromise Accounts).",
+      "supporting_facts": {
+        "gold": [
+          "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns MENTIONS T1056",
+          "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns MENTIONS T1111",
+          "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns MENTIONS T1566",
+          "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns MENTIONS T1583",
+          "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns MENTIONS T1584",
+          "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns MENTIONS T1586"
+        ],
+        "attack": [
+          "attack:PART_OF_TACTIC:T1566:TA0001",
+          "attack:PART_OF_TACTIC:T1056:TA0006",
+          "attack:PART_OF_TACTIC:T1111:TA0006",
+          "attack:PART_OF_TACTIC:T1056:TA0009",
+          "attack:PART_OF_TACTIC:T1583:TA0042",
+          "attack:PART_OF_TACTIC:T1584:TA0042",
+          "attack:PART_OF_TACTIC:T1586:TA0042"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)-[:`PART_OF_TACTIC`]->(a:`Tactic`)\nWHERE t.`attack_id` IN $techniques\nRETURN a.`attack_id` AS answer, collect(DISTINCT t.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1056",
+          "T1111",
+          "T1566",
+          "T1583",
+          "T1584",
+          "T1586"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q09",
+      "pattern": "tactics",
+      "hops": "Report -MENTIONS-> Technique -PART_OF_TACTIC-> Tactic",
+      "reports": [
+        "quoteintelligence_2021-05-20_how-the-demise-of-third"
+      ],
+      "question": "Under which MITRE ATT&CK tactics does ATT&CK place the techniques described in QuoIntelligence's May 2021 report “How the Demise of Third-Party Cookies Will Influence Data Security”?",
+      "answer": [
+        {
+          "attack_id": "TA0001",
+          "name": "Initial Access",
+          "support": [
+            "T1189"
+          ]
+        },
+        {
+          "attack_id": "TA0004",
+          "name": "Privilege Escalation",
+          "support": [
+            "T1134"
+          ]
+        },
+        {
+          "attack_id": "TA0005",
+          "name": "Stealth",
+          "support": [
+            "T1134"
+          ]
+        },
+        {
+          "attack_id": "TA0006",
+          "name": "Credential Access",
+          "support": [
+            "T1539",
+            "T1606"
+          ]
+        },
+        {
+          "attack_id": "TA0043",
+          "name": "Reconnaissance",
+          "support": [
+            "T1589"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK places the report's 5 techniques under 5 tactics: TA0001 Initial Access (T1189 Drive-by Compromise), TA0004 Privilege Escalation (T1134 Access Token Manipulation), TA0005 Stealth (T1134 Access Token Manipulation), TA0006 Credential Access (T1539 Steal Web Session Cookie and T1606 Forge Web Credentials) and TA0043 Reconnaissance (T1589 Gather Victim Identity Information).",
+      "supporting_facts": {
+        "gold": [
+          "quoteintelligence_2021-05-20_how-the-demise-of-third MENTIONS T1134",
+          "quoteintelligence_2021-05-20_how-the-demise-of-third MENTIONS T1189",
+          "quoteintelligence_2021-05-20_how-the-demise-of-third MENTIONS T1539",
+          "quoteintelligence_2021-05-20_how-the-demise-of-third MENTIONS T1589",
+          "quoteintelligence_2021-05-20_how-the-demise-of-third MENTIONS T1606"
+        ],
+        "attack": [
+          "attack:PART_OF_TACTIC:T1189:TA0001",
+          "attack:PART_OF_TACTIC:T1134:TA0004",
+          "attack:PART_OF_TACTIC:T1134:TA0005",
+          "attack:PART_OF_TACTIC:T1539:TA0006",
+          "attack:PART_OF_TACTIC:T1606:TA0006",
+          "attack:PART_OF_TACTIC:T1589:TA0043"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)-[:`PART_OF_TACTIC`]->(a:`Tactic`)\nWHERE t.`attack_id` IN $techniques\nRETURN a.`attack_id` AS answer, collect(DISTINCT t.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1134",
+          "T1189",
+          "T1539",
+          "T1589",
+          "T1606"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q10",
+      "pattern": "group_software",
+      "hops": "Report -MENTIONS-> Group -USES-> Software <-MENTIONS- Report",
+      "reports": [
+        "lab52_2021-05-17_literature-lover-targeting-colombia-with"
+      ],
+      "question": "Which malware or tools mentioned in Lab52's May 2021 report “Literature lover targeting Colombia with LimeRAT” does MITRE ATT&CK record as used by the threat group the report names?",
+      "answer": [
+        {
+          "attack_id": "S0385",
+          "name": "njRAT",
+          "support": [
+            "G0099"
+          ]
+        }
+      ],
+      "reference_answer": "The report names the threat group G0099 APT-C-36 and the software S0385 njRAT. ATT&CK records APT-C-36 as using S0385 njRAT.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2021-05-17_literature-lover-targeting-colombia-with MENTIONS G0099",
+          "lab52_2021-05-17_literature-lover-targeting-colombia-with MENTIONS S0385"
+        ],
+        "attack": [
+          "attack:USES:G0099:S0385"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (g:`Group`)-[u:`USES`]->(s:`Software`)\nWHERE g.`attack_id` IN $groups AND s.`attack_id` IN $software AND u.`source` = 'attack'\nRETURN s.`attack_id` AS answer, collect(DISTINCT g.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "groups": [
+          "G0099"
+        ],
+        "software": [
+          "S0385"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q11",
+      "pattern": "group_software",
+      "hops": "Report -MENTIONS-> Group -USES-> Software <-MENTIONS- Report",
+      "reports": [
+        "lab52_2022-01-24_new-transparentribe-operation-targeting-india"
+      ],
+      "question": "Which malware or tools mentioned in Lab52's January 2022 report “New TransparenTribe Operation: Targeting India with weaponized COVID-19 lure documents” does MITRE ATT&CK record as used by the threat group the report names?",
+      "answer": [
+        {
+          "attack_id": "S0115",
+          "name": "Crimson",
+          "support": [
+            "G0134"
+          ]
+        },
+        {
+          "attack_id": "S0643",
+          "name": "Peppy",
+          "support": [
+            "G0134"
+          ]
+        }
+      ],
+      "reference_answer": "The report names the threat group G0134 Transparent Tribe and the software S0115 Crimson and S0643 Peppy. ATT&CK records Transparent Tribe as using both: S0115 Crimson and S0643 Peppy.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS G0134",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS S0115",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS S0643"
+        ],
+        "attack": [
+          "attack:USES:G0134:S0115",
+          "attack:USES:G0134:S0643"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (g:`Group`)-[u:`USES`]->(s:`Software`)\nWHERE g.`attack_id` IN $groups AND s.`attack_id` IN $software AND u.`source` = 'attack'\nRETURN s.`attack_id` AS answer, collect(DISTINCT g.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "groups": [
+          "G0134"
+        ],
+        "software": [
+          "S0115",
+          "S0643"
+        ]
+      },
+      "checked_on_attack_website": {
+        "page": "https://attack.mitre.org/groups/G0134/",
+        "date": "2026-10-19",
+        "answer": [
+          "S0115",
+          "S0643"
+        ],
+        "found": "The page lists five software for Transparent Tribe: S0115 Crimson, S0334 DarkComet, S0385 njRAT, S0644 ObliqueRAT and S0643 Peppy. Both software the report mentions, S0115 Crimson and S0643 Peppy, are among them."
+      }
+    },
+    {
+      "id": "Q12",
+      "pattern": "groups_using_report_software",
+      "hops": "Report -MENTIONS-> Group -USES-> Software <-MENTIONS- Report",
+      "reports": [
+        "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber"
+      ],
+      "question": "Which of the threat groups named in QuoIntelligence's April 2021 report “US Sanctions Against Russia Unlikely to Limit Russian Cyber Espionage” does MITRE ATT&CK record as using the malware or tools the report mentions?",
+      "answer": [
+        {
+          "attack_id": "G0034",
+          "name": "Sandworm Team",
+          "support": [
+            "S0368"
+          ]
+        }
+      ],
+      "reference_answer": "Of the 5 groups the report names (G0007 APT28, G0010 Turla, G0016 APT29, G0034 Sandworm Team and G0047 Gamaredon Group), ATT&CK records only G0034 Sandworm Team as using S0368 NotPetya, the software the report mentions. ATT&CK does not record APT28, Turla, APT29 and Gamaredon Group using NotPetya.",
+      "supporting_facts": {
+        "gold": [
+          "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber MENTIONS G0007",
+          "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber MENTIONS G0010",
+          "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber MENTIONS G0016",
+          "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber MENTIONS G0034",
+          "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber MENTIONS G0047",
+          "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber MENTIONS S0368"
+        ],
+        "attack": [
+          "attack:USES:G0034:S0368"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (g:`Group`)-[u:`USES`]->(s:`Software`)\nWHERE g.`attack_id` IN $groups AND s.`attack_id` IN $software AND u.`source` = 'attack'\nRETURN g.`attack_id` AS answer, collect(DISTINCT s.`attack_id`) AS support\nORDER BY answer",
+      "parameters": {
+        "groups": [
+          "G0007",
+          "G0010",
+          "G0016",
+          "G0034",
+          "G0047"
+        ],
+        "software": [
+          "S0368"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q13",
+      "pattern": "group_techniques",
+      "hops": "Report -MENTIONS-> Group -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+      "reports": [
+        "lab52_2021-04-29_chimera-apt-updates-on-its"
+      ],
+      "question": "Which of the techniques described in Lab52's April 2021 report “Updates on OwlProxy malware” does MITRE ATT&CK record Chimera as using?",
+      "answer": [
+        {
+          "attack_id": "T1027",
+          "name": "Obfuscated Files or Information",
+          "support": [
+            "T1027.010"
+          ]
+        },
+        {
+          "attack_id": "T1036",
+          "name": "Masquerading",
+          "support": [
+            "T1036.005"
+          ]
+        },
+        {
+          "attack_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "support": [
+            "T1059.001",
+            "T1059.003"
+          ]
+        },
+        {
+          "attack_id": "T1071",
+          "name": "Application Layer Protocol",
+          "support": [
+            "T1071.001",
+            "T1071.004"
+          ]
+        },
+        {
+          "attack_id": "T1083",
+          "name": "File and Directory Discovery",
+          "support": [
+            "T1083"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK records Chimera as using 5 of the 6 techniques the report describes: T1027 Obfuscated Files or Information (through its sub-technique T1027.010 Command Obfuscation), T1036 Masquerading (through its sub-technique T1036.005 Match Legitimate Resource Name or Location), T1059 Command and Scripting Interpreter (through its sub-techniques T1059.001 PowerShell and T1059.003 Windows Command Shell), T1071 Application Layer Protocol (through its sub-techniques T1071.001 Web Protocols and T1071.004 DNS) and T1083 File and Directory Discovery. The report's other technique, T1547 Boot or Logon Autostart Execution, is not among Chimera's ATT&CK techniques.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS G0114",
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS T1027",
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS T1036",
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS T1059",
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS T1071",
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS T1083",
+          "lab52_2021-04-29_chimera-apt-updates-on-its MENTIONS T1547"
+        ],
+        "attack": [
+          "attack:USES:G0114:T1027.010",
+          "attack:SUBTECHNIQUE_OF:T1027.010:T1027",
+          "attack:USES:G0114:T1036.005",
+          "attack:SUBTECHNIQUE_OF:T1036.005:T1036",
+          "attack:USES:G0114:T1059.001",
+          "attack:SUBTECHNIQUE_OF:T1059.001:T1059",
+          "attack:USES:G0114:T1059.003",
+          "attack:SUBTECHNIQUE_OF:T1059.003:T1059",
+          "attack:USES:G0114:T1071.001",
+          "attack:SUBTECHNIQUE_OF:T1071.001:T1071",
+          "attack:USES:G0114:T1071.004",
+          "attack:SUBTECHNIQUE_OF:T1071.004:T1071",
+          "attack:USES:G0114:T1083"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (x:`Group` {`attack_id`: $user})-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nRETURN DISTINCT t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "user": "G0114",
+        "techniques": [
+          "T1027",
+          "T1036",
+          "T1059",
+          "T1071",
+          "T1083",
+          "T1547"
+        ]
+      },
+      "checked_on_attack_website": {
+        "page": "https://attack.mitre.org/groups/G0114/G0114-enterprise-layer.json",
+        "date": "2026-10-19",
+        "answer": [
+          "T1027",
+          "T1036",
+          "T1059",
+          "T1071",
+          "T1083"
+        ],
+        "found": "The Navigator layer of Chimera's page (ATT&CK version 20) lists 82 technique entries, among them T1027 with T1027.010, T1036 with T1036.005, T1059 with T1059.001 and T1059.003, T1071 with T1071.001 and T1071.004, and T1083; it lists no T1547 entry."
+      }
+    },
+    {
+      "id": "Q14",
+      "pattern": "group_techniques",
+      "hops": "Report -MENTIONS-> Group -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+      "reports": [
+        "lab52_2022-01-24_new-transparentribe-operation-targeting-india"
+      ],
+      "question": "Which of the techniques described in Lab52's January 2022 report “New TransparenTribe Operation: Targeting India with weaponized COVID-19 lure documents” does MITRE ATT&CK record Transparent Tribe as using?",
+      "answer": [
+        {
+          "attack_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "support": [
+            "T1059.005"
+          ]
+        },
+        {
+          "attack_id": "T1204",
+          "name": "User Execution",
+          "support": [
+            "T1204.001",
+            "T1204.002"
+          ]
+        },
+        {
+          "attack_id": "T1566",
+          "name": "Phishing",
+          "support": [
+            "T1566.001",
+            "T1566.002"
+          ]
+        },
+        {
+          "attack_id": "T1568",
+          "name": "Dynamic Resolution",
+          "support": [
+            "T1568"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK records Transparent Tribe as using 4 of the 12 techniques the report describes: T1059 Command and Scripting Interpreter (through its sub-technique T1059.005 Visual Basic), T1204 User Execution (through its sub-techniques T1204.001 Malicious Link and T1204.002 Malicious File), T1566 Phishing (through its sub-techniques T1566.001 Spearphishing Attachment and T1566.002 Spearphishing Link) and T1568 Dynamic Resolution. The report's other techniques, T1005 Data from Local System, T1041 Exfiltration Over C2 Channel, T1055 Process Injection, T1057 Process Discovery, T1071 Application Layer Protocol, T1105 Ingress Tool Transfer, T1497 Virtualization/Sandbox Evasion and T1547 Boot or Logon Autostart Execution, are not among Transparent Tribe's ATT&CK techniques.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS G0134",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1005",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1041",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1055",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1057",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1059",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1071",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1105",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1204",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1497",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1547",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1566",
+          "lab52_2022-01-24_new-transparentribe-operation-targeting-india MENTIONS T1568"
+        ],
+        "attack": [
+          "attack:USES:G0134:T1059.005",
+          "attack:SUBTECHNIQUE_OF:T1059.005:T1059",
+          "attack:USES:G0134:T1204.001",
+          "attack:SUBTECHNIQUE_OF:T1204.001:T1204",
+          "attack:USES:G0134:T1204.002",
+          "attack:SUBTECHNIQUE_OF:T1204.002:T1204",
+          "attack:USES:G0134:T1566.001",
+          "attack:SUBTECHNIQUE_OF:T1566.001:T1566",
+          "attack:USES:G0134:T1566.002",
+          "attack:SUBTECHNIQUE_OF:T1566.002:T1566",
+          "attack:USES:G0134:T1568"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (x:`Group` {`attack_id`: $user})-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nRETURN DISTINCT t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "user": "G0134",
+        "techniques": [
+          "T1005",
+          "T1041",
+          "T1055",
+          "T1057",
+          "T1059",
+          "T1071",
+          "T1105",
+          "T1204",
+          "T1497",
+          "T1547",
+          "T1566",
+          "T1568"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q15",
+      "pattern": "groups_most_techniques",
+      "hops": "Report -MENTIONS-> Group -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report, counted per group",
+      "reports": [
+        "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian"
+      ],
+      "question": "Which of the threat groups named in QuoIntelligence's June 2021 report “E.K.P. & Agent Tesla: The Daily Operations of a Nigerian eCrime Gang” does MITRE ATT&CK record as using the largest number of the techniques the report describes?",
+      "answer": [
+        {
+          "attack_id": "G0037",
+          "name": "FIN6",
+          "support": [
+            "T1027",
+            "T1047",
+            "T1048",
+            "T1053",
+            "T1059",
+            "T1087",
+            "T1204",
+            "T1547",
+            "T1555",
+            "T1560",
+            "T1566",
+            "T1685"
+          ]
+        }
+      ],
+      "reference_answer": "G0037 FIN6: ATT&CK records FIN6 as using 12 of the 35 techniques the report describes (T1027 Obfuscated Files or Information (through its sub-technique T1027.010 Command Obfuscation), T1047 Windows Management Instrumentation, T1048 Exfiltration Over Alternative Protocol (through its sub-technique T1048.003 Exfiltration Over Unencrypted Non-C2 Protocol), T1053 Scheduled Task/Job (through its sub-technique T1053.005 Scheduled Task), T1059 Command and Scripting Interpreter, T1087 Account Discovery (through its sub-technique T1087.002 Domain Account), T1204 User Execution (through its sub-technique T1204.002 Malicious File), T1547 Boot or Logon Autostart Execution (through its sub-technique T1547.001 Registry Run Keys / Startup Folder), T1555 Credentials from Password Stores, T1560 Archive Collected Data, T1566 Phishing (through its sub-techniques T1566.001 Spearphishing Attachment and T1566.003 Spearphishing via Service) and T1685 Disable or Modify Tools). G0080 Cobalt Group uses 11. G0120 Evilnum uses 6.",
+      "supporting_facts": {
+        "gold": [
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS G0037",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS G0080",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS G0120",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1016",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1027",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1033",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1047",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1048",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1053",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1055",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1056",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1057",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1059",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1071",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1082",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1087",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1105",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1112",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1113",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1115",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1124",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1125",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1140",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1185",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1203",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1204",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1218",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1486",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1497",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1547",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1552",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1555",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1560",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1564",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1566",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1606",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1608",
+          "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian MENTIONS T1685"
+        ],
+        "attack": [
+          "attack:USES:G0037:T1027.010",
+          "attack:SUBTECHNIQUE_OF:T1027.010:T1027",
+          "attack:USES:G0037:T1047",
+          "attack:USES:G0037:T1048.003",
+          "attack:SUBTECHNIQUE_OF:T1048.003:T1048",
+          "attack:USES:G0037:T1053.005",
+          "attack:SUBTECHNIQUE_OF:T1053.005:T1053",
+          "attack:USES:G0037:T1059",
+          "attack:USES:G0037:T1087.002",
+          "attack:SUBTECHNIQUE_OF:T1087.002:T1087",
+          "attack:USES:G0037:T1204.002",
+          "attack:SUBTECHNIQUE_OF:T1204.002:T1204",
+          "attack:USES:G0037:T1547.001",
+          "attack:SUBTECHNIQUE_OF:T1547.001:T1547",
+          "attack:USES:G0037:T1555",
+          "attack:USES:G0037:T1560",
+          "attack:USES:G0037:T1566.001",
+          "attack:SUBTECHNIQUE_OF:T1566.001:T1566",
+          "attack:USES:G0037:T1566.003",
+          "attack:SUBTECHNIQUE_OF:T1566.003:T1566",
+          "attack:USES:G0037:T1685"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (g:`Group`)-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE g.`attack_id` IN $groups AND t.`attack_id` IN $techniques AND u.`source` = 'attack'\nWITH g, collect(DISTINCT t.`attack_id`) AS used\nWITH max(size(used)) AS most, collect({id: g.`attack_id`, used: used}) AS rows\nUNWIND rows AS row\nWITH row, most WHERE size(row.used) = most\nRETURN row.id AS answer, row.used AS support\nORDER BY answer",
+      "parameters": {
+        "groups": [
+          "G0037",
+          "G0080",
+          "G0120"
+        ],
+        "techniques": [
+          "T1016",
+          "T1027",
+          "T1033",
+          "T1047",
+          "T1048",
+          "T1053",
+          "T1055",
+          "T1056",
+          "T1057",
+          "T1059",
+          "T1071",
+          "T1082",
+          "T1087",
+          "T1105",
+          "T1112",
+          "T1113",
+          "T1115",
+          "T1124",
+          "T1125",
+          "T1140",
+          "T1185",
+          "T1203",
+          "T1204",
+          "T1218",
+          "T1486",
+          "T1497",
+          "T1547",
+          "T1552",
+          "T1555",
+          "T1560",
+          "T1564",
+          "T1566",
+          "T1606",
+          "T1608",
+          "T1685"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q16",
+      "pattern": "software_techniques",
+      "hops": "Report -MENTIONS-> Software -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+      "reports": [
+        "intel471_2021-09-30_public-sector-cybersecurity-threats-2021"
+      ],
+      "question": "Which of the techniques described in Intel 471's September 2021 report “The public sector is a juicy target for cybercriminals” does MITRE ATT&CK record REvil as using?",
+      "answer": [
+        {
+          "attack_id": "T1189",
+          "name": "Drive-by Compromise",
+          "support": [
+            "T1189"
+          ]
+        },
+        {
+          "attack_id": "T1486",
+          "name": "Data Encrypted for Impact",
+          "support": [
+            "T1486"
+          ]
+        },
+        {
+          "attack_id": "T1566",
+          "name": "Phishing",
+          "support": [
+            "T1566.001"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK records REvil as using 3 of the 5 techniques the report describes: T1189 Drive-by Compromise, T1486 Data Encrypted for Impact and T1566 Phishing (through its sub-technique T1566.001 Spearphishing Attachment). The report's other techniques, T1190 Exploit Public-Facing Application and T1195 Supply Chain Compromise, are not among REvil's ATT&CK techniques.",
+      "supporting_facts": {
+        "gold": [
+          "intel471_2021-09-30_public-sector-cybersecurity-threats-2021 MENTIONS S0496",
+          "intel471_2021-09-30_public-sector-cybersecurity-threats-2021 MENTIONS T1189",
+          "intel471_2021-09-30_public-sector-cybersecurity-threats-2021 MENTIONS T1190",
+          "intel471_2021-09-30_public-sector-cybersecurity-threats-2021 MENTIONS T1195",
+          "intel471_2021-09-30_public-sector-cybersecurity-threats-2021 MENTIONS T1486",
+          "intel471_2021-09-30_public-sector-cybersecurity-threats-2021 MENTIONS T1566"
+        ],
+        "attack": [
+          "attack:USES:S0496:T1189",
+          "attack:USES:S0496:T1486",
+          "attack:USES:S0496:T1566.001",
+          "attack:SUBTECHNIQUE_OF:T1566.001:T1566"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (x:`Software` {`attack_id`: $user})-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nRETURN DISTINCT t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "user": "S0496",
+        "techniques": [
+          "T1189",
+          "T1190",
+          "T1195",
+          "T1486",
+          "T1566"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q17",
+      "pattern": "software_techniques",
+      "hops": "Report -MENTIONS-> Software -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+      "reports": [
+        "lab52_2022-01-10_tokyox-dll-side-loading-an"
+      ],
+      "question": "Which of the techniques described in Lab52's January 2022 report “TokyoX: DLL side-loading an unknown artifact” does MITRE ATT&CK record PlugX as using?",
+      "answer": [
+        {
+          "attack_id": "T1071",
+          "name": "Application Layer Protocol",
+          "support": [
+            "T1071.001",
+            "T1071.004"
+          ]
+        },
+        {
+          "attack_id": "T1140",
+          "name": "Deobfuscate/Decode Files or Information",
+          "support": [
+            "T1140"
+          ]
+        },
+        {
+          "attack_id": "T1204",
+          "name": "User Execution",
+          "support": [
+            "T1204.002"
+          ]
+        },
+        {
+          "attack_id": "T1574",
+          "name": "Hijack Execution Flow",
+          "support": [
+            "T1574.001"
+          ]
+        },
+        {
+          "attack_id": "T1620",
+          "name": "Reflective Code Loading",
+          "support": [
+            "T1620"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK records PlugX as using 5 of the 8 techniques the report describes: T1071 Application Layer Protocol (through its sub-techniques T1071.001 Web Protocols and T1071.004 DNS), T1140 Deobfuscate/Decode Files or Information, T1204 User Execution (through its sub-technique T1204.002 Malicious File), T1574 Hijack Execution Flow (through its sub-technique T1574.001 DLL) and T1620 Reflective Code Loading. The report's other techniques, T1055 Process Injection, T1129 Shared Modules and T1546 Event Triggered Execution, are not among PlugX's ATT&CK techniques.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS S0013",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1055",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1071",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1129",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1140",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1204",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1546",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1574",
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1620"
+        ],
+        "attack": [
+          "attack:USES:S0013:T1071.001",
+          "attack:SUBTECHNIQUE_OF:T1071.001:T1071",
+          "attack:USES:S0013:T1071.004",
+          "attack:SUBTECHNIQUE_OF:T1071.004:T1071",
+          "attack:USES:S0013:T1140",
+          "attack:USES:S0013:T1204.002",
+          "attack:SUBTECHNIQUE_OF:T1204.002:T1204",
+          "attack:USES:S0013:T1574.001",
+          "attack:SUBTECHNIQUE_OF:T1574.001:T1574",
+          "attack:USES:S0013:T1620"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (x:`Software` {`attack_id`: $user})-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nRETURN DISTINCT t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "user": "S0013",
+        "techniques": [
+          "T1055",
+          "T1071",
+          "T1129",
+          "T1140",
+          "T1204",
+          "T1546",
+          "T1574",
+          "T1620"
+        ]
+      },
+      "checked_on_attack_website": {
+        "page": "https://attack.mitre.org/software/S0013/S0013-enterprise-layer.json",
+        "date": "2026-10-19",
+        "answer": [
+          "T1071",
+          "T1140",
+          "T1204",
+          "T1574",
+          "T1620"
+        ],
+        "found": "The Navigator layer of PlugX's page (ATT&CK version 20) lists 66 technique entries, among them T1071 with T1071.001 and T1071.004, T1140, T1204 with T1204.002, T1574 with T1574.001, and T1620; it lists no entry for T1055, T1129 or T1546."
+      }
+    },
+    {
+      "id": "Q18",
+      "pattern": "software_techniques",
+      "hops": "Report -MENTIONS-> Software -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> Technique <-MENTIONS- Report",
+      "reports": [
+        "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists"
+      ],
+      "question": "Which of the techniques described in Zscaler's September 2021 report “CloudFall Targets Researchers and Scientists Invited to International Military Conferences in Central Asia and Eastern Europe” does MITRE ATT&CK record Cobalt Strike as using?",
+      "answer": [
+        {
+          "attack_id": "T1027",
+          "name": "Obfuscated Files or Information",
+          "support": [
+            "T1027",
+            "T1027.005"
+          ]
+        },
+        {
+          "attack_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "support": [
+            "T1059.001",
+            "T1059.003",
+            "T1059.005",
+            "T1059.006",
+            "T1059.007"
+          ]
+        },
+        {
+          "attack_id": "T1071",
+          "name": "Application Layer Protocol",
+          "support": [
+            "T1071.001",
+            "T1071.002",
+            "T1071.004"
+          ]
+        },
+        {
+          "attack_id": "T1083",
+          "name": "File and Directory Discovery",
+          "support": [
+            "T1083"
+          ]
+        },
+        {
+          "attack_id": "T1137",
+          "name": "Office Application Startup",
+          "support": [
+            "T1137.001"
+          ]
+        },
+        {
+          "attack_id": "T1140",
+          "name": "Deobfuscate/Decode Files or Information",
+          "support": [
+            "T1140"
+          ]
+        }
+      ],
+      "reference_answer": "ATT&CK records Cobalt Strike as using 6 of the 11 techniques the report describes: T1027 Obfuscated Files or Information, T1059 Command and Scripting Interpreter (through its sub-techniques T1059.001 PowerShell, T1059.003 Windows Command Shell, T1059.005 Visual Basic, T1059.006 Python and T1059.007 JavaScript), T1071 Application Layer Protocol (through its sub-techniques T1071.001 Web Protocols, T1071.002 File Transfer Protocols and T1071.004 DNS), T1083 File and Directory Discovery, T1137 Office Application Startup (through its sub-technique T1137.001 Office Template Macros) and T1140 Deobfuscate/Decode Files or Information. The report's other techniques, T1036 Masquerading, T1204 User Execution, T1221 Template Injection, T1566 Phishing and T1589 Gather Victim Identity Information, are not among Cobalt Strike's ATT&CK techniques.",
+      "supporting_facts": {
+        "gold": [
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS S0154",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1027",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1036",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1059",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1071",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1083",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1137",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1140",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1204",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1221",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1566",
+          "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists MENTIONS T1589"
+        ],
+        "attack": [
+          "attack:USES:S0154:T1027",
+          "attack:USES:S0154:T1059.001",
+          "attack:SUBTECHNIQUE_OF:T1059.001:T1059",
+          "attack:USES:S0154:T1059.003",
+          "attack:SUBTECHNIQUE_OF:T1059.003:T1059",
+          "attack:USES:S0154:T1059.005",
+          "attack:SUBTECHNIQUE_OF:T1059.005:T1059",
+          "attack:USES:S0154:T1059.006",
+          "attack:SUBTECHNIQUE_OF:T1059.006:T1059",
+          "attack:USES:S0154:T1059.007",
+          "attack:SUBTECHNIQUE_OF:T1059.007:T1059",
+          "attack:USES:S0154:T1071.001",
+          "attack:SUBTECHNIQUE_OF:T1071.001:T1071",
+          "attack:USES:S0154:T1071.002",
+          "attack:SUBTECHNIQUE_OF:T1071.002:T1071",
+          "attack:USES:S0154:T1071.004",
+          "attack:SUBTECHNIQUE_OF:T1071.004:T1071",
+          "attack:USES:S0154:T1083",
+          "attack:USES:S0154:T1137.001",
+          "attack:SUBTECHNIQUE_OF:T1137.001:T1137",
+          "attack:USES:S0154:T1140"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (x:`Software` {`attack_id`: $user})-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nRETURN DISTINCT t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "user": "S0154",
+        "techniques": [
+          "T1027",
+          "T1036",
+          "T1059",
+          "T1071",
+          "T1083",
+          "T1137",
+          "T1140",
+          "T1204",
+          "T1221",
+          "T1566",
+          "T1589"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q19",
+      "pattern": "software_techniques_missing",
+      "hops": "Report -MENTIONS-> Technique with no path Software -USES-> Technique -[SUBTECHNIQUE_OF 0 or 1 step]-> that Technique",
+      "reports": [
+        "intel471_2021-12-09_emotet-returns-december-2021"
+      ],
+      "question": "Which of the techniques described in Intel 471's December 2021 report “How the new Emotet differs from previous versions” are missing from MITRE ATT&CK's record of the techniques Emotet uses?",
+      "answer": [
+        {
+          "attack_id": "T1001",
+          "name": "Data Obfuscation",
+          "support": []
+        },
+        {
+          "attack_id": "T1189",
+          "name": "Drive-by Compromise",
+          "support": []
+        },
+        {
+          "attack_id": "T1606",
+          "name": "Forge Web Credentials",
+          "support": []
+        }
+      ],
+      "reference_answer": "3 of the 13 techniques the report describes are not among the techniques ATT&CK records for Emotet: T1001 Data Obfuscation, T1189 Drive-by Compromise and T1606 Forge Web Credentials. ATT&CK records Emotet as using the other 10: T1027 Obfuscated Files or Information (through its sub-techniques T1027.001 Binary Padding, T1027.002 Software Packing, T1027.009 Embedded Payloads, T1027.010 Command Obfuscation and T1027.013 Encrypted/Encoded File), T1041 Exfiltration Over C2 Channel, T1055 Process Injection (through its sub-techniques T1055.001 Dynamic-link Library Injection and T1055.012 Process Hollowing), T1057 Process Discovery, T1059 Command and Scripting Interpreter (through its sub-techniques T1059.001 PowerShell, T1059.003 Windows Command Shell and T1059.005 Visual Basic), T1110 Brute Force (through its sub-technique T1110.001 Password Guessing), T1114 Email Collection, T1218 System Binary Proxy Execution (through its sub-technique T1218.010 Regsvr32), T1566 Phishing (through its sub-techniques T1566.001 Spearphishing Attachment and T1566.002 Spearphishing Link) and T1573 Encrypted Channel.",
+      "supporting_facts": {
+        "gold": [
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS S0367",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1001",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1027",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1041",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1055",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1057",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1059",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1110",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1114",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1189",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1218",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1566",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1573",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1606"
+        ],
+        "attack": [
+          "attack:USES:S0367:T1027.001",
+          "attack:SUBTECHNIQUE_OF:T1027.001:T1027",
+          "attack:USES:S0367:T1027.002",
+          "attack:SUBTECHNIQUE_OF:T1027.002:T1027",
+          "attack:USES:S0367:T1027.009",
+          "attack:SUBTECHNIQUE_OF:T1027.009:T1027",
+          "attack:USES:S0367:T1027.010",
+          "attack:SUBTECHNIQUE_OF:T1027.010:T1027",
+          "attack:USES:S0367:T1027.013",
+          "attack:SUBTECHNIQUE_OF:T1027.013:T1027",
+          "attack:USES:S0367:T1041",
+          "attack:USES:S0367:T1055.001",
+          "attack:SUBTECHNIQUE_OF:T1055.001:T1055",
+          "attack:USES:S0367:T1055.012",
+          "attack:SUBTECHNIQUE_OF:T1055.012:T1055",
+          "attack:USES:S0367:T1057",
+          "attack:USES:S0367:T1059.001",
+          "attack:SUBTECHNIQUE_OF:T1059.001:T1059",
+          "attack:USES:S0367:T1059.003",
+          "attack:SUBTECHNIQUE_OF:T1059.003:T1059",
+          "attack:USES:S0367:T1059.005",
+          "attack:SUBTECHNIQUE_OF:T1059.005:T1059",
+          "attack:USES:S0367:T1110.001",
+          "attack:SUBTECHNIQUE_OF:T1110.001:T1110",
+          "attack:USES:S0367:T1114",
+          "attack:USES:S0367:T1218.010",
+          "attack:SUBTECHNIQUE_OF:T1218.010:T1218",
+          "attack:USES:S0367:T1566.001",
+          "attack:SUBTECHNIQUE_OF:T1566.001:T1566",
+          "attack:USES:S0367:T1566.002",
+          "attack:SUBTECHNIQUE_OF:T1566.002:T1566",
+          "attack:USES:S0367:T1573"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)\nWHERE t.`attack_id` IN $techniques\n  AND NOT EXISTS {\n    MATCH (:`Software` {`attack_id`: $user})-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t)\n    WHERE u.`source` = 'attack'\n  }\nRETURN t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "user": "S0367",
+        "techniques": [
+          "T1001",
+          "T1027",
+          "T1041",
+          "T1055",
+          "T1057",
+          "T1059",
+          "T1110",
+          "T1114",
+          "T1189",
+          "T1218",
+          "T1566",
+          "T1573",
+          "T1606"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q20",
+      "pattern": "shared_techniques",
+      "hops": "Report A -MENTIONS-> Technique <-MENTIONS- Report B",
+      "reports": [
+        "proofpoint_2021-10-28_ta575-uses-squid-game-lures",
+        "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm"
+      ],
+      "question": "Which MITRE ATT&CK techniques are described in both Proofpoint's October 2021 report “TA575 Uses ‘Squid Game’ Lures to Distribute Dridex malware” and Proofpoint's December 2021 report “That Holiday Feelin’: TA575 Brings the Warm and Fuzzies with Year-end, Festive Lures”?",
+      "answer": [
+        {
+          "attack_id": "T1105",
+          "name": "Ingress Tool Transfer",
+          "support": []
+        },
+        {
+          "attack_id": "T1204",
+          "name": "User Execution",
+          "support": []
+        },
+        {
+          "attack_id": "T1486",
+          "name": "Data Encrypted for Impact",
+          "support": []
+        },
+        {
+          "attack_id": "T1566",
+          "name": "Phishing",
+          "support": []
+        }
+      ],
+      "reference_answer": "The first report describes 4 techniques and the second 6; both describe 4 techniques: T1105 Ingress Tool Transfer, T1204 User Execution, T1486 Data Encrypted for Impact and T1566 Phishing.",
+      "supporting_facts": {
+        "gold": [
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1105",
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1204",
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1486",
+          "proofpoint_2021-10-28_ta575-uses-squid-game-lures MENTIONS T1566",
+          "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm MENTIONS T1105",
+          "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm MENTIONS T1204",
+          "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm MENTIONS T1486",
+          "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm MENTIONS T1566"
+        ],
+        "attack": []
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)\nWHERE t.`attack_id` IN $techniques_a AND t.`attack_id` IN $techniques_b\nRETURN t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "techniques_a": [
+          "T1105",
+          "T1204",
+          "T1486",
+          "T1566"
+        ],
+        "techniques_b": [
+          "T1059",
+          "T1102",
+          "T1105",
+          "T1204",
+          "T1486",
+          "T1566"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q21",
+      "pattern": "shared_techniques",
+      "hops": "Report A -MENTIONS-> Technique <-MENTIONS- Report B",
+      "reports": [
+        "intel471_2021-12-09_emotet-returns-december-2021",
+        "zscaler_2021-11-16_return-emotet-malware"
+      ],
+      "question": "Which MITRE ATT&CK techniques are described in both Intel 471's December 2021 report “How the new Emotet differs from previous versions” and Zscaler's November 2021 report “Return of Emotet malware”?",
+      "answer": [
+        {
+          "attack_id": "T1055",
+          "name": "Process Injection",
+          "support": []
+        },
+        {
+          "attack_id": "T1057",
+          "name": "Process Discovery",
+          "support": []
+        },
+        {
+          "attack_id": "T1218",
+          "name": "System Binary Proxy Execution",
+          "support": []
+        },
+        {
+          "attack_id": "T1566",
+          "name": "Phishing",
+          "support": []
+        },
+        {
+          "attack_id": "T1573",
+          "name": "Encrypted Channel",
+          "support": []
+        }
+      ],
+      "reference_answer": "The first report describes 13 techniques and the second 16; both describe 5 techniques: T1055 Process Injection, T1057 Process Discovery, T1218 System Binary Proxy Execution, T1566 Phishing and T1573 Encrypted Channel.",
+      "supporting_facts": {
+        "gold": [
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1055",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1057",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1218",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1566",
+          "intel471_2021-12-09_emotet-returns-december-2021 MENTIONS T1573",
+          "zscaler_2021-11-16_return-emotet-malware MENTIONS T1055",
+          "zscaler_2021-11-16_return-emotet-malware MENTIONS T1057",
+          "zscaler_2021-11-16_return-emotet-malware MENTIONS T1218",
+          "zscaler_2021-11-16_return-emotet-malware MENTIONS T1566",
+          "zscaler_2021-11-16_return-emotet-malware MENTIONS T1573"
+        ],
+        "attack": []
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)\nWHERE t.`attack_id` IN $techniques_a AND t.`attack_id` IN $techniques_b\nRETURN t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "techniques_a": [
+          "T1001",
+          "T1027",
+          "T1041",
+          "T1055",
+          "T1057",
+          "T1059",
+          "T1110",
+          "T1114",
+          "T1189",
+          "T1218",
+          "T1566",
+          "T1573",
+          "T1606"
+        ],
+        "techniques_b": [
+          "T1012",
+          "T1018",
+          "T1036",
+          "T1055",
+          "T1057",
+          "T1071",
+          "T1082",
+          "T1083",
+          "T1218",
+          "T1486",
+          "T1518",
+          "T1547",
+          "T1564",
+          "T1566",
+          "T1573",
+          "T1685"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q22",
+      "pattern": "shared_techniques",
+      "hops": "Report A -MENTIONS-> Technique <-MENTIONS- Report B",
+      "reports": [
+        "lab52_2022-01-10_tokyox-dll-side-loading-an",
+        "lab52_2022-01-12_tokyox-dll-side-loading-an"
+      ],
+      "question": "Which MITRE ATT&CK techniques are described in both Lab52's January 2022 report “TokyoX: DLL side-loading an unknown artifact” and Lab52's January 2022 report “TokyoX: DLL side-loading an unknown artifact (Part 2)”?",
+      "answer": [
+        {
+          "attack_id": "T1574",
+          "name": "Hijack Execution Flow",
+          "support": []
+        }
+      ],
+      "reference_answer": "The first report describes 8 techniques and the second 10; both describe one technique: T1574 Hijack Execution Flow.",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2022-01-10_tokyox-dll-side-loading-an MENTIONS T1574",
+          "lab52_2022-01-12_tokyox-dll-side-loading-an MENTIONS T1574"
+        ],
+        "attack": []
+      },
+      "cypher": "CYPHER 25\nMATCH (t:`Technique`)\nWHERE t.`attack_id` IN $techniques_a AND t.`attack_id` IN $techniques_b\nRETURN t.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "techniques_a": [
+          "T1055",
+          "T1071",
+          "T1129",
+          "T1140",
+          "T1204",
+          "T1546",
+          "T1574",
+          "T1620"
+        ],
+        "techniques_b": [
+          "T1005",
+          "T1033",
+          "T1041",
+          "T1049",
+          "T1059",
+          "T1070",
+          "T1082",
+          "T1083",
+          "T1105",
+          "T1574"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q23",
+      "pattern": "groups_all_techniques",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-USES- Group, for every technique of the report",
+      "reports": [
+        "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud"
+      ],
+      "question": "Which threat groups does MITRE ATT&CK record as using every technique described in Proofpoint's January 2022 report “OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign”?",
+      "answer": [
+        {
+          "attack_id": "G0007",
+          "name": "APT28",
+          "support": [
+            "T1078",
+            "T1528",
+            "T1557",
+            "T1566"
+          ]
+        }
+      ],
+      "reference_answer": "Only one group in ATT&CK uses all 4 techniques the report describes: G0007 APT28 (T1078 Valid Accounts, T1528 Steal Application Access Token, T1557 Adversary-in-the-Middle (through its sub-technique T1557.004 Evil Twin) and T1566 Phishing (through its sub-technique T1566.001 Spearphishing Attachment)).",
+      "supporting_facts": {
+        "gold": [
+          "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud MENTIONS T1078",
+          "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud MENTIONS T1528",
+          "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud MENTIONS T1557",
+          "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud MENTIONS T1566"
+        ],
+        "attack": [
+          "attack:USES:G0007:T1078",
+          "attack:USES:G0007:T1528",
+          "attack:USES:G0007:T1557.004",
+          "attack:SUBTECHNIQUE_OF:T1557.004:T1557",
+          "attack:USES:G0007:T1566.001",
+          "attack:SUBTECHNIQUE_OF:T1566.001:T1566"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (g:`Group`)-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nWITH g, count(DISTINCT t) AS covered\nWHERE covered = size($techniques)\nRETURN g.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1078",
+          "T1528",
+          "T1557",
+          "T1566"
+        ]
+      },
+      "checked_on_attack_website": null
+    },
+    {
+      "id": "Q24",
+      "pattern": "groups_all_techniques",
+      "hops": "Report -MENTIONS-> Technique <-[SUBTECHNIQUE_OF 0 or 1 step]- Technique <-USES- Group, for every technique of the report",
+      "reports": [
+        "lab52_2020-08-26_a-twisted-malware-infection-chain"
+      ],
+      "question": "Which threat groups does MITRE ATT&CK record as using every technique described in Lab52's August 2020 report “A twisted malware infection chain”?",
+      "answer": [
+        {
+          "attack_id": "G0094",
+          "name": "Kimsuky",
+          "support": [
+            "T1027",
+            "T1041",
+            "T1053",
+            "T1055",
+            "T1059",
+            "T1105",
+            "T1115",
+            "T1140",
+            "T1204",
+            "T1218",
+            "T1497",
+            "T1547",
+            "T1555",
+            "T1566",
+            "T1620",
+            "T1685"
+          ]
+        }
+      ],
+      "reference_answer": "Only one group in ATT&CK uses all 16 techniques the report describes: G0094 Kimsuky (T1027 Obfuscated Files or Information, T1041 Exfiltration Over C2 Channel, T1053 Scheduled Task/Job (through its sub-technique T1053.005 Scheduled Task), T1055 Process Injection, T1059 Command and Scripting Interpreter (through its sub-techniques T1059.001 PowerShell, T1059.003 Windows Command Shell, T1059.005 Visual Basic, T1059.006 Python and T1059.007 JavaScript), T1105 Ingress Tool Transfer, T1115 Clipboard Data, T1140 Deobfuscate/Decode Files or Information, T1204 User Execution (through its sub-techniques T1204.001 Malicious Link, T1204.002 Malicious File and T1204.004 Malicious Copy and Paste), T1218 System Binary Proxy Execution (through its sub-techniques T1218.005 Mshta, T1218.010 Regsvr32 and T1218.011 Rundll32), T1497 Virtualization/Sandbox Evasion (through its sub-technique T1497.001 System Checks), T1547 Boot or Logon Autostart Execution (through its sub-technique T1547.001 Registry Run Keys / Startup Folder), T1555 Credentials from Password Stores (through its sub-technique T1555.003 Credentials from Web Browsers), T1566 Phishing, T1620 Reflective Code Loading and T1685 Disable or Modify Tools).",
+      "supporting_facts": {
+        "gold": [
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1027",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1041",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1053",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1055",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1059",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1105",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1115",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1140",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1204",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1218",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1497",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1547",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1555",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1566",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1620",
+          "lab52_2020-08-26_a-twisted-malware-infection-chain MENTIONS T1685"
+        ],
+        "attack": [
+          "attack:USES:G0094:T1027",
+          "attack:USES:G0094:T1041",
+          "attack:USES:G0094:T1053.005",
+          "attack:SUBTECHNIQUE_OF:T1053.005:T1053",
+          "attack:USES:G0094:T1055",
+          "attack:USES:G0094:T1059.001",
+          "attack:SUBTECHNIQUE_OF:T1059.001:T1059",
+          "attack:USES:G0094:T1059.003",
+          "attack:SUBTECHNIQUE_OF:T1059.003:T1059",
+          "attack:USES:G0094:T1059.005",
+          "attack:SUBTECHNIQUE_OF:T1059.005:T1059",
+          "attack:USES:G0094:T1059.006",
+          "attack:SUBTECHNIQUE_OF:T1059.006:T1059",
+          "attack:USES:G0094:T1059.007",
+          "attack:SUBTECHNIQUE_OF:T1059.007:T1059",
+          "attack:USES:G0094:T1105",
+          "attack:USES:G0094:T1115",
+          "attack:USES:G0094:T1140",
+          "attack:USES:G0094:T1204.001",
+          "attack:SUBTECHNIQUE_OF:T1204.001:T1204",
+          "attack:USES:G0094:T1204.002",
+          "attack:SUBTECHNIQUE_OF:T1204.002:T1204",
+          "attack:USES:G0094:T1204.004",
+          "attack:SUBTECHNIQUE_OF:T1204.004:T1204",
+          "attack:USES:G0094:T1218.005",
+          "attack:SUBTECHNIQUE_OF:T1218.005:T1218",
+          "attack:USES:G0094:T1218.010",
+          "attack:SUBTECHNIQUE_OF:T1218.010:T1218",
+          "attack:USES:G0094:T1218.011",
+          "attack:SUBTECHNIQUE_OF:T1218.011:T1218",
+          "attack:USES:G0094:T1497.001",
+          "attack:SUBTECHNIQUE_OF:T1497.001:T1497",
+          "attack:USES:G0094:T1547.001",
+          "attack:SUBTECHNIQUE_OF:T1547.001:T1547",
+          "attack:USES:G0094:T1555.003",
+          "attack:SUBTECHNIQUE_OF:T1555.003:T1555",
+          "attack:USES:G0094:T1566",
+          "attack:USES:G0094:T1620",
+          "attack:USES:G0094:T1685"
+        ]
+      },
+      "cypher": "CYPHER 25\nMATCH (g:`Group`)-[u:`USES`]->(:`Technique`)-[:`SUBTECHNIQUE_OF`*0..1]->(t:`Technique`)\nWHERE t.`attack_id` IN $techniques AND u.`source` = 'attack'\nWITH g, count(DISTINCT t) AS covered\nWHERE covered = size($techniques)\nRETURN g.`attack_id` AS answer\nORDER BY answer",
+      "parameters": {
+        "techniques": [
+          "T1027",
+          "T1041",
+          "T1053",
+          "T1055",
+          "T1059",
+          "T1105",
+          "T1115",
+          "T1140",
+          "T1204",
+          "T1218",
+          "T1497",
+          "T1547",
+          "T1555",
+          "T1566",
+          "T1620",
+          "T1685"
+        ]
+      },
+      "checked_on_attack_website": null
+    }
+  ]
+}

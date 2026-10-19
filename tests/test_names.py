@@ -1,9 +1,12 @@
-"""Every name in schema.cypher and in the loader's Cypher comes from schemas.py."""
+"""Every name in schema.cypher, in the loader's and scorer's Cypher and in the benchmark files comes from schemas.py."""
+import json
 import re
 from pathlib import Path
 
+import gold
 import load_attack
 import schemas
+import score
 
 SCHEMA_TEXT = (Path(__file__).resolve().parent.parent / "schema.cypher").read_text(encoding="utf-8")
 SCHEMA_CODE = "\n".join(line for line in SCHEMA_TEXT.splitlines() if not line.strip().startswith("//"))
@@ -47,3 +50,17 @@ def test_edge_kinds_use_attack_labels_and_relationships():
 
 def test_rdf_vocabulary_covers_every_attack_relationship():
     assert set(schemas.RDF_RELATIONSHIP) == set(schemas.ATTACK_RELATIONSHIPS)
+
+
+def test_benchmark_files_and_their_cypher_use_only_defined_names():
+    gold_doc = json.loads(gold.GOLD_FILE.read_text(encoding="utf-8"))
+    assert {triple["predicate"] for triple in gold_doc["triples"]} == {schemas.MENTIONS}
+    assert {triple["object_label"] for triple in gold_doc["triples"]} == set(gold.GOLD_LABELS)
+    queries = json.loads(gold.QUERIES_FILE.read_text(encoding="utf-8"))["questions"]
+    cypher = "\n".join([question["cypher"] for question in queries]
+                       + [score.loaded_reports_query(), score.system_facts_query()])
+    allowed = (set(schemas.NODE_LABELS) | set(schemas.RELATIONSHIP_TYPES) | set(schemas.KEY.values())
+               | {schemas.SOURCE})
+    assert set(re.findall(r"`([^`]+)`", cypher)) <= allowed
+    named_in_hops = set(re.findall(r"\b[A-Z][A-Z_]*[A-Z]\b", " ".join(gold.HOPS.values())))
+    assert named_in_hops <= set(schemas.RELATIONSHIP_TYPES)
