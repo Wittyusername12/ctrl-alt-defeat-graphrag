@@ -212,8 +212,12 @@ def check_neo4j(env: dict[str, str]) -> None:
             with driver.session(database=database) as session:
                 for record in session.run("CALL dbms.components() YIELD name, versions, edition "
                                           "RETURN name, versions, edition"):
-                    ok(f"{record['name']} {', '.join(record['versions'])}, {record['edition']} edition, "
-                       f"database {database!r}")
+                    versions = ", ".join(record["versions"])
+                    if record["edition"]:
+                        ok(f"{record['name']} {versions}, {record['edition']} edition, database {database!r}")
+                    else:
+                        # Neo4j 2026.09 also returns a "Cypher" row (versions 5 and 25) with an empty edition.
+                        ok(f"{record['name']} versions {versions}")
                 show_default_language(driver, database)
                 print("\n5. Plugins")
                 for label, query in (("APOC", "RETURN apoc.version() AS version"),
