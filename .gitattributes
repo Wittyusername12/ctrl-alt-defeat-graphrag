@@ -15,3 +15,7 @@
 # Binary files
 *.png binary
 *.pdf binary
+
+# Saved model replies and embeddings (numbers, not text)
+*.npz binary
+*.npy binary

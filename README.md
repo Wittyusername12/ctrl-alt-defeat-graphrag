@@ -4,7 +4,7 @@ Term project for CS 6338 Knowledge Engineering, Angelo State University. Team CT
 
 The system answers questions about cyber threat reports. A knowledge graph in Neo4j joins MITRE ATT&CK v20.0 (Enterprise) with the AnnoCTR threat reports. A language model answers from retrieved report text plus the graph, and every answer cites the report chunks and graph edges it used. The same pipeline without the graph is the text-only baseline.
 
-**Status:** skeleton stage. The schema and the MITRE ATT&CK loader are in place; extraction, linking and question answering follow in later commits.
+**Status:** skeleton stage. One report runs through every stage: ATT&CK loading, extraction, linking, loading, and question answering with and without the graph.
 
 ## Repository layout
 
@@ -16,6 +16,12 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `datafiles.py` | where the data files live, and the SHA-256 check |
 | `apply_schema.py` | applies `schema.cypher` and lists the constraints and indexes in place |
 | `load_attack.py` | MITRE ATT&CK v20.0: STIX JSON → RDF with rdflib (saved as `out/attack-v20.ttl`) → Neo4j, with count checks |
+| `annoctr.py` | the AnnoCTR reports: text, chunks (4,000 characters, 400 shared) and the experts' ATT&CK labels |
+| `llm.py` | every OpenAI call (gpt-6-sol, text-embedding-3-small), saved under `replies/` and reused on reruns |
+| `extract.py` | the model lists techniques, tactics, groups, software and "uses" relations in each chunk, each with its evidence sentence; code checks every item and counts each reason for dropping one |
+| `link.py` | links each mention to ATT&CK (exact name, tie-break rules, then embedding similarity) and loads the report, its chunks and the links into Neo4j |
+| `rag.py` | answers a question from the most similar chunks plus the graph around the entities they mention (ranked by personalized PageRank), citing `[chunk:…]` and `[edge:…]`; the same question without the graph is the baseline |
+| `replies/` | saved model replies and embeddings; committing them makes every rerun identical |
 | `data/` | the data files, their licences and their SHA-256 list (see `data/README.md`) |
 | `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine |
 | `tests/` | `pytest` tests |
@@ -74,6 +80,12 @@ Keep the repository and the virtual environment outside any folder that OneDrive
    ```
    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe load_attack.py
    ```
+10. Extract, link and load a report, then ask a question. With no report named, the scripts use the test report `lab52_2020-06-02_mustang-panda-recent-activity-dll` (dev split); with no question, `rag.py` asks which ATT&CK mitigations address the techniques in that report. Saved replies are reused, so a rerun calls OpenAI only for what is new:
+    ```
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe extract.py
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe link.py
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe rag.py
+    ```
 
 ## Tests
 

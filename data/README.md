@@ -17,7 +17,13 @@ Each data source in this folder keeps its own licence, which covers that source'
 
 ## AnnoCTR
 
-The AnnoCTR reports and annotations are added with the extraction step, together with their CC BY-SA 4.0 licence and attribution notice.
+| | |
+|---|---|
+| Files | `annoctr/text/{train,dev,test}/*.txt` (120 report texts: train 70, dev 16, test 34) and `annoctr/linking_mitre_only/{train,dev,test}.jsonl` (the experts' links from report mentions to MITRE ATT&CK) |
+| Source | <https://github.com/boschresearch/anno-ctr-lrec-coling-2024>, folder `AnnoCTR`, commit `d510b6949e1938d47c93a43eedd562dc538439dc` |
+| Changes | none: unmodified copies (the code removes embedded base64 image data when it reads a report) |
+| Licence | CC BY-SA 4.0: `annoctr/LICENSE.txt`, with the attribution notice in `annoctr/NOTICE.md` |
+| Used by | `annoctr.py` (read by `extract.py`, `link.py` and, later, the gold-standard builder) |
 
 ## SHA-256 list
 

@@ -177,6 +177,27 @@ def read_stix(path: Path) -> tuple[list[Node], list[Edge]]:
     return nodes, edges
 
 
+def read_revocations(path: Path) -> dict[str, str]:
+    """Revoked ATT&CK ID -> the live ID that replaced it, from the file's revoked-by relationships."""
+    objects = json.loads(path.read_text(encoding="utf-8"))["objects"]
+    attack_ids = {}
+    for obj in objects:
+        if obj["type"] in STIX_LABEL:
+            try:
+                attack_ids[obj["id"]] = attack_reference(obj)[0]
+            except LoadError:
+                continue
+    replaced = {attack_ids[obj["source_ref"]]: attack_ids[obj["target_ref"]] for obj in objects
+                if obj["type"] == "relationship" and obj["relationship_type"] == "revoked-by"
+                and obj["source_ref"] in attack_ids and obj["target_ref"] in attack_ids}
+    for old in list(replaced):  # follow chains: A revoked by B, B revoked by C
+        seen = {old}
+        while replaced[old] in replaced and replaced[old] not in seen:
+            seen.add(replaced[old])
+            replaced[old] = replaced[replaced[old]]
+    return replaced
+
+
 # ---------------------------------------------------------------- 3. build the RDF graph
 
 def term(name: str) -> URIRef:
