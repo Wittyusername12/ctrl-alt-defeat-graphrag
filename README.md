@@ -4,7 +4,21 @@ Term project for CS 6338 Knowledge Engineering, Angelo State University. Team CT
 
 The system answers questions about cyber threat reports. A knowledge graph in Neo4j joins MITRE ATT&CK v20.0 (Enterprise) with the AnnoCTR threat reports. A language model answers from retrieved report text plus the graph, and every answer cites the report chunks and graph edges it used. The same pipeline without the graph is the text-only baseline.
 
-**Status:** setup stage. The two scripts below check a new machine; the pipeline follows in later commits.
+**Status:** skeleton stage. The schema and the MITRE ATT&CK loader are in place; extraction, linking and question answering follow in later commits.
+
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `schemas.py` | every node label, relationship type and property name, defined once and imported everywhere else |
+| `schema.cypher` | one uniqueness constraint per node label, and the vector index for chunk embeddings |
+| `db.py` | the Neo4j connection, configured from `.env`; every data query names its Cypher version |
+| `datafiles.py` | where the data files live, and the SHA-256 check |
+| `apply_schema.py` | applies `schema.cypher` and lists the constraints and indexes in place |
+| `load_attack.py` | MITRE ATT&CK v20.0: STIX JSON → RDF with rdflib (saved as `out/attack-v20.ttl`) → Neo4j, with count checks |
+| `data/` | the data files, their licences and their SHA-256 list (see `data/README.md`) |
+| `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine |
+| `tests/` | `pytest` tests |
 
 ## What you need
 
@@ -44,8 +58,25 @@ Keep the repository and the virtual environment outside any folder that OneDrive
    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe scripts\try_openai.py
    ```
 6. In Neo4j Desktop, create a local instance running Neo4j 2026.09.0, install the APOC and Graph Data Science plugins on that instance, start it, and put its connection URI and password into `.env`.
-7. Check Python, the packages, `.env`, Neo4j and its plugins:
+7. Check Python, the packages, `.env`, Neo4j and its plugins, and the data files:
    ```
    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe scripts\check_setup.py
    ```
    The last line reads `RESULT: OK` when everything is in place.
+
+## Build the knowledge graph (Command Prompt, in the repository folder, with the Neo4j instance started)
+
+8. Apply the schema (the constraints and the vector index; running it again changes nothing):
+   ```
+   %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe apply_schema.py
+   ```
+9. Load MITRE ATT&CK v20.0: 1,785 nodes and 20,426 relationships. The script checks its counts at every stage and ends with `RESULT: OK` when they all match:
+   ```
+   %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe load_attack.py
+   ```
+
+## Tests
+
+```
+%USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe -m pytest
+```

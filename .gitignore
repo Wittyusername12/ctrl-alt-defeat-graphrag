@@ -14,3 +14,6 @@ venv/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Files the scripts produce (for example out/attack-v20.ttl); every one can be made again
+out/

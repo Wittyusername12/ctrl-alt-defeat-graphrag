@@ -11,11 +11,14 @@ Checks, in order:
   4. Neo4j: the server at NEO4J_URI accepts NEO4J_USER and NEO4J_PASSWORD; prints its version,
      its edition, and the default Cypher version of the database named by NEO4J_DATABASE.
   5. Plugins: the APOC and Graph Data Science versions, and the procedures the project calls.
+  6. Data files: every file listed in data/SHA256SUMS matches its SHA-256 (a 64-character fingerprint of
+     the file's bytes), so a damaged, changed or removed data file is caught after each pull.
 
 The last line starts with RESULT. Exit code 0 when nothing is wrong, 1 otherwise.
 """
 from __future__ import annotations
 
+import hashlib
 import importlib.metadata
 import logging
 import os
@@ -245,12 +248,44 @@ def check_neo4j(env: dict[str, str]) -> None:
         problem(f"Neo4j driver error: {exc}")
 
 
+def check_data() -> None:
+    print("\n6. Data files")
+    manifest = REPO / "data" / "SHA256SUMS"
+    if not manifest.is_file():
+        note("no data/SHA256SUMS, so there are no data files to check")
+        return
+    checked = 0
+    for number, line in enumerate(manifest.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        expected, separator, name = line.partition("  ")
+        name = name.strip()
+        if not separator or len(expected) != 64 or not name:
+            problem(f"data/SHA256SUMS line {number} not understood: {line!r}")
+            continue
+        path = REPO / "data" / name
+        if not path.is_file():
+            problem(f"data/{name} is missing")
+            continue
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for block in iter(lambda: handle.read(1 << 20), b""):
+                digest.update(block)
+        if digest.hexdigest() != expected:
+            problem(f"data/{name} does not match its SHA-256 in data/SHA256SUMS")
+            continue
+        checked += 1
+    if checked:
+        ok(f"{checked} data file(s) match their SHA-256 in data/SHA256SUMS")
+
+
 def main() -> int:
     print("Setup check for the CTRL ALT DEFEAT GraphRAG project")
     check_python()
     check_packages()
     env = read_env()
     check_neo4j(env)
+    check_data()
     if problems:
         print(f"\nRESULT: {len(problems)} problem(s)")
         for text in problems:
