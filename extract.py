@@ -75,14 +75,18 @@ Then list each "uses" relation: a group or a piece of software (user) uses a tec
 
 Copy text and evidence character for character from the chunk. Every entry must rest on the chunk's own words; use your knowledge of ATT&CK only to choose attack_name. Some version 20 names differ from older versions: for example, the tactic once called Defense Evasion is now Stealth (hiding activity) or Defense Impairment (breaking defences). Organisations, people, places, file names, and indicators such as addresses or hashes are not concepts."""
 
-# The prompt's worked example: the opening of a train report, with the reply written by hand.
-EXAMPLE_REPORT = "intel471_2020-12-18_ta505-get2-loader-malware-december"
-EXAMPLE_END = "and other malware."
+# The prompt's worked examples: the openings of two train reports, each with a reply written by hand. The first
+# shows techniques described rather than named and a tactic; the second shows a sub-technique, software that has no
+# ATT&CK entry (attack_name ""), a group named after its malware, and a sentence that links two names without a
+# "uses" relation (worked with).
+EXAMPLE_REPORTS = ("intel471_2020-12-18_ta505-get2-loader-malware-december",
+                   "zscaler_2020-09-29_spear-phishing-campaign-delivers-buer")
+EXAMPLE_ENDS = ("and other malware.", "as a way to bypass traditional defences.")
 
 
-def example_passage() -> str:
-    text = annoctr.text(EXAMPLE_REPORT)
-    return text[:text.index(EXAMPLE_END) + len(EXAMPLE_END)]
+def example_passage(n: int = 0) -> str:
+    text = annoctr.text(EXAMPLE_REPORTS[n])
+    return text[:text.index(EXAMPLE_ENDS[n]) + len(EXAMPLE_ENDS[n])]
 
 
 def _sentence(passage: str, start_words: str) -> str:
@@ -90,8 +94,16 @@ def _sentence(passage: str, start_words: str) -> str:
     return line.strip()
 
 
-def example_reply() -> ChunkExtraction:
-    p = example_passage()
+def _reply(entries: list[tuple], uses: list[tuple]) -> ChunkExtraction:
+    return ChunkExtraction(
+        mentions=[Mention(id=i, text=t, category=c, attack_name=a, evidence=e, confidence=f)
+                  for i, t, c, a, e, f in entries],
+        uses=[Uses(user=u, used=v, evidence=e) for u, v, e in uses],
+    )
+
+
+def _ta505_reply() -> ChunkExtraction:
+    p = example_passage(0)
     title = _sentence(p, "TA505")
     s3 = _sentence(p, "After months")
     s4 = _sentence(p, "On December 14")
@@ -118,20 +130,54 @@ def example_reply() -> ChunkExtraction:
         ("m11", "SDBbot", "software", "SDBbot", s10, 0.9),
         ("m12", "FlawedGrace", "software", "FlawedGrace", s10, 0.9),
     ]
-    return ChunkExtraction(
-        mentions=[Mention(id=i, text=t, category=c, attack_name=a, evidence=e, confidence=f)
-                  for i, t, c, a, e, f in entries],
-        uses=[Uses(user="m2", used="m3", evidence=s3), Uses(user="m4", used="m5", evidence=s4)],
-    )
+    return _reply(entries, [("m2", "m3", s3), ("m4", "m5", s4)])
+
+
+def _buer_reply() -> ChunkExtraction:
+    p = example_passage(1)
+    title = _sentence(p, "Spear Phishing")
+    s2 = _sentence(p, "Zscaler ThreatLabZ")
+    s3 = _sentence(p, "During the past")
+    s4 = _sentence(p, "These emails")
+    s5 = _sentence(p, "What's interesting")
+    s6 = _sentence(p, "Use of the Buer")
+    s7 = _sentence(p, "In the past")
+    s9 = _sentence(p, "In this email campaign")
+    s10 = _sentence(p, "In some previous")
+    entries = [
+        ("m1", "Spear Phishing Campaign", "technique", "Phishing", title, 0.9),
+        ("m2", "Buer", "software", "", title, 0.8),
+        ("m3", "Bazar", "software", "Bazar", title, 0.95),
+        ("m4", "phishing campaign", "technique", "Phishing", s2, 0.9),
+        ("m5", "spear phishing emails", "technique", "Phishing", s3, 0.9),
+        ("m6", "Bazar backdoor", "software", "Bazar", s4, 0.95),
+        ("m7", "TrickBot gang", "group", "Wizard Spider", s4, 0.7),
+        ("m8", "Buer loader", "software", "", s5, 0.8),
+        ("m9", "Buer loader", "software", "", s6, 0.8),
+        ("m10", "TrickBot gang", "group", "Wizard Spider", s6, 0.7),
+        ("m11", "TrickBot gang", "group", "Wizard Spider", s7, 0.7),
+        ("m12", "Emotet", "software", "Emotet", s7, 1.0),
+        ("m13", "included links to what appeared to be a legitimate Google Docs document, which itself contained "
+                "links to malicious files", "technique", "Phishing: Spearphishing Link", s9, 0.85),
+        ("m14", "phishing email campaigns", "technique", "Phishing", s10, 0.9),
+        ("m15", "hide the Google Drive links in the documents behind a SendGrid URL", "technique", "Masquerading",
+         s10, 0.6),
+        ("m16", "bypass traditional defences", "tactic", "Stealth", s10, 0.6),
+    ]
+    return _reply(entries, [("m7", "m6", s4), ("m10", "m9", s6)])
+
+
+def example_reply(n: int = 0) -> ChunkExtraction:
+    return (_ta505_reply, _buer_reply)[n]()
 
 
 def messages_for(chunk_text: str) -> list[dict]:
-    return [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": f"Chunk:\n{example_passage()}"},
-        {"role": "assistant", "content": example_reply().model_dump_json()},
-        {"role": "user", "content": f"Chunk:\n{chunk_text}"},
-    ]
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for n in range(len(EXAMPLE_REPORTS)):
+        messages.append({"role": "user", "content": f"Chunk:\n{example_passage(n)}"})
+        messages.append({"role": "assistant", "content": example_reply(n).model_dump_json()})
+    messages.append({"role": "user", "content": f"Chunk:\n{chunk_text}"})
+    return messages
 
 
 # ---------------------------------------------------------------- checking a reply

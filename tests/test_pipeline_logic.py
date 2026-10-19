@@ -46,18 +46,28 @@ def test_attack_ids_from_links():
 
 # ---------------------------------------------------------------- extraction checks
 
-def test_prompt_example_comes_from_a_train_report_and_passes_every_check():
-    assert annoctr.split_of(extract.EXAMPLE_REPORT) == "train"
-    passage = extract.example_passage()
-    reply = extract.example_reply()
+@pytest.mark.parametrize("n, mentions_kept, relations_kept", [(0, 12, 2), (1, 16, 2)])
+def test_prompt_examples_come_from_train_reports_and_pass_every_check(n, mentions_kept, relations_kept):
+    assert annoctr.split_of(extract.EXAMPLE_REPORTS[n]) == "train"
+    passage = extract.example_passage(n)
+    reply = extract.example_reply(n)
     record = {"finish_reason": "stop", "refusal": None, "content": reply.model_dump_json()}
     mentions, relations, dropped = extract.check_reply(record, passage, "example#0")
-    assert (len(mentions), len(relations), dict(dropped)) == (12, 2, {})
+    assert (len(mentions), len(relations), dict(dropped)) == (mentions_kept, relations_kept, {})
+
+
+def test_example_attack_names_are_live_attack_names():
+    index = link.load_index()[0]
+    for k in range(len(extract.EXAMPLE_REPORTS)):
+        for mention in extract.example_reply(k).mentions:
+            if mention.attack_name:
+                assert link.exact_link({"attack_name": mention.attack_name, "text": mention.text,
+                                        "category": mention.category}, index)[0] is not None, mention.attack_name
 
 
 def test_messages_end_with_the_chunk():
     messages = extract.messages_for("Some chunk text.")
-    assert [m["role"] for m in messages] == ["system", "user", "assistant", "user"]
+    assert [m["role"] for m in messages] == ["system", "user", "assistant", "user", "assistant", "user"]
     assert messages[-1]["content"] == "Chunk:\nSome chunk text."
 
 
@@ -84,6 +94,7 @@ def test_every_reason_for_dropping_an_item_is_counted():
         m("m5", "Cobalt Strike", "software", s2),                         # text not in its evidence sentence
         m("m6", "decoded files", "technique", s2, "Deobfuscate/Decode Files or Information"),
         m("m7", "Cobalt Strike", "software", s3, "Cobalt Strike"),
+        m("m8", " ", "technique", s3),                                    # mention text empty
     ]
     uses = [
         extract.Uses(user="m1", used="m2", evidence=s1),         # kept
@@ -97,7 +108,8 @@ def test_every_reason_for_dropping_an_item_is_counted():
     assert mentions_kept[0]["mention_id"] == "r#0/m1"
     assert relations == [{"user": "r#0/m1", "used": "r#0/m2", "evidence": s1}]
     assert dict(dropped) == {
-        "mention id used twice": 1, "mention text not in the chunk": 1, "evidence not in the chunk": 1,
+        "mention id used twice": 1, "mention text empty": 1, "mention text not in the chunk": 1,
+        "evidence not in the chunk": 1,
         "mention text not in its evidence sentence": 1, "relation pointing the wrong way": 1,
         "relation between categories that cannot use each other": 1,
         "relation refers to a missing or dropped mention": 1, "relation evidence not in the chunk": 1}
