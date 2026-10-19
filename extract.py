@@ -73,7 +73,7 @@ List one entry for each place where the chunk names or describes a concept:
 
 Then list each "uses" relation: a group or a piece of software (user) uses a technique or a piece of software (used). List a relation only when its evidence sentence names or clearly refers to both, and refer to both by their entry ids.
 
-Copy text and evidence character for character from the chunk. Every entry must rest on the chunk's own words; use your knowledge of ATT&CK only to choose attack_name. Some names changed in version 20: for example, the tactic once called Defense Evasion is now Stealth (hiding activity) or Defense Impairment (breaking defences). Organisations, people, places, file names, and indicators such as addresses or hashes are not concepts."""
+Copy text and evidence character for character from the chunk. Every entry must rest on the chunk's own words; use your knowledge of ATT&CK only to choose attack_name. Some version 20 names differ from older versions: for example, the tactic once called Defense Evasion is now Stealth (hiding activity) or Defense Impairment (breaking defences). Organisations, people, places, file names, and indicators such as addresses or hashes are not concepts."""
 
 # The prompt's worked example: the opening of a train report, with the reply written by hand.
 EXAMPLE_REPORT = "intel471_2020-12-18_ta505-get2-loader-malware-december"
