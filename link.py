@@ -14,10 +14,12 @@ Linking (named entity disambiguation) decides which ATT&CK entry each mention me
      "Parent technique: Sub-technique"; otherwise the mention goes to step 3. Never an arbitrary pick.
   3. Embedding similarity: the mention (ATT&CK name, text and evidence sentence) against every ATT&CK
      entry's name and description; the closest entry is linked when its cosine similarity reaches
-     EMBEDDING_THRESHOLD, a provisional value until it is calibrated on the 213 dev facts.
-  4. Otherwise the mention stays unlinked and points to an Entity node of its own.
+     EMBEDDING_THRESHOLD.
+  4. Otherwise the mention stays unlinked and points to an Entity node of its own. A mention whose model
+     confidence is below MODEL_CONFIDENCE_CUTOFF also stays unlinked, whatever steps 1 to 3 found.
+EMBEDDING_THRESHOLD and MODEL_CONFIDENCE_CUTOFF are set by calibrate.py on the 16 dev reports only.
 Each MENTIONS relationship records how the link was made and its confidence: 1.0 for an exact match, the
-cosine similarity for an embedding match. The model's own confidence is stored but used for nothing.
+cosine similarity for an embedding match; the model's own confidence is stored beside it.
 
 Then the report, its chunks (with their embeddings), the mentions and the "uses" relations found in the
 text are written to Neo4j, after removing whatever an earlier run wrote for the same report. The last
@@ -45,7 +47,12 @@ import load_attack
 from schemas import (CHUNK, CHUNK_VECTOR_INDEX, EDGE_ID, EMBEDDING, ENTITY, GROUP, HAS_CHUNK, KEY, MENTIONS, REPORT,
                      SOFTWARE, SOURCE, SOURCE_TEXT, SUBTECHNIQUE_OF, TACTIC, TECHNIQUE, USES)
 
-EMBEDDING_THRESHOLD = 0.40  # provisional; calibrated on the 213 dev facts in Phase 5
+# Both set by calibrate.py on the 16 dev reports (19 Oct 2026; table in results/calibration_dev.csv): the chosen
+# pair is τ = 0.6438106894493103 (a dev cosine) and c = 0.75, parent-level F1 0.6869 on dev; the threshold is stored
+# between that cosine and the next lower dev cosine (0.6437057256698608), so the dev decisions are the same and no
+# dev cosine sits on the threshold. Before calibration: 0.40 and 0 (no cut-off).
+EMBEDDING_THRESHOLD = 0.6438
+MODEL_CONFIDENCE_CUTOFF = 0.75  # a mention whose model confidence is below this stays unlinked
 LABEL_OF_CATEGORY = {"technique": TECHNIQUE, "tactic": TACTIC, "group": GROUP, "software": SOFTWARE}
 DESCRIPTION_CHARACTERS = 4000
 
@@ -132,36 +139,61 @@ def query_text(mention: dict) -> str:
     return ". ".join(dict.fromkeys(part.strip() for part in parts if part.strip()))
 
 
-def link_mentions(mentions: list[dict], index: AttackIndex, entry_vectors: np.ndarray | None,
-                  embed_queries) -> list[dict]:
-    """A link decision for every mention: attack_id (or None), method, confidence and the closest entries."""
-    decisions, needs_embedding = [], []
+def candidate_links(mentions: list[dict], index: AttackIndex, entry_vectors: np.ndarray | None,
+                    embed_queries) -> list[dict]:
+    """Every mention's exact match or, without one, its closest ATT&CK entries by embedding.
+
+    The candidates do not depend on the threshold or the cut-off, so calibrate.py and link.py decide from the
+    same candidates. Every mention without an exact match is embedded, in mention order, whatever its model
+    confidence, so the embedding request (and the name it is saved under) stays the same.
+    """
+    candidates, needs_embedding = [], []
     for mention in mentions:
         entry, method = exact_link(mention, index)
-        decision = {"mention_id": mention["mention_id"], "attack_id": entry.attack_id if entry else None,
-                    "label": entry.label if entry else None, "method": method,
-                    "confidence": 1.0 if entry else None, "closest": []}
-        decisions.append(decision)
+        candidate = {"mention_id": mention["mention_id"], "model_confidence": mention["model_confidence"],
+                     "exact": entry, "exact_method": method, "best": None, "best_cosine": None, "closest": []}
+        candidates.append(candidate)
         if entry is None:
-            needs_embedding.append((decision, mention))
+            needs_embedding.append((candidate, mention))
     if needs_embedding and entry_vectors is not None:
         queries = embed_queries([query_text(mention) for _, mention in needs_embedding])
         similarity = normalized(queries) @ normalized(entry_vectors).T
-        for row, (decision, _) in zip(similarity, needs_embedding):
+        for row, (candidate, _) in zip(similarity, needs_embedding):
             order = np.argsort(-row)[:3]
-            decision["closest"] = [(index.entries[i].attack_id, index.entries[i].name, round(float(row[i]), 3))
-                                   for i in order]
-            best = order[0]
-            if row[best] >= EMBEDDING_THRESHOLD:
-                entry = index.entries[best]
-                decision.update(attack_id=entry.attack_id, label=entry.label, confidence=round(float(row[best]), 4),
-                                method=f"embedding ({decision['method']})")
-            else:
-                decision["method"] = f"unlinked ({decision['method']}; closest below {EMBEDDING_THRESHOLD})"
-    for decision in decisions:
-        if decision["attack_id"] is None and not decision["method"].startswith("unlinked"):
-            decision["method"] = f"unlinked ({decision['method']})"
-    return decisions
+            candidate["closest"] = [(index.entries[i].attack_id, index.entries[i].name, round(float(row[i]), 3))
+                                    for i in order]
+            candidate["best"], candidate["best_cosine"] = index.entries[order[0]], float(row[order[0]])
+    return candidates
+
+
+def decide(candidate: dict, threshold: float | None = None, cutoff: float | None = None) -> dict:
+    """The link decision for one candidate: attack_id (or None), label, method, confidence and the closest
+    entries. A link counts when it is an exact match or its cosine reaches the threshold, and the model's own
+    confidence reaches the cut-off. Defaults: link.py's calibrated EMBEDDING_THRESHOLD and MODEL_CONFIDENCE_CUTOFF."""
+    threshold = EMBEDDING_THRESHOLD if threshold is None else threshold
+    cutoff = MODEL_CONFIDENCE_CUTOFF if cutoff is None else cutoff
+    decision = {"mention_id": candidate["mention_id"], "attack_id": None, "label": None, "confidence": None,
+                "closest": candidate["closest"]}
+    exact, best, method = candidate["exact"], candidate["best"], candidate["exact_method"]
+    if candidate["model_confidence"] < cutoff:
+        decision["method"] = f"unlinked (model confidence {candidate['model_confidence']} below {cutoff})"
+    elif exact is not None:
+        decision.update(attack_id=exact.attack_id, label=exact.label, confidence=1.0, method=method)
+    elif best is not None and candidate["best_cosine"] >= threshold:
+        decision.update(attack_id=best.attack_id, label=best.label, confidence=round(candidate["best_cosine"], 4),
+                        method=f"embedding ({method})")
+    elif best is not None:
+        decision["method"] = f"unlinked ({method}; closest below {threshold})"
+    else:
+        decision["method"] = f"unlinked ({method})"
+    return decision
+
+
+def link_mentions(mentions: list[dict], index: AttackIndex, entry_vectors: np.ndarray | None, embed_queries,
+                  threshold: float | None = None, cutoff: float | None = None) -> list[dict]:
+    """A link decision for every mention (see decide)."""
+    return [decide(candidate, threshold, cutoff)
+            for candidate in candidate_links(mentions, index, entry_vectors, embed_queries)]
 
 
 def normalized(vectors: np.ndarray) -> np.ndarray:

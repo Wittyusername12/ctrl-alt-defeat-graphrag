@@ -139,9 +139,9 @@ def index():
     return link.load_index()[0]
 
 
-def mention(attack_name, text, category, evidence="", mention_id="r#0/m1"):
+def mention(attack_name, text, category, evidence="", mention_id="r#0/m1", confidence=0.9):
     return {"mention_id": mention_id, "attack_name": attack_name, "text": text, "category": category,
-            "evidence": evidence or text}
+            "evidence": evidence or text, "model_confidence": confidence}
 
 
 @pytest.mark.parametrize("attack_name, text, category, expected, method", [
@@ -169,11 +169,20 @@ def test_embedding_step_links_above_the_threshold_and_leaves_the_rest_unlinked(i
     mentions = [mention("Defense Evasion", "evade defenses", "tactic", mention_id="r#0/m1"),
                 mention("", "a made-up behaviour", "technique", mention_id="r#0/m2"),
                 mention("PlugX", "PlugX", "software", mention_id="r#0/m3")]
-    decisions = link.link_mentions(mentions, index, vectors, lambda texts: np.stack([close, far][:len(texts)]))
+    decisions = link.link_mentions(mentions, index, vectors, lambda texts: np.stack([close, far][:len(texts)]),
+                                   threshold=0.40, cutoff=0.0)
     assert decisions[0]["attack_id"] == "TA0005" and decisions[0]["method"] == "embedding (no exact match)"
     assert decisions[0]["confidence"] == pytest.approx(0.995, abs=0.001)
     assert decisions[1]["attack_id"] is None and decisions[1]["method"].startswith("unlinked (no exact match")
     assert decisions[2]["attack_id"] == "S0013" and decisions[2]["confidence"] == 1.0
+
+
+def test_the_confidence_cut_off_unlinks_even_an_exact_match(index):
+    low = mention("PlugX", "PlugX", "software", confidence=0.3)
+    [candidate] = link.candidate_links([low], index, None, None)
+    assert link.decide(candidate, threshold=0.40, cutoff=0.3)["attack_id"] == "S0013"   # reaching the cut-off is enough
+    decision = link.decide(candidate, threshold=0.40, cutoff=0.4)
+    assert decision["attack_id"] is None and decision["method"] == "unlinked (model confidence 0.3 below 0.4)"
 
 
 def test_descriptions_lose_citations_and_link_targets():

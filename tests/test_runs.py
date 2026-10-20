@@ -62,13 +62,18 @@ def test_every_unusable_reply_counts_as_incomplete(reason):
     assert extract.complete({"error": None, "dropped": {"evidence not in the chunk": 2}})
 
 
-def stand_in_parse(cut_off_calls=(), prompt=3000, cached=1000, out=500):
-    """A stand-in for llm.parse: a complete reply with no mentions, or a cut-off reply on the listed calls."""
-    calls = []
+def stand_in_parse(cut_off=lambda chunk_index, cap: False, prompt=3000, cached=1000, out=500):
+    """A stand-in for llm.parse: a complete reply with no mentions, or a cut-off reply where cut_off(n, cap) is
+    true for the n-th chunk asked (counting from 1) at that token cap. calls lists (n, cap) for every request."""
+    calls, chunks_seen = [], []
 
     def parse(kind, messages, response_format, max_completion_tokens, label):
-        calls.append(label)
-        cut = len(calls) in cut_off_calls
+        key = (label["report_id"], label["chunk_index"])
+        if key not in chunks_seen:
+            chunks_seen.append(key)
+        n = chunks_seen.index(key) + 1
+        calls.append((n, max_completion_tokens))
+        cut = cut_off(n, max_completion_tokens)
         return {"key": f"key{len(calls)}", "reused": False, "seconds": 2.0, "model": "gpt-6-sol",
                 "finish_reason": "length" if cut else "stop", "created": "2026-10-19T00:00:00+00:00",
                 "refusal": None, "content": '{"mentions": [' if cut else '{"mentions": [], "uses": []}',
@@ -76,13 +81,25 @@ def stand_in_parse(cut_off_calls=(), prompt=3000, cached=1000, out=500):
     return parse, calls
 
 
-def test_a_dev_run_whose_replies_are_cut_off_stops_after_three_requests(monkeypatch, capsys):
-    parse, calls = stand_in_parse(cut_off_calls=range(1, 51))
+def test_a_dev_run_whose_replies_are_cut_off_even_after_the_retry_stops_after_three_chunks(monkeypatch, capsys):
+    parse, calls = stand_in_parse(cut_off=lambda n, cap: True)
     monkeypatch.setattr(extract.llm, "parse", parse)
     assert extract.main(["--split", "dev"]) == 1
     output = capsys.readouterr().out
-    assert len(calls) == 3
+    assert calls == [(1, 4000), (1, 8000), (2, 4000), (2, 8000), (3, 4000), (3, 8000)]
     assert "RESULT: STOPPED - 3 chunks in a row without a complete reply; 47 chunk(s) not tried" in output
+
+
+def test_a_reply_cut_off_at_4000_tokens_is_asked_again_at_8000_and_both_are_billed(monkeypatch, capsys):
+    parse, calls = stand_in_parse(cut_off=lambda n, cap: n == 2 and cap == 4000)
+    monkeypatch.setattr(extract.llm, "parse", parse)
+    assert extract.main(["--split", "dev"]) == 0
+    output = capsys.readouterr().out
+    assert len(calls) == 51 and (2, 8000) in calls
+    assert "the first reply was cut off at 4000 tokens; asked again with a cap of 8000" in output
+    assert "50 of 50 chunks tried, 50 with a complete reply; 1 asked again after a cut-off reply" in output
+    assert "tokens of the 51 new replies" in output
+    assert "RESULT: OK" in output
 
 
 def test_failed_calls_count_toward_the_stop_rule(monkeypatch, capsys):
@@ -100,13 +117,32 @@ def test_failed_calls_count_toward_the_stop_rule(monkeypatch, capsys):
 
 
 def test_one_unusable_reply_is_a_problem_but_does_not_stop_the_run(monkeypatch, capsys):
-    parse, calls = stand_in_parse(cut_off_calls=(2,))
+    parse, calls = stand_in_parse(cut_off=lambda n, cap: n == 2)   # chunk 2 is cut off at both caps
     monkeypatch.setattr(extract.llm, "parse", parse)
     assert extract.main(["--split", "dev"]) == 1
     output = capsys.readouterr().out
-    assert len(calls) == 50
+    assert len(calls) == 51
     assert "RESULT: 1 problem(s)" in output
     assert "finish reason length; reply cut off at the token cap" in output
+
+
+def test_a_replay_reads_the_retried_reply_saved_under_its_own_name(monkeypatch):
+    report = annoctr.TRACER
+    saved = {}
+    text = annoctr.text(report)
+    for index, (start, end) in enumerate(annoctr.chunk_spans(len(text))):
+        messages = extract.messages_for(text[start:end])
+        cut = index == 0
+        saved[llm.parse_key(messages, extract.ChunkExtraction, 4000)] = {
+            "key": "first", "finish_reason": "length" if cut else "stop", "refusal": None,
+            "content": '{"mentions": [' if cut else '{"mentions": [], "uses": []}', "usage": {}}
+        saved[llm.parse_key(messages, extract.ChunkExtraction, 8000)] = {
+            "key": "retry", "finish_reason": "stop", "refusal": None, "content": '{"mentions": [], "uses": []}',
+            "usage": {}}
+    monkeypatch.setattr(extract.llm, "saved", lambda kind, key: dict(saved[key], reused=True))
+    result = extract.extract_report(report, call_model=False)
+    assert [(c["reply_key"], c["cut_off"] is not None) for c in result["chunks"]] == [("retry", True), ("first", False)]
+    assert all(extract.complete(c) for c in result["chunks"])
 
 
 def test_complete_replies_run_every_chunk_and_the_spend_line_adds_up(monkeypatch, capsys):

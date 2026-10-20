@@ -11,10 +11,13 @@ to gpt-6-sol and its reply is saved under replies/extract/. Code then checks eve
 keeps it only if its text and its evidence sentence really are in the chunk. Each reason for dropping an
 item has its own counter. Code, not the model, gives every kept item its permanent ID.
 
+A reply cut off at MAX_COMPLETION_TOKENS (4,000) is asked again once with RETRY_COMPLETION_TOKENS (8,000);
+the second reply is saved under its own name and used in place of the first.
+
 Stop rule: the run stops after MAX_INCOMPLETE_IN_A_ROW chunks in a row without a complete reply (no reply
-from OpenAI, or a reply that was filtered, refused, cut off at the token cap or not in the required format),
-so a failure that repeats costs at most that many requests. The run ends with the tokens of its new replies
-and their cost at list price.
+from OpenAI, or a reply that was filtered, refused, cut off even after the retry, or not in the required
+format), so a failure that repeats costs at most that many requests. The run ends with the tokens of its new
+replies and their cost at list price.
 
 The last line starts with RESULT. Exit code 0 when every chunk has a complete reply, 1 otherwise.
 """
@@ -33,6 +36,7 @@ import annoctr
 import llm
 
 MAX_COMPLETION_TOKENS = 4000
+RETRY_COMPLETION_TOKENS = 8000  # a reply cut off at MAX_COMPLETION_TOKENS is asked again once with this cap
 MAX_INCOMPLETE_IN_A_ROW = 3  # the stop rule (tracker section 4)
 CATEGORIES = ("technique", "tactic", "group", "software")
 USER_CATEGORIES = ("group", "software")
@@ -274,20 +278,28 @@ def extract_chunk(report_id: str, text: str, index: int, start: int, end: int, c
     chunk_id = f"{report_id}#{index}"
     chunk_text = text[start:end]
     messages = messages_for(chunk_text)
+    label = {"report_id": report_id, "chunk_index": index, "start": start, "end": end}
     chunk = {"chunk_id": chunk_id, "index": index, "start": start, "end": end, "text": chunk_text, "error": None,
              "reply_key": None, "reused": False, "seconds": None, "model": None, "finish_reason": None,
-             "usage": None, "created": None, "mentions": [], "uses": [], "dropped": {}}
-    if call_model:
-        try:
-            record = llm.parse("extract", messages, ChunkExtraction, MAX_COMPLETION_TOKENS,
-                               {"report_id": report_id, "chunk_index": index, "start": start, "end": end})
-        except llm.LLMError as exc:
-            chunk["error"] = str(exc)
-            return chunk
-    else:
-        record = llm.saved("extract", llm.parse_key(messages, ChunkExtraction, MAX_COMPLETION_TOKENS))
+             "usage": None, "created": None, "cut_off": None, "mentions": [], "uses": [], "dropped": {}}
+
+    def reply(cap: int) -> dict:
+        if call_model:
+            return llm.parse("extract", messages, ChunkExtraction, cap, label)
+        record = llm.saved("extract", llm.parse_key(messages, ChunkExtraction, cap))
         if record is None:
-            raise FileNotFoundError(f"no saved reply for {chunk_id}; run extract.py for {report_id} first")
+            raise FileNotFoundError(f"no saved reply for {chunk_id} (cap {cap} tokens); run extract.py for {report_id} first")
+        return record
+
+    try:
+        record = reply(MAX_COMPLETION_TOKENS)
+        if record.get("finish_reason") == "length":
+            chunk["cut_off"] = {"reply_key": record["key"], "reused": record.get("reused", False),
+                                "usage": record.get("usage")}
+            record = reply(RETRY_COMPLETION_TOKENS)
+    except llm.LLMError as exc:
+        chunk["error"] = str(exc)
+        return chunk
     mentions, relations, dropped = check_reply(record, chunk_text, chunk_id)
     chunk.update(reply_key=record["key"], reused=record.get("reused", False), seconds=record.get("seconds"),
                  model=record.get("model"), finish_reason=record.get("finish_reason"), usage=record.get("usage"),
@@ -334,12 +346,17 @@ def spend(chunks: list[dict]) -> dict:
 
     A reply saved before cached tokens were recorded counts all its prompt tokens at the full input price.
     """
-    new = [chunk for chunk in chunks if chunk["error"] is None and not chunk["reused"]]
-    usages = [chunk["usage"] or {} for chunk in new]
+    usages = []
+    for chunk in chunks:
+        first = chunk.get("cut_off")
+        if first and not first["reused"]:
+            usages.append(first["usage"] or {})   # a cut-off reply is billed too
+        if chunk["error"] is None and not chunk["reused"]:
+            usages.append(chunk["usage"] or {})
     tokens_in = sum(usage.get("prompt_tokens") or 0 for usage in usages)
     cached = sum(usage.get("cached_tokens") or 0 for usage in usages)
     tokens_out = sum(usage.get("completion_tokens") or 0 for usage in usages)
-    return {"requests": len(new), "reused": sum(1 for chunk in chunks if chunk["reused"]), "tokens_in": tokens_in,
+    return {"requests": len(usages), "reused": sum(1 for chunk in chunks if chunk["reused"]), "tokens_in": tokens_in,
             "cached": cached, "tokens_out": tokens_out, "dollars": llm.chat_cost(tokens_in, cached, tokens_out)}
 
 
@@ -354,6 +371,9 @@ def print_chunk(chunk: dict) -> None:
     source = "saved reply reused" if chunk["reused"] else f"new reply in {chunk['seconds']} s"
     print(f"  {where}: {source}; model {chunk['model']}; finish reason {chunk['finish_reason']}; "
           f"tokens {usage.get('prompt_tokens')} in, {usage.get('completion_tokens')} out")
+    if chunk.get("cut_off"):
+        print(f"           the first reply was cut off at {MAX_COMPLETION_TOKENS} tokens; asked again with a cap of "
+              f"{RETRY_COMPLETION_TOKENS}")
     print(f"           kept {len(chunk['mentions'])} mentions and {len(chunk['uses'])} uses relations")
     for reason, count in sorted(chunk["dropped"].items()):
         print(f"           dropped {count}: {reason}")
@@ -370,7 +390,9 @@ def totals(chunks: list[dict]) -> tuple[int, int, Counter, Counter]:
 
 def print_run_total(chunks: list[dict], planned: int, seconds: float) -> None:
     kept, uses, dropped, by_category = totals(chunks)
-    print(f"\nRun total: {len(chunks)} of {planned} chunks tried, {sum(map(complete, chunks))} with a complete reply")
+    retried = sum(1 for chunk in chunks if chunk.get("cut_off"))
+    print(f"\nRun total: {len(chunks)} of {planned} chunks tried, {sum(map(complete, chunks))} with a complete reply"
+          + (f"; {retried} asked again after a cut-off reply" if retried else ""))
     print(f"  kept {kept} mentions and {uses} uses relations; dropped {sum(dropped.values())} items")
     for reason, count in sorted(dropped.items()):
         print(f"    dropped {count}: {reason}")
