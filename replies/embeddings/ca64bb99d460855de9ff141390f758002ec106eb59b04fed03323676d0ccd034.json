@@ -1,0 +1,19 @@
+{
+ "key": "ca64bb99d460855de9ff141390f758002ec106eb59b04fed03323676d0ccd034",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-07-04_coverage-advisory-kaseya-vsa-supply"
+ },
+ "created": "2026-10-20T01:28:12+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "2272fbd9e295c413726a576603a1e7ed3be5befdfac6d6d32e1fabfbf8f2cba5",
+  "373364c5df0c5c5f4c5524a6a51a1011bf2c1558989c0223f769e57df29b13d8"
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "key": "d65d669fe1b3c0d895ed965a4c6c727553d1fd31c5fd32983990aeb8b476728a",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-10-27_new-threat-actor-spoofs-philippine"
+ },
+ "created": "2026-10-20T01:28:08+00:00",
+ "seconds": 0.33,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "7366e3fdf585b0665003242c71ebe12f0d2204820bf4c205d857b8c792d13a82",
+  "416c75d6168247ca2faf72fbc937af3962ded24cd041af8b8766c357c44b336a",
+  "965574ce97cd1fd88061a8ca14faeb77f8f12d8d411fda7b4968e50fedcd58d0",
+  "c4d9a6e94fa25b8521cd6cd8c5d9f1b14fbbbaeb54a458881a43febe5bcb843f"
+ ]
+}

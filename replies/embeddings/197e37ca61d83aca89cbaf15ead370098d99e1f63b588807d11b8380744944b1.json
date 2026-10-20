@@ -1,0 +1,24 @@
+{
+ "key": "197e37ca61d83aca89cbaf15ead370098d99e1f63b588807d11b8380744944b1",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-05-21_threat-actors-distribute-malicious-vpn"
+ },
+ "created": "2026-10-20T01:28:10+00:00",
+ "seconds": 0.35,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 7,
+ "text_sha256": [
+  "a4febf1077061169aa130d87d8e6f1791647615df5e0cb28efc187d9d3dd8130",
+  "b732d9a8e594e914021246754629232417a3f58ce98bfbc85c3d7f8e8c45e794",
+  "1a6f32b00b18481a304d19fb3e15a79e2e4573c29058240f57de6f968d6989b6",
+  "b602c32be7a871dc72406be14d35ab74ead4c0c42868538ba60f08c564e33eb5",
+  "48379069018f39c5aabf61346714287180284a380c5357205bf02c60e7c5bd58",
+  "cbc0ce60c92a022bd27fb5beefe9006aa4413803988465f3bb8eb4da783027e9",
+  "bbfab8b2fe7042d9cd743f374ce861cbf99dcace6d2d046324e62805a80e0872"
+ ]
+}

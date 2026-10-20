@@ -1,0 +1,22 @@
+{
+ "key": "a84ec51a2bc5b0bbf595c66da5e8ab043436eca3c62f15e23c43bfac04b99afe",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "proofpoint_2021-10-20_ta551-uses-sliver-red-team"
+ },
+ "created": "2026-10-20T01:28:06+00:00",
+ "seconds": 0.31,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 5,
+ "text_sha256": [
+  "10cb87e4d490e537e445cccdc14343459c69b569ab2705c2c4863b5511ac118b",
+  "a81f1a68046b5f5cfa9bd6085e76fd6d769ba872e93dc9fcc2ff55eac6f8370b",
+  "d171a4550bfd881605d31ce12fca3ddb60b8a957b79836113651523aef76b1c5",
+  "0c0dfd7598a5760c92c7c23894732b1ed301cbd48c580944f12ffcacf2ee857d",
+  "c77006f76274c3e69e8b0de330b93199572dcfed6a49203f3d0b9210a2985dca"
+ ]
+}

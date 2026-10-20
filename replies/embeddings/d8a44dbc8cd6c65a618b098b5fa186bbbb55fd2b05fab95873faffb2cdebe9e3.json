@@ -1,0 +1,19 @@
+{
+ "key": "d8a44dbc8cd6c65a618b098b5fa186bbbb55fd2b05fab95873faffb2cdebe9e3",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-05-10_darkside-ransomware-colonial-pipeline-attack"
+ },
+ "created": "2026-10-20T01:27:56+00:00",
+ "seconds": 0.43,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "0c3deff0136c9c81552ec2304aa3e5f36d6484bab9e37622d6c787d47c42ea4c",
+  "3e2597be2f5008295b803b1b32ecafa7cc93a9a9d76f86f9608ca4755921dca5"
+ ]
+}

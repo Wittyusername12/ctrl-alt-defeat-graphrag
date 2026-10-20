@@ -1,0 +1,22 @@
+{
+ "key": "2ebecf64d644cba08d8ab559806577aa94c383a1353cf059ce0a008c80745b75",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-10-19_whatta-ta-ta505-ramps-activity"
+ },
+ "created": "2026-10-20T01:28:05+00:00",
+ "seconds": 0.29,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 5,
+ "text_sha256": [
+  "0fe6d7a81f69e9d52d755008196d9f0f5acc02f2288a266122430ca8a202a0a4",
+  "411f4f47aba42d0ec4ca6c4b86218a16be795d681e55064b3de7f5271eb292b7",
+  "c61d44a18cbc55a818260c502f86f2b031d0aff0354a9348311e32b7415dd910",
+  "3127c70769f36b1f0cb39177186ce07a3e35eca0c56fe0b91f21c5d0b558281f",
+  "ed6b5ffcdc0b85f9219480e86e80be18ba0f406a07859ea48ca4b3147a1343e4"
+ ]
+}

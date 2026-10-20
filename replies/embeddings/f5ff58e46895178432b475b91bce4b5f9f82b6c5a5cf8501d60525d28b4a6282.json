@@ -1,0 +1,19 @@
+{
+ "key": "f5ff58e46895178432b475b91bce4b5f9f82b6c5a5cf8501d60525d28b4a6282",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-07-12_threatlabz-june-2021-report-deconstructing"
+ },
+ "created": "2026-10-20T01:28:13+00:00",
+ "seconds": 0.5,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "275dc853b235553e92344c66d64d164ad9c34677581c2121ba2c3f26bda93bf4",
+  "381236049f3c631f78e07e6ae2df34f478836cb9f0fbf2b754c27f971e77a052"
+ ]
+}

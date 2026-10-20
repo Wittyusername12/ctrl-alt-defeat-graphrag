@@ -1,0 +1,18 @@
+{
+ "key": "101d283f7ac1e3f59a092ea6cf407afa34ff04f2d4a82e64409fd65c5a1b580b",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-04-19_china-cybercrime-big-data-privacy"
+ },
+ "created": "2026-10-20T01:27:47+00:00",
+ "seconds": 1.62,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "6f0cbbefed2ecb17779a2124656910bc01975147c9ea181a9236c35e04db3423"
+ ]
+}

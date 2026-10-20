@@ -1,0 +1,19 @@
+{
+ "key": "8b67891cf32429f8bab7572da03b99771ce9a13aa917033a7608d938c0994728",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-09-29_ta544-targets-italian-organizations-ursnif"
+ },
+ "created": "2026-10-20T01:28:04+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "6ce532c40e408531d8b38487fa01fd04e34f6e7305869cca3f2457640735b496",
+  "e862e837986cdacf45fec6a41b0bd2a54664974ea5c3a81b48b02de99a7ce296"
+ ]
+}

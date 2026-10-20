@@ -1,0 +1,21 @@
+{
+ "key": "227ba1791a58f96e548e28f4e540f7b6310c2952306dd7d4065376a285f8feed",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-07-14_targeted-attack-government-organizations-delivers"
+ },
+ "created": "2026-10-20T01:28:14+00:00",
+ "seconds": 0.28,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "0f364d06c0cbe219f8794d75a49ab5763a0ccccf98f2167485b08f6a84b35743",
+  "a48f529cde2dc72e174773194907455a2cd201aaf323d883d92a47979be09e1c",
+  "f244d540973129e41b7736d1878660999a5307f12b80a63a2edf753f6ddd8ff7",
+  "21fbb0f096eac005a4592cdff7338c66c4c33602075a21ac150c9c0e6122a4a0"
+ ]
+}

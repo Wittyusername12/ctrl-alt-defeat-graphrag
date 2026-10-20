@@ -1,0 +1,18 @@
+{
+ "key": "0622a32657fc97d1087ceda72a1b2644abfa0c017207c5f1556157e19cef9dca",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "zscaler_2021-07-14_targeted-attack-government-organizations-delivers"
+ },
+ "created": "2026-10-20T01:28:14+00:00",
+ "seconds": 0.21,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "cf21c97e58537c0eda10f2d6fc0eeb146f00e64b75af37eb8004f37a5cd609de"
+ ]
+}

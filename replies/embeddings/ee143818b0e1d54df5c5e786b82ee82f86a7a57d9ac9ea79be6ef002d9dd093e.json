@@ -1,0 +1,31 @@
+{
+ "key": "ee143818b0e1d54df5c5e786b82ee82f86a7a57d9ac9ea79be6ef002d9dd093e",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "proofpoint_2021-09-29_ta544-targets-italian-organizations-ursnif"
+ },
+ "created": "2026-10-20T01:28:03+00:00",
+ "seconds": 0.54,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 14,
+ "text_sha256": [
+  "d98bf09743d00f01f09fb8a1d6ffb9f5caf6048e689cb68cd30c5ae7b2cb8a69",
+  "2de3a2d057bbbab4eb575e743bc22b70730ae0222c84767ce88e2844aaaaeeaa",
+  "511aac546011baa286fbfc5b6c5a6c433c5f1f159ace612cec827338aca26879",
+  "ad231f41102070aeccd989f08a6534012ab843b4d1b4b6a065077cc2ab5f6aaf",
+  "fc2d2134818113a7d79a95b142cbf0cfb07053d492f5308cab259cd291edbf02",
+  "d2367b3203734cfb69a9cad208e97a39228e0f809af903617f9a6c4c7c12bcb7",
+  "f8400f3ed5916e807436fafc8095a2b1df08995cee3525840279158bd51ad806",
+  "6abe58b11d3ba4da1c9296940dcd66e897627e81f9a05dd6ecb3309f1d42d515",
+  "d8bc7deb10dfad16e127bce76b7a019b7a51127e85f766b60c8bc50f309b7ae7",
+  "5bb9d52fb83c127c240787d65b5e2242224fb011a95878ce7bb8834470035264",
+  "f24bf948c4ea9ed92a7ab118255784a8e079379354ff6fd1b0b889c87d53f043",
+  "d8bc7deb10dfad16e127bce76b7a019b7a51127e85f766b60c8bc50f309b7ae7",
+  "822058994b49a1abcffb6b069ceb076110279879ac9392133af4ac92facdb147",
+  "fd68c23e9d53b00899a99b1b2c9eb09b71a35bc4046bd5f19180271a3c2b5f25"
+ ]
+}

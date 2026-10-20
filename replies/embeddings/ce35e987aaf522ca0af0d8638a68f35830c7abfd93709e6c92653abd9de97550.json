@@ -1,0 +1,19 @@
+{
+ "key": "ce35e987aaf522ca0af0d8638a68f35830c7abfd93709e6c92653abd9de97550",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "zscaler_2021-07-04_coverage-advisory-kaseya-vsa-supply"
+ },
+ "created": "2026-10-20T01:28:11+00:00",
+ "seconds": 0.24,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "98205de0516ccb01446f596452031596e993369662d41294878c99dc9f281706",
+  "3db61e82cca78a8cec1b2f6f2dce712b3d3ae65cc8406381a7da301043f9971a"
+ ]
+}

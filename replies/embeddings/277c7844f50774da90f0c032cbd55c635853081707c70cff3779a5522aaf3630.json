@@ -1,0 +1,26 @@
+{
+ "key": "277c7844f50774da90f0c032cbd55c635853081707c70cff3779a5522aaf3630",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-05-14_darkside-ransomware-shut-down-revil"
+ },
+ "created": "2026-10-20T01:27:57+00:00",
+ "seconds": 0.32,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 9,
+ "text_sha256": [
+  "73d97ab0c8a56061a94a56959000dc3e3119c013b8b6ccf591b9baf878d810fe",
+  "73d97ab0c8a56061a94a56959000dc3e3119c013b8b6ccf591b9baf878d810fe",
+  "76669264f8bf21498ea015b2d21e4f40a024262d683cb20c5db99008054f3420",
+  "a27a8cf0a502dae628eb152d2658a67cf77b133eaccfa8e047d24821d59e1792",
+  "36d9ea3a42f04a00035a12f0efaf53f1510d96b469a837e16c5638bd70b3ceab",
+  "862980260546492ba6dd1899b2f95c9f8115c99a4cd36cb83e16649f07a2422b",
+  "8d78486da242c277f1152c5e5ae70ff62f745bcc509f391d06fe662e7b486278",
+  "506d88aee64a52795a9ba31026427011f9e13e358f02b4c176c833f101d22cc8",
+  "ab87c1b637bae7fced6f12d7aae1afef525ba14b7e85cc287f08cc01c5ddc8e1"
+ ]
+}

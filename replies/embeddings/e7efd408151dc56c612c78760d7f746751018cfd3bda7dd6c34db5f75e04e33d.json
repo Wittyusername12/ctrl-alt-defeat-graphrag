@@ -1,0 +1,21 @@
+{
+ "key": "e7efd408151dc56c612c78760d7f746751018cfd3bda7dd6c34db5f75e04e33d",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "quoteintelligence_2021-01-27_supply-chain-attacks-cybersecurity-regulations"
+ },
+ "created": "2026-10-20T01:28:08+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "6cc5a465ce498d2cc48c0681bc4fc8c81315a343a644e3ab0efe9b94a181a213",
+  "5488128c86bb57d7070cfffd9f37736105a2df93fcd4644dcd7c5a61a7a095a9",
+  "6ad75717e6fd85370dc37a40a4999425f4fd730a432a8fc5e88bd48cb6a9f3d3",
+  "18ed4305114c807d1f9db086ba3c42849a465adb59e09acd72f9c0d355cc0baa"
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "key": "5dfd48aca6e0d5ce1a63ef9a7ebeed855377d842020e5cbf195a7aa7f069251c",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2020-05-14_the-energy-reserves-in-the"
+ },
+ "created": "2026-10-20T01:27:59+00:00",
+ "seconds": 0.53,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "ec6e0e53c2e32a4c297670bd25a5ba6fa9602c602cd619c57967e7bf9935d0ee",
+  "6878917de75317bce71dcaa446896a3cf459a02ad78e816383923328bbc0231e",
+  "5d75643ef862446b6d76aecce745eda5e964b9613e0e9ca1952050fdf0bbbc0d",
+  "36a7d35650dd2009e394cd97466ac1d3c9342221475954a81e6e6d94b796c67a"
+ ]
+}

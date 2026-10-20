@@ -1,0 +1,20 @@
+{
+ "key": "da8f571f69d3ba10c36226218e806f7e0c1d1dc09ce171c544f394d1622cdade",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-04-19_china-cybercrime-big-data-privacy"
+ },
+ "created": "2026-10-20T01:27:48+00:00",
+ "seconds": 0.53,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "bb159cf72a68507d06ddc2edc334d3c663b580660bb66190d6ad4e72067ad61d",
+  "b1de2080c29669b2fb2806235a85c5b8d87e5876c0da24049e0a650122ebe630",
+  "ba06d78060f3074a695f652c3325b98987974439c91497c4c1bfb6700937c2ce"
+ ]
+}

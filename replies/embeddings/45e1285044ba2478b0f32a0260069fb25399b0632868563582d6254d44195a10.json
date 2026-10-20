@@ -1,0 +1,21 @@
+{
+ "key": "45e1285044ba2478b0f32a0260069fb25399b0632868563582d6254d44195a10",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-04-26_financial-cybercrime-2021-jackpotting-atm"
+ },
+ "created": "2026-10-20T01:27:53+00:00",
+ "seconds": 0.52,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "15d2e1f142fd6f183e4e0d06b7e4375f421a220bbb9c715f5bcf8324e7356676",
+  "646a3bcb3091aa6298db8cf67206557e8da59a8c2a7dc34b0126bb732d763add",
+  "0ded3b672aee2a4db984c41133f5223eebf253fd1a0483aaae41a9073c63a864",
+  "864752a878dc2a6d6526df05048c887bc90346baaa3349b613ec86652f7913e3"
+ ]
+}

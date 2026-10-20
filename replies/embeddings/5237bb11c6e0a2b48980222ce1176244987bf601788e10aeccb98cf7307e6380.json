@@ -1,0 +1,19 @@
+{
+ "key": "5237bb11c6e0a2b48980222ce1176244987bf601788e10aeccb98cf7307e6380",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-05-14_darkside-ransomware-shut-down-revil"
+ },
+ "created": "2026-10-20T01:27:57+00:00",
+ "seconds": 0.27,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "c70660f0425482ff447d0e925eb6f9d10f6c407ae281cf3f12cccc1d6bcfae6e",
+  "437d93811fc0f05134cf4a8771ea63ccaf40ebcbaa5eb3a76fe6ad3b487010eb"
+ ]
+}

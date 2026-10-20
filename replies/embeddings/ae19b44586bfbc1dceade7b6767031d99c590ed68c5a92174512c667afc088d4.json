@@ -1,0 +1,19 @@
+{
+ "key": "ae19b44586bfbc1dceade7b6767031d99c590ed68c5a92174512c667afc088d4",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2020-06-09_recent-fk-undead-rootkit-samples"
+ },
+ "created": "2026-10-20T01:28:02+00:00",
+ "seconds": 0.3,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "6e9b8f547d1bf162d9ff6c995be17649282b6db560e014bdea2da282fdbe8965",
+  "6052c7c87e571199c5eb825f8cc74a120c5c4df318c056c0a1f1325ee10bceb1"
+ ]
+}

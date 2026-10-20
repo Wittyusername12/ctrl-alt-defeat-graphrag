@@ -1,0 +1,21 @@
+{
+ "key": "e0759f8426c9d22cd0b1f3d4b369ee9e8dbf98d5a9df1c9a85ebb585bde9d4ef",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2020-05-14_the-energy-reserves-in-the"
+ },
+ "created": "2026-10-20T01:27:59+00:00",
+ "seconds": 0.53,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "83b07ca251409bd8aa25720a51ceb6acd28687636026416e9795f845b46abe39",
+  "4158218446bf2485af76d38c6091fc2f5385170c95e562f1aeaf683187e8d802",
+  "b6ea9a69422eab4f722d561feddd89ecc06b505967aab582b4678a173ab00a7f",
+  "fe6d5adb1e7b361bcb18d96797b6a233a2d44e13b60a359ab4e5d81ed970211e"
+ ]
+}

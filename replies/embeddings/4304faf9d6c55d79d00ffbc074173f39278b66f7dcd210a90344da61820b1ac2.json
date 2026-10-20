@@ -1,0 +1,25 @@
+{
+ "key": "4304faf9d6c55d79d00ffbc074173f39278b66f7dcd210a90344da61820b1ac2",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2020-06-09_recent-fk-undead-rootkit-samples"
+ },
+ "created": "2026-10-20T01:28:02+00:00",
+ "seconds": 0.36,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 8,
+ "text_sha256": [
+  "8bd7f7d709af37e81d6c90c6403d50c96f6f76ed6bc4bfadbe33803f3cc96509",
+  "6dfd980fc911ab3b5c430c730997d1c4cbee0d7e30a4aeeb292a089c915fee6a",
+  "fa4f300507bea5fac2f408d6fd33b42d9dcb6160d2fced036a7ef404ce0a8f1a",
+  "e3c68d5438438b4626b9e7df4ab07f36ceff6b3cecb30213613ec0bcdcc6118c",
+  "c7cdb3d19a2c1691a540851da9e38971c94d6bd08fe16e7e8cf468e2fee5a282",
+  "8c8ffc29dd84cbb21fd7f5ac5a042c2ff395a4acb375df7e1ab4fb719fc37280",
+  "32020516f18f915808159815d3fd0757b4b7cc31b4c6e10e2ebd89202cf13763",
+  "37358e1a17f0a0bc90c3b043554a4cc32610a619ef99bb9fbd4749db15d8de85"
+ ]
+}

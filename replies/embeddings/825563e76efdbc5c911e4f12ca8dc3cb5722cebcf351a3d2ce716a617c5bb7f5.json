@@ -1,0 +1,19 @@
+{
+ "key": "825563e76efdbc5c911e4f12ca8dc3cb5722cebcf351a3d2ce716a617c5bb7f5",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-10-20_ta551-uses-sliver-red-team"
+ },
+ "created": "2026-10-20T01:28:06+00:00",
+ "seconds": 0.24,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "6aef63921b93cd564581e0d3a08b25b0a34c11835e1306310b14ef79cae5738e",
+  "fdb6bf0f90eee7805b240463ae949da2d8f778a82b6ccb3844ffcfe1dd32fb3a"
+ ]
+}
