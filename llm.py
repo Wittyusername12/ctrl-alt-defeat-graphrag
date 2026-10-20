@@ -124,6 +124,14 @@ def saved(kind: str, key: str) -> dict | None:
     return record
 
 
+def save_record(kind: str, key: str, record: dict) -> Path:
+    """Save a record that was computed rather than returned by OpenAI (for example the PageRank scores one question
+    used) as replies/<kind>/<key>.json, in the same format as the saved replies; returns the file's path."""
+    path = _saved_json(kind, key)
+    _save(path, record)
+    return path
+
+
 def parse(kind: str, messages: list[dict], response_format: type[BaseModel], max_completion_tokens: int,
           label: dict) -> dict:
     """One structured chat request (client.chat.completions.parse); the saved record, reused when it exists.

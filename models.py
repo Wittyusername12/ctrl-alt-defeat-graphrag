@@ -89,6 +89,9 @@ class QueryResponse(BaseModel):
     citation_check: CitationCheck
     model: str | None = None            # as the model's reply names itself
     seconds: float | None = None        # duration of the model call; None when a saved answer was reused
+    anchored_reports: list[str] = Field(default_factory=list)  # the reports the question names (report lookup)
+    summaries: list[str] = Field(default_factory=list)         # the summary lines, also the first lines of facts
+    timings: dict[str, float] = Field(default_factory=dict)    # seconds per stage: lookup, chunks, ..., total
 
 
 def response_from(question: str, result: dict) -> QueryResponse:
@@ -101,4 +104,6 @@ def response_from(question: str, result: dict) -> QueryResponse:
     return QueryResponse(question=question, mode=result["mode"], answer=answer,
                          citations=[f"{kind}:{cid}" for kind, cid in rag.citations(answer)], chunks=chunks,
                          facts=result["fact_lines"], citation_check=CitationCheck(**result["check"]),
-                         model=record.get("model"), seconds=None if record.get("reused") else record.get("seconds"))
+                         model=record.get("model"), seconds=None if record.get("reused") else record.get("seconds"),
+                         anchored_reports=result.get("anchored_reports", []), summaries=result.get("summaries", []),
+                         timings=result.get("timings", {}))

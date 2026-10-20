@@ -1,0 +1,11 @@
+# Streamlit settings for this project. Streamlit reads this file when it is started from the repository folder.
+
+[server]
+# No first-run prompt for an email address in Command Prompt.
+showEmailPrompt = false
+# Listen on this computer only (http://localhost:8501), so no other computer can open the page.
+address = "localhost"
+
+[browser]
+# Send no usage statistics to Streamlit.
+gatherUsageStats = false

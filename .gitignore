@@ -17,3 +17,6 @@ desktop.ini
 
 # Files the scripts produce (for example out/attack-v20.ttl); every one can be made again
 out/
+
+# Streamlit secrets, should anyone add them (the project keeps its secrets in .env)
+.streamlit/secrets.toml
