@@ -127,6 +127,9 @@ Keep the repository and the virtual environment outside any folder that OneDrive
     ```
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe -m streamlit run app.py
     ```
+    The page on 19 Oct 2026, answering the tracer question with GraphRAG (left) and the text-only baseline (right), both from saved answers:
+
+    ![The chat page: the tracer question answered by GraphRAG and by the text-only baseline, with the citation checks and the FastRP neighbours of T1027.013](docs/chat-page.png)
 15. Local model (needs Ollama with `qwen3:4b` pulled): one report chunk through `qwen3:4b` with the extraction prompt and reply format, checked like the gpt-6-sol replies. On a laptop processor the chunk takes minutes; the reply is saved under `replies/ollama`, and a rerun reuses it without Ollama:
     ```
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe scripts\try_ollama.py
