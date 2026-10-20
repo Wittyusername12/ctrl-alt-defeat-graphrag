@@ -44,7 +44,7 @@ BENCHMARK = datafiles.REPO / "benchmark"
 GOLD_FILE = BENCHMARK / "gold_triples.json"
 QUERIES_FILE = BENCHMARK / "eval_queries.json"
 
-GOLD_SPLITS = ("dev", "test")
+GOLD_SPLITS = annoctr.EVALUATION_SPLITS
 GOLD_LABELS = (TECHNIQUE, TACTIC, GROUP, SOFTWARE)  # what the experts labelled; nobody labelled mitigations
 # Counted from the same files on 18 Oct 2026 with a separate script (see the tracker, section 5).
 EXPECTED = {

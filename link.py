@@ -2,7 +2,10 @@ r"""Link extracted mentions to ATT&CK, then load the report into Neo4j beside AT
 
 Run from the repository folder with the project's Python, after extract.py and load_attack.py:
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe link.py [report_id ...]
-With no report named, the Phase 2 test report (annoctr.TRACER) is used.
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe link.py --split dev
+With no report named and no --split, the Phase 2 report (annoctr.TRACER, dev split) is used. With --split,
+every report of the split is linked and loaded, and each report gets a short summary instead of the
+mention-by-mention and label-by-label listing.
 
 Linking (named entity disambiguation) decides which ATT&CK entry each mention means:
   1. Exact match of the model's ATT&CK name, then of the mention text, against every ATT&CK name and alias,
@@ -269,8 +272,9 @@ def rows_for_neo4j(result: dict, decisions: dict[str, dict], chunk_vectors: np.n
     return {"chunks": chunks, "entities": list(entities.values()), "mentions": dict(mentions), "uses": dict(uses)}
 
 
-def write_report(driver, database: str, result: dict, rows: dict) -> list[str]:
-    """Replace the report's text-derived part of the graph; problems are rows that did not reach the database."""
+def write_report(driver, database: str, result: dict, rows: dict, detail: bool = True) -> list[str]:
+    """Replace the report's text-derived part of the graph; problems are rows that did not reach the database.
+    With detail=False only problems are printed."""
     problems = []
     report_id = result["report_id"]
     for query in delete_report_query():
@@ -281,7 +285,8 @@ def write_report(driver, database: str, result: dict, rows: dict) -> list[str]:
     def write(name: str, query: str, items: list[dict]):
         written = sum(db.run(driver, database, query, rows=batch)[0]["written"] for batch in db.batches(items))
         if written == len(items):
-            print(f"  ok       {name}: {written} written")
+            if detail:
+                print(f"  ok       {name}: {written} written")
         else:
             problems.append(f"{name}: {written} of {len(items)} written")
             print(f"  PROBLEM  {problems[-1]}")
@@ -311,11 +316,11 @@ def read_back(driver, database: str, report_id: str) -> dict:
     return counts
 
 
-def probe_vector_index(driver, database: str, chunk_id: str, vector: np.ndarray) -> list[str]:
+def probe_vector_index(driver, database: str, chunk_id: str, vector: np.ndarray, detail: bool = True) -> list[str]:
     """Search the chunk index with a chunk's own embedding, both ways; the index works when it finds that chunk.
 
     This shows that the index takes in embeddings stored as plain lists of floats, and that the SEARCH
-    subclause rag.py uses is accepted, before rag.py relies on either.
+    subclause rag.py uses is accepted, before rag.py relies on either. With detail=False a success is one line.
     """
     problems = []
     embedding = [float(x) for x in vector]
@@ -332,25 +337,35 @@ def probe_vector_index(driver, database: str, chunk_id: str, vector: np.ndarray)
             print(f"  PROBLEM  {problems[-1]}")
             continue
         if rows and rows[0]["chunk_id"] == chunk_id:
-            print(f"  ok       vector search with the {name} finds {chunk_id} from its own embedding "
-                  f"(score {rows[0]['score']:.4f})")
+            if detail:
+                print(f"  ok       vector search with the {name} finds {chunk_id} from its own embedding "
+                      f"(score {rows[0]['score']:.4f})")
         else:
             problems.append(f"vector search with the {name} did not find {chunk_id} "
                             f"(found {rows[0]['chunk_id'] if rows else 'nothing'})")
             print(f"  PROBLEM  {problems[-1]}")
+    if not detail and not problems:
+        print(f"  ok       vector search finds {chunk_id} from its own embedding, both ways")
     return problems
 
 
 # ---------------------------------------------------------------- main
 
 def compare_with_experts(report_id: str, decisions: dict, mentions: list[dict], index: AttackIndex,
-                         live: set[str], replaced: dict[str, str]) -> None:
+                         live: set[str], replaced: dict[str, str], detail: bool = True) -> tuple[int, int, int]:
+    """Expert labels found, expert labels, and linked IDs outside the labels; listed one by one when detail."""
     facts = annoctr.expert_facts(report_id, live, replaced)
     linked = defaultdict(list)
     for mention in mentions:
         decision = decisions[mention["mention_id"]]
         if decision["attack_id"]:
             linked[decision["attack_id"]].append((mention, decision))
+    extra = sorted(set(linked) - facts)
+    hits = len(facts & set(linked))
+    if not detail:
+        print(f"  expert labels: {hits} of {len(facts)} found; {len(extra)} linked IDs not among them "
+              f"(informal; score.py scores)")
+        return hits, len(facts), len(extra)
     print(f"\nExpert ATT&CK labels for this report ({len(facts)}), beside the system's links")
     for attack_id in sorted(facts):
         entry = index.by_id[attack_id]
@@ -361,18 +376,18 @@ def compare_with_experts(report_id: str, decisions: dict, mentions: list[dict], 
             print(f"  found     {attack_id:10} {entry.name[:45]:45} {len(found)} mention(s): {how}")
         else:
             print(f"  missed    {attack_id:10} {entry.name[:45]}")
-    extra = sorted(set(linked) - facts)
     for attack_id in extra:
         found = linked[attack_id]
         print(f"  not in the expert labels: {attack_id:10} {index.by_id[attack_id].name[:45]:45} "
               f"{len(found)} mention(s), first: \"{found[0][0]['text'][:40]}\"")
-    hits = len(facts & set(linked))
     print(f"  {hits} of {len(facts)} expert labels found; {len(extra)} linked IDs not among them "
           f"(an informal look at one report, not the evaluation)")
+    return hits, len(facts), len(extra)
 
 
 def link_report(report_id: str, index: AttackIndex, live: set[str], replaced: dict[str, str],
-                entry_vectors: np.ndarray, driver, database: str) -> list[str]:
+                entry_vectors: np.ndarray, driver, database: str, detail: bool = True) -> dict:
+    """Link and load one report; returns its problems, its link methods and its informal expert-label counts."""
     print(f"\nLink and load {report_id}")
     result = extract.extract_report(report_id, call_model=False)
     mentions = [mention for chunk in result["chunks"] for mention in chunk["mentions"]]
@@ -384,7 +399,7 @@ def link_report(report_id: str, index: AttackIndex, live: set[str], replaced: di
     decisions = {d["mention_id"]: d for d in link_mentions(mentions, index, entry_vectors, embed_queries)}
     methods = Counter(d["method"].split(" (")[0] for d in decisions.values())
     print(f"  {len(mentions)} mentions: " + ", ".join(f"{method} {count}" for method, count in sorted(methods.items())))
-    for mention in mentions:
+    for mention in (mentions if detail else []):
         decision = decisions[mention["mention_id"]]
         if not decision["method"].startswith("exact"):
             closest = "; ".join(f"{aid} {name[:30]} {score}" for aid, name, score in decision["closest"])
@@ -394,27 +409,34 @@ def link_report(report_id: str, index: AttackIndex, live: set[str], replaced: di
     chunk_vectors, _ = llm.embed("embeddings", [chunk["text"] for chunk in result["chunks"]],
                                  {"use": "chunks", "report_id": report_id})
     rows = rows_for_neo4j(result, decisions, chunk_vectors)
-    problems += write_report(driver, database, result, rows)
+    problems += write_report(driver, database, result, rows, detail)
     expected = {"chunks": len(rows["chunks"]), "chunks with a 1,536-number embedding": len(rows["chunks"]),
                 "mentions": sum(len(items) for items in rows["mentions"].values()),
                 "uses relations from the text": sum(len(items) for items in rows["uses"].values())}
     found = read_back(driver, database, report_id)
-    print("  read back:")
+    if detail:
+        print("  read back:")
     for name, number in expected.items():
         if found[name] == number:
-            print(f"  ok       {name}: {found[name]}")
+            if detail:
+                print(f"  ok       {name}: {found[name]}")
         else:
             problems.append(f"{name}: {found[name]} in Neo4j, {number} written")
             print(f"  PROBLEM  {problems[-1]}")
-    problems += probe_vector_index(driver, database, rows["chunks"][0]["chunk_id"], chunk_vectors[0])
-    compare_with_experts(report_id, decisions, mentions, index, live, replaced)
-    return problems
+    if not detail and found == expected:
+        print(f"  ok       written and read back: {found['chunks']} chunks with embeddings, {found['mentions']} "
+              f"mentions, {found['uses relations from the text']} uses relations from the text")
+    problems += probe_vector_index(driver, database, rows["chunks"][0]["chunk_id"], chunk_vectors[0], detail)
+    hits, labels, extra = compare_with_experts(report_id, decisions, mentions, index, live, replaced, detail)
+    return {"problems": problems, "methods": methods, "hits": hits, "labels": labels, "extra": extra}
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Link extracted mentions to ATT&CK and load reports into Neo4j.")
-    parser.add_argument("reports", nargs="*", default=[annoctr.TRACER], help="report IDs (file names without .txt)")
+    annoctr.add_report_arguments(parser)
     args = parser.parse_args(argv)
+    reports = annoctr.chosen_reports(parser, args)
+    detail = not args.split
     print("Link mentions to ATT&CK and load reports into Neo4j")
     index, live, replaced = load_index()
     print(f"  ok       ATT&CK index: {len(index.entries)} entries, {len(index.by_key)} distinct names and aliases")
@@ -431,16 +453,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  PROBLEM  {exc}\n\nRESULT: FAILED - {exc}")
         return 1
     problems = []
+    methods, hits, labels, extra, done = Counter(), 0, 0, 0, 0
     with driver:
-        for report_id in args.reports:
+        for report_id in reports:
             try:
-                problems += link_report(report_id, index, live, replaced, entry_vectors, driver, database)
+                outcome = link_report(report_id, index, live, replaced, entry_vectors, driver, database, detail)
             except (FileNotFoundError, KeyError, llm.LLMError) as exc:
                 problems.append(f"{report_id}: {exc}")
                 print(f"  PROBLEM  {exc}")
+                continue
             except (Neo4jError, DriverError) as exc:
                 problems.append(f"{report_id}: {db.explain(exc)}")
                 print(f"  PROBLEM  {db.explain(exc)}")
+                continue
+            problems += outcome["problems"]
+            methods += outcome["methods"]
+            hits, labels, extra = hits + outcome["hits"], labels + outcome["labels"], extra + outcome["extra"]
+            done += 1
+    if len(reports) > 1:
+        print(f"\nRun total: {done} of {len(reports)} reports linked and loaded; {sum(methods.values())} mentions: "
+              + ", ".join(f"{method} {count}" for method, count in sorted(methods.items())))
+        print(f"  expert labels: {hits} of {labels} found; {extra} linked IDs not among them "
+              f"(informal; score.py gives the scores)")
     if problems:
         print(f"\nRESULT: {len(problems)} problem(s)")
         for text in problems:

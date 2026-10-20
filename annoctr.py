@@ -17,6 +17,7 @@ ANNOCTR = DATA / "annoctr"
 TEXT_DIR = ANNOCTR / "text"
 LINKING_DIR = ANNOCTR / "linking_mitre_only"
 SPLITS = ("train", "dev", "test")
+EVALUATION_SPLITS = ("dev", "test")  # the splits with gold facts, and the only ones the pipeline scripts run over
 TRACER = "lab52_2020-06-02_mustang-panda-recent-activity-dll"  # the dev report Phase 2 runs end to end
 
 CHUNK_SIZE = 4000      # characters
@@ -30,6 +31,21 @@ ATTACK_LINK = re.compile(r"attack\.mitre\.org/(?:techniques|tactics|groups|softw
 
 def report_ids(split: str) -> list[str]:
     return sorted(path.stem for path in (TEXT_DIR / split).glob("*.txt"))
+
+
+def add_report_arguments(parser) -> None:
+    """The report choice extract.py and link.py share: report IDs, or --split for every report of a split."""
+    parser.add_argument("reports", nargs="*", help=f"report IDs (file names without .txt); default {TRACER}")
+    parser.add_argument("--split", choices=EVALUATION_SPLITS, help="every report of this split, in file-name order")
+
+
+def chosen_reports(parser, args) -> list[str]:
+    """The reports to run: the reports named, every report of --split, or the tracer report when neither is given."""
+    if args.split and args.reports:
+        parser.error("name reports or give --split, not both")
+    if args.split:
+        return report_ids(args.split)
+    return list(args.reports) or [TRACER]
 
 
 @lru_cache(maxsize=None)

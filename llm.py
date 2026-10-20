@@ -30,6 +30,8 @@ REPLIES = REPO / "replies"
 
 CHAT_MODEL = "gpt-6-sol"
 CHAT_SETTINGS = {"reasoning_effort": "none", "temperature": 0, "seed": 7}
+# gpt-6-sol list prices in US dollars per million tokens (OpenAI's model page, checked 19 Oct 2026)
+CHAT_PRICES = {"input": 2.00, "cached_input": 0.20, "output": 10.00}
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_BATCH = 256          # texts per embeddings request
 EMBEDDING_MAX_CHARACTERS = 8000  # longer texts are cut (the model reads at most 8,191 tokens)
@@ -95,8 +97,17 @@ def _usage(completion) -> dict | None:
     if usage is None:
         return None
     details = getattr(usage, "completion_tokens_details", None)
+    prompt_details = getattr(usage, "prompt_tokens_details", None)
     return {"prompt_tokens": usage.prompt_tokens, "completion_tokens": usage.completion_tokens,
-            "reasoning_tokens": getattr(details, "reasoning_tokens", None)}
+            "reasoning_tokens": getattr(details, "reasoning_tokens", None),
+            "cached_tokens": getattr(prompt_details, "cached_tokens", None)}
+
+
+def chat_cost(prompt_tokens: int, cached_tokens: int, completion_tokens: int) -> float:
+    """List-price cost in US dollars: cached prompt tokens at the cached-input price, the other prompt tokens at
+    the input price, reply tokens at the output price."""
+    return ((prompt_tokens - cached_tokens) * CHAT_PRICES["input"] + cached_tokens * CHAT_PRICES["cached_input"]
+            + completion_tokens * CHAT_PRICES["output"]) / 1_000_000
 
 
 def parse_key(messages: list[dict], response_format: type[BaseModel], max_completion_tokens: int) -> str:
@@ -141,7 +152,8 @@ def parse(kind: str, messages: list[dict], response_format: type[BaseModel], max
               "settings": {**CHAT_SETTINGS, "max_completion_tokens": max_completion_tokens},
               "model": body.get("model"), "finish_reason": choice.get("finish_reason"),
               "usage": {"prompt_tokens": usage.get("prompt_tokens"), "completion_tokens": usage.get("completion_tokens"),
-                        "reasoning_tokens": (usage.get("completion_tokens_details") or {}).get("reasoning_tokens")},
+                        "reasoning_tokens": (usage.get("completion_tokens_details") or {}).get("reasoning_tokens"),
+                        "cached_tokens": (usage.get("prompt_tokens_details") or {}).get("cached_tokens")},
               "refusal": message.get("refusal"), "content": message.get("content"), "messages": messages}
     _save(path, record)
     record["reused"] = False

@@ -4,7 +4,7 @@ Term project for CS 6338 Knowledge Engineering, Angelo State University. Team CT
 
 The system answers questions about cyber threat reports. A knowledge graph in Neo4j joins MITRE ATT&CK v20.0 (Enterprise) with the AnnoCTR threat reports. A language model answers from retrieved report text plus the graph, and every answer cites the report chunks and graph edges it used. The same pipeline without the graph is the text-only baseline.
 
-**Status:** skeleton stage. One report runs through every stage: ATT&CK loading, extraction, linking, loading, and question answering with and without the graph. The benchmark (gold triples, evaluation questions) and the scorer are in place.
+**Status:** full build (Phase 5). Every stage runs: ATT&CK loading, extraction, linking and loading, scoring, and question answering with and without the graph. Extraction, linking and scoring take one report or a whole split (`--split dev`, `--split test`). The benchmark (gold triples, evaluation questions) and the scorer are in place.
 
 ## Repository layout
 
@@ -18,7 +18,7 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `load_attack.py` | MITRE ATT&CK v20.0: STIX JSON → RDF with rdflib (saved as `out/attack-v20.ttl`) → Neo4j, with count checks |
 | `annoctr.py` | the AnnoCTR reports: text, chunks (4,000 characters, 400 shared) and the experts' ATT&CK labels |
 | `llm.py` | every OpenAI call (gpt-6-sol, text-embedding-3-small), saved under `replies/` and reused on reruns |
-| `extract.py` | the model lists techniques, tactics, groups, software and "uses" relations in each chunk, each with its evidence sentence; code checks every item and counts each reason for dropping one |
+| `extract.py` | the model lists techniques, tactics, groups, software and "uses" relations in each chunk, each with its evidence sentence; code checks every item and counts each reason for dropping one; a run stops after 3 chunks in a row without a complete reply and ends with its tokens and their cost at list price |
 | `link.py` | links each mention to ATT&CK (exact name, tie-break rules, then embedding similarity) and loads the report, its chunks and the links into Neo4j |
 | `rag.py` | answers a question from the most similar chunks plus the graph around the entities they mention (ranked by personalized PageRank), citing `[chunk:…]` and `[edge:…]`; the same question without the graph is the baseline |
 | `models.py` | Pydantic data models for the graph (ATT&CK entries, relationships, chunks) and for the question-answering payloads (`QueryRequest`, `QueryResponse`); the extraction reply models are in `extract.py` |
@@ -85,20 +85,26 @@ Keep the repository and the virtual environment outside any folder that OneDrive
    ```
    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe load_attack.py
    ```
-10. Extract, link and load a report, then ask a question. With no report named, the scripts use the test report `lab52_2020-06-02_mustang-panda-recent-activity-dll` (dev split); with no question, `rag.py` asks which ATT&CK mitigations address the techniques in that report. Saved replies are reused, so a rerun calls OpenAI only for what is new:
+10. Extract, link and load a report, then ask a question. With no report named, the scripts use the Phase 2 report `lab52_2020-06-02_mustang-panda-recent-activity-dll` (dev split); with no question, `rag.py` asks which ATT&CK mitigations address the techniques in that report. Saved replies are reused, so a rerun calls OpenAI only for what is new:
     ```
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe extract.py
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe link.py
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe rag.py
     ```
+11. Extract, link, load and score a whole split. Changes are tried on the 16 dev reports; the 34 test reports are run once, after the calibration on dev. `extract.py` stops after 3 chunks in a row without a complete reply, and ends with the tokens of its new replies and their cost at list price; `link.py` gives each report a short summary:
+    ```
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe extract.py --split dev
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe link.py --split dev
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe score.py --split dev
+    ```
 
 ## Benchmark and scoring (Command Prompt, in the repository folder, with the Neo4j instance started)
 
-11. Check the benchmark: `--check` rebuilds both benchmark files and compares them with the files in `benchmark/`; `--neo4j` also runs each question's Cypher query in Neo4j and compares its answer with the file's. Running `gold.py` with neither option rewrites both files from the data:
+12. Check the benchmark: `--check` rebuilds both benchmark files and compares them with the files in `benchmark/`; `--neo4j` also runs each question's Cypher query in Neo4j and compares its answer with the file's. Running `gold.py` with neither option rewrites both files from the data:
     ```
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe gold.py --neo4j
     ```
-12. Score the system's facts in Neo4j against the gold triples, for named reports or for a whole split (`--split dev` or `--split test`):
+13. Score the system's facts in Neo4j against the gold triples, for named reports or for a whole split (`--split dev` or `--split test`):
     ```
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe score.py lab52_2020-06-02_mustang-panda-recent-activity-dll
     ```
