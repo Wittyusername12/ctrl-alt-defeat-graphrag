@@ -182,6 +182,15 @@ def test_a_short_summary_prints_nothing_for_complete_writes_and_every_shortfall(
     assert "ok       chunks (with embeddings): 1 written" in capsys.readouterr().out
 
 
+def test_a_relation_listed_twice_in_a_chunk_is_expected_once_in_the_graph():
+    rows = {"chunks": [{"chunk_id": "r#0"}], "mentions": {"Group": [{"edge_id": "text:MENTIONS:r#0/m1"}],
+                                                          "Software": [{"edge_id": "text:MENTIONS:r#0/m2"}]},
+            "uses": {("Group", "Software"): [{"edge_id": "text:USES:r#0/m1->r#0/m2"},
+                                             {"edge_id": "text:USES:r#0/m1->r#0/m2"}]}}
+    assert link.expected_counts(rows) == {"chunks": 1, "chunks with a 1,536-number embedding": 1, "mentions": 2,
+                                          "uses relations from the text": 1}
+
+
 def test_a_short_expert_comparison_counts_without_listing(capsys):
     index, live, replaced = link.load_index()
     mentions = [{"mention_id": "m1", "text": "PlugX"}, {"mention_id": "m2", "text": "Mimikatz"}]

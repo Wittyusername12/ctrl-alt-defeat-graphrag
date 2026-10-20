@@ -300,6 +300,14 @@ def write_report(driver, database: str, result: dict, rows: dict, detail: bool =
     return problems
 
 
+def expected_counts(rows: dict) -> dict:
+    """What read_back() should find for one report. Relationships are counted by edge ID: when the model lists
+    the same uses relation twice in one chunk, both rows MERGE into one relationship."""
+    return {"chunks": len(rows["chunks"]), "chunks with a 1,536-number embedding": len(rows["chunks"]),
+            "mentions": len({item["edge_id"] for items in rows["mentions"].values() for item in items}),
+            "uses relations from the text": len({item["edge_id"] for items in rows["uses"].values() for item in items})}
+
+
 def read_back(driver, database: str, report_id: str) -> dict:
     counts = {
         "chunks": db.run(driver, database, f"MATCH (:`{REPORT}` {{`{KEY[REPORT]}`: $id}})-[:`{HAS_CHUNK}`]->(c:`{CHUNK}`) "
@@ -410,9 +418,7 @@ def link_report(report_id: str, index: AttackIndex, live: set[str], replaced: di
                                  {"use": "chunks", "report_id": report_id})
     rows = rows_for_neo4j(result, decisions, chunk_vectors)
     problems += write_report(driver, database, result, rows, detail)
-    expected = {"chunks": len(rows["chunks"]), "chunks with a 1,536-number embedding": len(rows["chunks"]),
-                "mentions": sum(len(items) for items in rows["mentions"].values()),
-                "uses relations from the text": sum(len(items) for items in rows["uses"].values())}
+    expected = expected_counts(rows)
     found = read_back(driver, database, report_id)
     if detail:
         print("  read back:")
