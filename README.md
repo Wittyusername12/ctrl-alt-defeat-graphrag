@@ -11,11 +11,13 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | Path | What it is |
 |---|---|
 | `schemas.py` | every node label, relationship type and property name, defined once and imported everywhere else |
-| `schema.cypher` | one uniqueness constraint per node label, and the vector index for chunk embeddings |
+| `schema.cypher` | one uniqueness constraint per node label, the vector index for chunk embeddings, and three vector indexes for FastRP vectors (Technique, Group, Software) |
 | `db.py` | the Neo4j connection, configured from `.env`; every data query names its Cypher version |
 | `datafiles.py` | where the data files live, and the SHA-256 check |
 | `apply_schema.py` | applies `schema.cypher` and lists the constraints and indexes in place |
 | `load_attack.py` | MITRE ATT&CK v20.0: STIX JSON → RDF with rdflib (saved as `out/attack-v20.ttl`) → Neo4j, with count checks |
+| `analytics.cypher` | the GDS (Graph Data Science) queries: one undirected projection of ATT&CK alone, then PageRank, Louvain communities and FastRP vectors, each run with one thread |
+| `enrich.py` | runs `analytics.cypher` once, saves the results under `analytics/`, writes them onto the ATT&CK nodes and checks the FastRP vector indexes; later runs load the saved files |
 | `annoctr.py` | the AnnoCTR reports: text, chunks (4,000 characters, 400 shared) and the experts' ATT&CK labels |
 | `llm.py` | every OpenAI call (gpt-6-sol, text-embedding-3-small), saved under `replies/` and reused on reruns |
 | `extract.py` | the model lists techniques, tactics, groups, software and "uses" relations in each chunk, each with its evidence sentence; code checks every item and counts each reason for dropping one; a reply cut off at 4,000 tokens is asked again once at 8,000; a run stops after 3 chunks in a row without a complete reply and ends with its tokens and their cost at list price |
@@ -28,6 +30,7 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `benchmark/` | `gold_triples.json` and `eval_queries.json`, written by `gold.py` only (see `benchmark/README.md`) |
 | `replies/` | saved model replies and embeddings; committing them makes every rerun identical |
 | `results/` | tables computed from saved replies (the dev calibration table) |
+| `analytics/` | the saved GDS results: PageRank score and community of every ATT&CK entry, FastRP vectors, and how they were computed |
 | `data/` | the data files, their licences and their SHA-256 list (see `data/README.md`) |
 | `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine |
 | `tests/` | `pytest` tests |
@@ -79,13 +82,17 @@ Keep the repository and the virtual environment outside any folder that OneDrive
 
 ## Build the knowledge graph (Command Prompt, in the repository folder, with the Neo4j instance started)
 
-8. Apply the schema (the constraints and the vector index; running it again changes nothing):
+8. Apply the schema (the constraints and the four vector indexes; running it again changes nothing):
    ```
    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe apply_schema.py
    ```
 9. Load MITRE ATT&CK v20.0: 1,785 nodes and 20,426 relationships. The script checks its counts at every stage and ends with `RESULT: OK` when they all match:
    ```
    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe load_attack.py
+   ```
+   Then write the graph analytics onto the ATT&CK nodes: PageRank scores, Louvain communities and FastRP vectors. The first run computes them with GDS and saves them under `analytics/`; every later run, on any machine, loads the saved files, so the numbers stay the same:
+   ```
+   %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe enrich.py
    ```
 10. Extract, link and load a report, then ask a question. With no report named, the scripts use the Phase 2 report `lab52_2020-06-02_mustang-panda-recent-activity-dll` (dev split); with no question, `rag.py` asks which ATT&CK mitigations address the techniques in that report. Saved replies are reused, so a rerun calls OpenAI only for what is new:
     ```

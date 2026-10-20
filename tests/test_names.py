@@ -30,6 +30,25 @@ def test_vector_index_matches_schemas():
     assert f"`vector.dimensions`: {schemas.EMBEDDING_DIMENSIONS}," in SCHEMA_CODE
 
 
+def test_every_vector_index_matches_schemas():
+    found = re.findall(r"CREATE VECTOR INDEX (\w+) IF NOT EXISTS\s+FOR \(n:(\w+)\) ON \(n\.(\w+)\)\s+OPTIONS \{indexConfig: \{\s+"
+                       r"`vector\.dimensions`: (\d+),", SCHEMA_CODE)
+    expected = [(schemas.CHUNK_VECTOR_INDEX, schemas.CHUNK, schemas.EMBEDDING, str(schemas.EMBEDDING_DIMENSIONS))]
+    expected += [(name, label, schemas.FASTRP, str(schemas.FASTRP_DIMENSIONS))
+                 for label, name in schemas.FASTRP_VECTOR_INDEX.items()]
+    assert found == expected
+    assert [name for name, *_ in found] == list(schemas.VECTOR_INDEXES)
+
+
+def test_analytics_cypher_uses_only_defined_names():
+    import enrich
+    text = "\n".join(enrich.queries().values())
+    assert set(re.findall(r"type\(r\) IN \[([^\]]*)\]", text)[0].replace("'", "").replace(" ", "").split(",")) == set(
+        schemas.ATTACK_RELATIONSHIPS)
+    assert f"r.{schemas.SOURCE} = '{schemas.SOURCE_ATTACK}'" in text
+    assert set(re.findall(r"\)\.(\w+) AS", text)) == {schemas.ATTACK_ID}
+
+
 def test_loader_cypher_uses_only_defined_names():
     queries = [load_attack.node_query(label) for label in schemas.ATTACK_LABELS]
     queries += [load_attack.node_count_query(label) for label in schemas.ATTACK_LABELS]

@@ -16,7 +16,7 @@ from pathlib import Path
 from neo4j.exceptions import DriverError, Neo4jError
 
 import db
-from schemas import CHUNK_VECTOR_INDEX, KEY, NODE_LABELS
+from schemas import KEY, NODE_LABELS, VECTOR_INDEXES
 
 SCHEMA_FILE = Path(__file__).resolve().parent / "schema.cypher"
 INDEX_WAIT_SECONDS = 120
@@ -41,7 +41,7 @@ def wait_for_index(driver, database: str, name: str) -> dict | None:
 
 def apply(driver, database: str) -> list[str]:
     problems: list[str] = []
-    failed_vector_index = False
+    failed_indexes = set()
     for statement in statements(SCHEMA_FILE.read_text(encoding="utf-8")):
         first_line = statement.splitlines()[0]
         try:
@@ -50,7 +50,7 @@ def apply(driver, database: str) -> list[str]:
         except Neo4jError as exc:
             problems.append(f"{first_line}: {db.explain(exc)}")
             print(f"  PROBLEM  {first_line}\n           {db.explain(exc)}")
-            failed_vector_index = failed_vector_index or CHUNK_VECTOR_INDEX in first_line
+            failed_indexes |= {name for name in VECTOR_INDEXES if f"INDEX {name} " in first_line}
 
     print("\nConstraints")
     rows = db.run_plain(driver, database, db.CONSTRAINTS_QUERY)
@@ -63,22 +63,24 @@ def apply(driver, database: str) -> list[str]:
             print(f"  PROBLEM  no uniqueness constraint on {label}.{KEY[label]}")
     print(f"  note     {len(rows)} constraint(s) in the database; the schema defines {len(NODE_LABELS)}")
 
-    print("\nVector index")
-    index = wait_for_index(driver, database, CHUNK_VECTOR_INDEX)
-    if index is None:
-        if failed_vector_index:
-            print(f"  note     {CHUNK_VECTOR_INDEX} was not created (the PROBLEM line under Statements says why)")
+    print("\nVector indexes")
+    for name in VECTOR_INDEXES:
+        index = wait_for_index(driver, database, name)
+        if index is None:
+            if name in failed_indexes:
+                print(f"  note     {name} was not created (the PROBLEM line under Statements says why)")
+            else:
+                problems.append(f"the vector index {name} does not exist")
+                print(f"  PROBLEM  the vector index {name} does not exist")
+        elif index["state"] != "ONLINE":
+            problems.append(f"the vector index {name} is {index['state']}")
+            print(f"  PROBLEM  the vector index {name} is {index['state']}")
         else:
-            problems.append(f"the vector index {CHUNK_VECTOR_INDEX} does not exist")
-            print(f"  PROBLEM  the vector index {CHUNK_VECTOR_INDEX} does not exist")
-    elif index["state"] != "ONLINE":
-        problems.append(f"the vector index {CHUNK_VECTOR_INDEX} is {index['state']}")
-        print(f"  PROBLEM  the vector index {CHUNK_VECTOR_INDEX} is {index['state']}")
-    else:
-        print(f"  ok       {CHUNK_VECTOR_INDEX}: {index['type']}, {index['state']}")
-        config = (index.get("options") or {}).get("indexConfig") or {}
-        for key in sorted(config):
-            print(f"  note     {key} = {config[key]}")
+            config = (index.get("options") or {}).get("indexConfig") or {}
+            settings = ", ".join(f"{key.removeprefix('vector.')} {config[key]}" for key in
+                                 ("vector.dimensions", "vector.similarity_function", "vector.quantization.type")
+                                 if key in config)
+            print(f"  ok       {name}: {index['type']}, {index['state']}; {settings}")
     return problems
 
 
@@ -101,7 +103,7 @@ def main() -> int:
         for text in problems:
             print(f"  - {text}")
         return 1
-    print("\nRESULT: OK - every constraint and the vector index are in place")
+    print("\nRESULT: OK - every constraint and every vector index are in place")
     return 0
 
 

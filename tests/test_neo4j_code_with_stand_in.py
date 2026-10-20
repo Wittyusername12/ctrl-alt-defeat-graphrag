@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import apply_schema
 import db
 import load_attack
-from schemas import ATTACK_LABELS, KEY, NODE_LABELS, SOFTWARE, TECHNIQUE, USES
+from schemas import ATTACK_LABELS, KEY, NODE_LABELS, SOFTWARE, TECHNIQUE, USES, VECTOR_INDEXES
 
 
 class Record(dict):
@@ -41,12 +41,12 @@ def rows(count):
     return [{"key": f"K{i}", "edge_id": f"E{i}", "src": f"S{i}", "dst": f"D{i}", "props": {}} for i in range(count)]
 
 
-def test_schema_file_splits_into_eight_constraints_and_one_vector_index():
+def test_schema_file_splits_into_eight_constraints_and_four_vector_indexes():
     statements = apply_schema.statements(apply_schema.SCHEMA_FILE.read_text(encoding="utf-8"))
-    assert len(statements) == 9
+    assert len(statements) == 12
     assert all(statement.startswith("CREATE CONSTRAINT") for statement in statements[:8])
-    assert statements[8].startswith("CREATE VECTOR INDEX chunk_embedding")
-    assert statements[8].endswith("}}")
+    assert [statement.split()[3] for statement in statements[8:]] == list(VECTOR_INDEXES)
+    assert all(statement.endswith("}}") for statement in statements[8:])
 
 
 def test_every_data_query_names_its_cypher_version_and_writes_in_batches_of_1000():

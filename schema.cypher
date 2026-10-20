@@ -1,6 +1,7 @@
 // Knowledge-graph schema for the CTRL ALT DEFEAT GraphRAG project.
-// One uniqueness constraint per node label, so a node can never be created twice, and one vector index
-// for chunk embeddings. Every label, property and index name here is defined in schemas.py
+// One uniqueness constraint per node label, so a node can never be created twice, one vector index for
+// chunk embeddings, and three for FastRP vectors on ATT&CK nodes. Every label, property and index name here
+// is defined in schemas.py
 // (tests/test_names.py checks that). apply_schema.py runs these statements before any data is loaded.
 // Each statement uses IF NOT EXISTS, so running the file again changes nothing.
 
@@ -20,6 +21,32 @@ CREATE VECTOR INDEX chunk_embedding IF NOT EXISTS
 FOR (n:Chunk) ON (n.embedding)
 OPTIONS {indexConfig: {
   `vector.dimensions`: 1536,
+  `vector.similarity_function`: 'cosine',
+  `vector.quantization.type`: 'NONE'
+}};
+
+// FastRP vectors on ATT&CK nodes (128 numbers each, written by enrich.py from analytics/fastrp.npz), compared by
+// cosine similarity: one index for each label the chat page compares. Quantization off, as for chunks.
+CREATE VECTOR INDEX fastrp_technique IF NOT EXISTS
+FOR (n:Technique) ON (n.fastrp)
+OPTIONS {indexConfig: {
+  `vector.dimensions`: 128,
+  `vector.similarity_function`: 'cosine',
+  `vector.quantization.type`: 'NONE'
+}};
+
+CREATE VECTOR INDEX fastrp_group IF NOT EXISTS
+FOR (n:Group) ON (n.fastrp)
+OPTIONS {indexConfig: {
+  `vector.dimensions`: 128,
+  `vector.similarity_function`: 'cosine',
+  `vector.quantization.type`: 'NONE'
+}};
+
+CREATE VECTOR INDEX fastrp_software IF NOT EXISTS
+FOR (n:Software) ON (n.fastrp)
+OPTIONS {indexConfig: {
+  `vector.dimensions`: 128,
   `vector.similarity_function`: 'cosine',
   `vector.quantization.type`: 'NONE'
 }};

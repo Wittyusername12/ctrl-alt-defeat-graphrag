@@ -65,6 +65,14 @@ EMBEDDING = "embedding"              # list of floats
 CHUNK_VECTOR_INDEX = "chunk_embedding"
 EMBEDDING_DIMENSIONS = 1536
 
+# Graph analytics on ATT&CK nodes (enrich.py; GDS on the ATT&CK-only projection, saved under analytics/)
+PAGERANK = "pagerank"      # global PageRank score
+COMMUNITY = "community"    # Louvain community number
+FASTRP = "fastrp"          # FastRP vector (list of floats)
+FASTRP_DIMENSIONS = 128
+FASTRP_VECTOR_INDEX = {TECHNIQUE: "fastrp_technique", GROUP: "fastrp_group", SOFTWARE: "fastrp_software"}
+VECTOR_INDEXES = (CHUNK_VECTOR_INDEX, *FASTRP_VECTOR_INDEX.values())
+
 # RDF vocabulary used by load_attack.py. Classes reuse the node labels; each relationship type and each
 # property gets an RDF property name in the usual lowerCamelCase form.
 ONTOLOGY_IRI = "https://github.com/Wittyusername12/ctrl-alt-defeat-graphrag/ontology#"
