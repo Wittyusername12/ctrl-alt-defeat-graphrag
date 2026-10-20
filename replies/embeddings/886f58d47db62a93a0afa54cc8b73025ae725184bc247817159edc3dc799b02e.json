@@ -1,0 +1,19 @@
+{
+ "key": "886f58d47db62a93a0afa54cc8b73025ae725184bc247817159edc3dc799b02e",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2021-07-05_quick-review-of-babuk-ransomware"
+ },
+ "created": "2026-10-20T02:56:03+00:00",
+ "seconds": 0.23,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "2af367e60857d20d53d345e05c484089c0fac824fc9a583499a98e9d78f31682",
+  "e6504490913079c46af49fad1013aa9a74a7315dd08f2d4246eca7ea53ca80a0"
+ ]
+}

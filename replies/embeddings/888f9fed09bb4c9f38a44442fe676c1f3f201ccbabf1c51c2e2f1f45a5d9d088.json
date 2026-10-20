@@ -1,0 +1,20 @@
+{
+ "key": "888f9fed09bb4c9f38a44442fe676c1f3f201ccbabf1c51c2e2f1f45a5d9d088",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2020-08-26_a-twisted-malware-infection-chain"
+ },
+ "created": "2026-10-20T02:55:59+00:00",
+ "seconds": 0.24,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "4f53b837d372eeaca39a96f748539b69213dedf8f707d78878df9a345f482abc",
+  "b15595cce2dc37f9e7b47ec5e95e701cc9f9007f888e436b3403d0153a71c69a",
+  "5d9e2d858ad6118598d061cf32267d2f7be13e80ec9afc2048bafe02dede4b91"
+ ]
+}

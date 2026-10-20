@@ -1,0 +1,19 @@
+{
+ "key": "24a07e85928462257249f47a6837a1fe3f371e9369e4a34875dbbb0343cd061b",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-08-18_information-stealer-ransomware-account-takeover"
+ },
+ "created": "2026-10-20T02:55:51+00:00",
+ "seconds": 0.54,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "673b01937ff9827b9e7f4983ac5473f87d9ee2d8eda8177b02eea4311f65b4fb",
+  "5269b7bdd50a476f542a40890b1b240bb0f44b64cd8ed302bd9a31912750a0e1"
+ ]
+}

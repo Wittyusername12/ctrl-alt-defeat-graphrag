@@ -1,0 +1,32 @@
+{
+ "key": "80ff66f5a5fe65087cb8c358f4a36ea0f62d65aa9c3745a5efee6f7c252602ec",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2022-01-10_tokyox-dll-side-loading-an"
+ },
+ "created": "2026-10-20T02:56:03+00:00",
+ "seconds": 0.28,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 15,
+ "text_sha256": [
+  "242a619deaa14e41e91421782b0a406054f1fcf4301e14fc98d30bd6f91ca35e",
+  "f8ad92b9cb2c068d84f79a97600026ebf8e5ee2372ed5f8ba1cb5070defbad68",
+  "bb2578e4c3af5301284150c84386c6603dacc1e01e4a7a8f93d52aac0ddcd113",
+  "ceff591f11e81e5df73bbc242c6e56043a6defcfbe079aa0d68280fe50d1432c",
+  "57ff52f5500f6bb7b89ba69fb767b6c9f7969a3db223ec48df13a7f82bbb6101",
+  "8857efe646ecae96505f106a7c1ae746740c6813f4d1c6b7fb761f57284a8b1b",
+  "ce4476d4c9ee118ec2857e2a32309ec87a245e4e5beefb2c977818fd3b82baf5",
+  "4744857a194f0d08b27d4c6f47f92eb036378a164a19fd1e4ca3a7393436dbfc",
+  "6a081ef88664adb83efd1ee819bc589367b074bcb0ae1e4cea16b1570bea6def",
+  "7c709f7e2352bbbbfe80dc4c2d225e567f43bafc1bcaec232e3fe6af053fea67",
+  "762a019aadd13ea9e43cd17e0409c2dfe99987b161b94d5f4f9d243317e6fac9",
+  "4baef301641ce1b8070666f37377baf7a1594e3048d16adaa4dbc34236cc4ea7",
+  "4baef301641ce1b8070666f37377baf7a1594e3048d16adaa4dbc34236cc4ea7",
+  "7209879a442fbcd5fc1b677a4f6e5b91bf414b65ef79aa1d0827cccda0c8cd76",
+  "ae842c59d9ae857be4f7102753cc3265a72e6eda5978f17fa5b6bcd65bc9f670"
+ ]
+}

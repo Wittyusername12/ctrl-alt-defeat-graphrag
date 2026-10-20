@@ -1,0 +1,24 @@
+{
+ "key": "364991bd2b27f34621f47e0a9a199a8db61958a154b9e32f3366cb7471269047",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-07-14_how-cybercriminals-create-turbulence-for"
+ },
+ "created": "2026-10-20T02:55:47+00:00",
+ "seconds": 2.1,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 7,
+ "text_sha256": [
+  "66662e319ca405093f322f7a9ad839d370a7d1b260a9492bd872c0e8e5118152",
+  "e8cf7d51a26374eeb8a90004964e0531a0929940e52057052e7bb0e8e47b5c1f",
+  "6f8e6a8b1a7b0323dbb3e96c429ddfcb55d9a112b0f143724ba7efdbead5c7a2",
+  "be575a58730ed390e8d507295a71579ee7657744a0ea7019dbbe17cbd868ec19",
+  "70257db5d06c2fc9567570d86c2955632e1ad2cf9651cd0ffadae1c41615e927",
+  "79dbb346da902f6fd17b3a37e7bdd8843574b5b0c2faf2e334273d04985e2efb",
+  "ae50790ef9080afd4a081b17fe0e61e4274852fe049f5a362eb40ce7a7b0c698"
+ ]
+}

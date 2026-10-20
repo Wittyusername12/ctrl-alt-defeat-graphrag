@@ -1,0 +1,21 @@
+{
+ "key": "eb61948928a0d115e52f2c739ab4201755251d425371f2a7446efb8a31e8ef7e",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2022-01-12_tokyox-dll-side-loading-an"
+ },
+ "created": "2026-10-20T02:56:04+00:00",
+ "seconds": 0.24,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "54fbc8b82bd8ce4e43d5eef99501a74c687c360fc082e1b265496e3834ddcae2",
+  "a2ab7ee93909c8d9acd33a53b0d7dc1cb0399e5d2f279ff7fd3f08663fd35291",
+  "486117b1b99460d2a389b71c03b50ab2e32c254264b4fcc458290b64b56d41ae",
+  "7fe6412fad8d52b96b8c4dbc836f2d706e47cd28256fd1ce01a260c26108f5ef"
+ ]
+}

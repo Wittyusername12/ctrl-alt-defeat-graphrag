@@ -1,0 +1,19 @@
+{
+ "key": "b578d06b4a2ee8391d47a5b5cd0d2087ceb3cc1eb9e91cb6c79eb285990820e5",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2021-05-17_literature-lover-targeting-colombia-with"
+ },
+ "created": "2026-10-20T02:56:02+00:00",
+ "seconds": 0.24,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "423a76442d76ad93f6182f6467caf3aa5dbf5c828fa8c7f278c685a438a3ef16",
+  "5a88790bff592d708a1325cb8962ed33daea0cbd8912b64803afa8b031622921"
+ ]
+}

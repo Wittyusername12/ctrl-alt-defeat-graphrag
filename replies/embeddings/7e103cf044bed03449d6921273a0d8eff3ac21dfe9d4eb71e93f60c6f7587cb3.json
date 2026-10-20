@@ -1,0 +1,24 @@
+{
+ "key": "7e103cf044bed03449d6921273a0d8eff3ac21dfe9d4eb71e93f60c6f7587cb3",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-09-09_groove-gang-ransomware-babuk-revil"
+ },
+ "created": "2026-10-20T02:55:55+00:00",
+ "seconds": 0.66,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 7,
+ "text_sha256": [
+  "08448080282ae5a7419038d7d0d9ee232de253941325a8a3aa46d220ac620565",
+  "d1b4edea2996cc2fa300c6e8a0543ce1c85a41d42cbc32db2ba10ca0c7176df9",
+  "419bc8b7e60b9942ddd31c1d42b3bb976c5a073564447604b5f3d8defd8b8d06",
+  "89ca41476a043877320612e5912b26ca29b7711e896966129d17de5056c00680",
+  "51ad2d6215571d8fde36127b17e7e1818ab67088b54d8c690a5d040fae86e0b3",
+  "be7f0fc20c8adb43e0473930916d1c1f947919b1dda9d8b8a2b41b6fe0c80362",
+  "cc60f3bd3ffda102241307fa446b4b07131d527bca2ad8714f02284bb3a7dab7"
+ ]
+}

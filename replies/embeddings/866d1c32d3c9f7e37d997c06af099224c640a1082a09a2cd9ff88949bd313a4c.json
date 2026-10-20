@@ -1,0 +1,23 @@
+{
+ "key": "866d1c32d3c9f7e37d997c06af099224c640a1082a09a2cd9ff88949bd313a4c",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-09-28_squirrelwaffle-new-loader-delivering-cobalt"
+ },
+ "created": "2026-10-20T02:56:20+00:00",
+ "seconds": 0.41,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "0071d3447c20364fb5890479cb57b30861c9c555ed15fc3197a5b4574b211d0f",
+  "a92101fcdf85f1b0c0f7a1cffd37215dc86efec1983b2e112d150e7efb1085ea",
+  "d018d6915548d391692e086637b9918abb8e2d535c4548f8279b44b3e29a0ee8",
+  "5d8df4fb3f065d48616b01804abb0995b32aae04846eb81856e9817823c72f44",
+  "21a3517f52800e84fb6a47965db90869aa3fe03db649054686b82d6113a024d3",
+  "12f7c11ee3699caa196b11211fae3f665ebba6956234dd66a4191c6fedf56a21"
+ ]
+}

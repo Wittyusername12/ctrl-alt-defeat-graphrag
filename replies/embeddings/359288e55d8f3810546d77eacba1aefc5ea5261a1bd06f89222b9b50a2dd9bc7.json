@@ -1,0 +1,21 @@
+{
+ "key": "359288e55d8f3810546d77eacba1aefc5ea5261a1bd06f89222b9b50a2dd9bc7",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-12-09_emotet-returns-december-2021"
+ },
+ "created": "2026-10-20T02:55:58+00:00",
+ "seconds": 0.3,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "3e22b8b3cc578fce808aa8f149f3e84413dd78dd2c12e1d395f7b0c5efc7d52a",
+  "d61cacf1d721b5e5e17d6b966efc37af83ff735ce2572cfaa874b355213fd9f8",
+  "345f13ea50dfe1551103ee9b19a1136e6a0050657778752099abf6db87f2f507",
+  "d24deb292a119bbc922fde9673f4b97b1103244a1b364066e1883a4d06f0c30a"
+ ]
+}

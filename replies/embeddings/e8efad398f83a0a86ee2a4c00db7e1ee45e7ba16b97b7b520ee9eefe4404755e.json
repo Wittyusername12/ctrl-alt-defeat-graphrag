@@ -1,0 +1,26 @@
+{
+ "key": "e8efad398f83a0a86ee2a4c00db7e1ee45e7ba16b97b7b520ee9eefe4404755e",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm"
+ },
+ "created": "2026-10-20T02:56:10+00:00",
+ "seconds": 0.35,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 9,
+ "text_sha256": [
+  "ead4a121764b851a48c4ba10ec8d09d990b90717abe3dc69c4af3c97f2199290",
+  "728ed462c7843ec8e96bfafd67ed91c6b30b749abaa2e679cc9f062064298a96",
+  "ae4a60f234be963c0c8851845f9ab525df89d05c3800afb7030ef2e918d32e52",
+  "dbf13621d6e29a504714b8183c2270204fee49562d39413e89aac52b363e9885",
+  "10e8b03167940135f9845fe1920317b02a4e793b3e94d841d8eff30729b26576",
+  "3ad79a5f7a2747253e124945aaba4af05ad070bdb49232958aed40eb369cbcf9",
+  "54b59ff508394c98befb6a93b6b03ed2f28475221bd08459e3861a8709d43bf2",
+  "3cf491666ab987308ec15d3b2f6760f1c9c259522ef83f37f1a86f555b7b3b98",
+  "05edc4cf5e8b1a900eadf35af0bf06aa8da98c2bd8112bbf59af727b9aa455db"
+ ]
+}

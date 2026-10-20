@@ -1,0 +1,20 @@
+{
+ "key": "86eefcd9030359de4881c3d6eb8bc0f23a7d6a38a954d9a3949563ef8dcc8cea",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-11-05_spike-danabot-malware-activity"
+ },
+ "created": "2026-10-20T02:56:24+00:00",
+ "seconds": 0.28,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "f715910d7a2b8158fe6b5edf4b8eaaf5cf0d50c2571d842a46a11343e6f8b677",
+  "dfdd100777c0eac571587942bdac2247c9ba7131c5b500db44877b13b49c02c0",
+  "08c1a581ec86a3915c62a2e60e0872520b70d0b63373b5985cbba73e8fd7b2a5"
+ ]
+}

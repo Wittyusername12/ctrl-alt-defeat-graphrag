@@ -1,0 +1,19 @@
+{
+ "key": "3ff0a2b5a8b9463de73871518f416f51747991577bd70d962621da997b2bdf24",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-12-09_holiday-feelin-ta575-brings-warm"
+ },
+ "created": "2026-10-20T02:56:10+00:00",
+ "seconds": 0.29,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "9fa7f0953d7f1662ee9c2c343b7cfc28bc7c4743dc300ac7dd686993fb2f5f45",
+  "da0a73b623e202299c8a3f8dd81026eef60be80c5114bba5a860624c9f1f91c6"
+ ]
+}

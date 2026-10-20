@@ -1,0 +1,19 @@
+{
+ "key": "123b724d3c7b39c9e20a0cd78b784276f7b30554cd1e4d09ceaf58f96c8436a8",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-07-14_how-cybercriminals-create-turbulence-for"
+ },
+ "created": "2026-10-20T02:55:48+00:00",
+ "seconds": 0.51,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "3a20a23558ea90ca844784a01e8a8cc0b271437555097afc20c85e40003c3bc7",
+  "c65523454fbf5a85b91e63029bd672f13f5d2269765284987e209a94e1d13afc"
+ ]
+}

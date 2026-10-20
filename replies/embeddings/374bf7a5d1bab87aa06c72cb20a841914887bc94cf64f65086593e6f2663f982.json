@@ -1,0 +1,19 @@
+{
+ "key": "374bf7a5d1bab87aa06c72cb20a841914887bc94cf64f65086593e6f2663f982",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-11-16_return-emotet-malware"
+ },
+ "created": "2026-10-20T02:56:25+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "2bc473bc8cd66527fabee949bae482b593ecdcac741fbcaf5d07c9b625c17a2f",
+  "d848481237c82ae86d250851dfeaf50a0a5689a1ef13723db77a854cf17100c6"
+ ]
+}

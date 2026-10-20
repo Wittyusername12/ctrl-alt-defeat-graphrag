@@ -1,0 +1,19 @@
+{
+ "key": "671fb556b6abf99390e6e96549a0ea4ed287c163649410b4908887fe818d8c3e",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2021-07-05_quick-review-of-babuk-ransomware"
+ },
+ "created": "2026-10-20T02:56:03+00:00",
+ "seconds": 0.22,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "a4356e3c49738df30609b1e14fec5ded189d3727162b9792f380664f4a7cd025",
+  "e4bddcf7e59471788d942cbd076f32844233957f7128cf2fc52eb4010ac7c912"
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "key": "d5c1dbf48db84dbe5365dbd80c8bc71541d36f09757d94b8119e0d1df9a61d26",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2020-08-26_a-twisted-malware-infection-chain"
+ },
+ "created": "2026-10-20T02:55:59+00:00",
+ "seconds": 0.24,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "9eeee4ad0d3f677f5441de0411c79515cdea4c8882d5d30f5eb0aa448b812032",
+  "4f038c41f388b167e51e9bd472676da6f4be64ef124a2b8394a31923b0878533",
+  "383537ccc44ee64f46d801f336b52b176b15a0b5ac97e424d29ac99a22787f06",
+  "359059b502cb00b19a6254bfe1620afe1d8954b85f023b74f6be3a797b0596eb"
+ ]
+}

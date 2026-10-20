@@ -1,0 +1,23 @@
+{
+ "key": "4acf4d99383ca6fef053ff383926fe62c4c76b8ef07afbfffa880a17b2bd8353",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "quoteintelligence_2021-06-30_daily-operations-of-a-nigerian"
+ },
+ "created": "2026-10-20T02:56:17+00:00",
+ "seconds": 0.37,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "5d9c3efc79bbef0698c412a4300155e8decf7f1c01456df6d5765bc7990f1502",
+  "fc27ab64ffd2adeabd4d8f1a9885b3eba6f8155c8cfa692b7f5c383e41b11199",
+  "f5464dc774f11423b4a20fa366d78dafaa9e04b20e0c30e55b4a1e49b4122e70",
+  "e8eadbaf67e9791f616f3a94058fa5d574485bbcbf59985a30a957238215f241",
+  "bdb6f394c011687d28be82023f37a77d86f2a2721fcdc23f85e53dac787c3724",
+  "612e113fa24fdf91043226e9efeb8453d2e63145fbe94baf099f642733b5bc44"
+ ]
+}

@@ -1,0 +1,25 @@
+{
+ "key": "1055ec90f4264f84d8484137d1b31772c7e645838101a4bd23c2f5587e85e413",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists"
+ },
+ "created": "2026-10-20T02:56:18+00:00",
+ "seconds": 0.31,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 8,
+ "text_sha256": [
+  "f3c7864ab8a68d15d1225f5518698a13cf725e1480e345728cbbb1cca49a7f64",
+  "134674f1f01ebc4f0f65b1c16a5d4c382adbf75fcc24126ddfaf0a9eb960248b",
+  "caa284adc7f6ed3830b84a0001c3eb72b9a581ecefd1739f012dfc5937500256",
+  "caa284adc7f6ed3830b84a0001c3eb72b9a581ecefd1739f012dfc5937500256",
+  "958bec0f949547b19369b2c4769894b6f0ffa82dee6f118778ed98004e436760",
+  "c01fe237c7b4bbfcf3f69370bebfd999b183aacda8e45a2d5eebd56aaf0919bb",
+  "caa8fe3d1d80912d41107a6ec475a63e728c8d0afe78884686e5387a9976db0b",
+  "c3fcb8131231e30e196db4064ac0623329ba06ed9a0036da17d3a1237165e4e5"
+ ]
+}

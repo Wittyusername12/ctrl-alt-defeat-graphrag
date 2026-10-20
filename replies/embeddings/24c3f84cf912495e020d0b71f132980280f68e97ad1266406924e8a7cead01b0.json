@@ -1,0 +1,23 @@
+{
+ "key": "24c3f84cf912495e020d0b71f132980280f68e97ad1266406924e8a7cead01b0",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud"
+ },
+ "created": "2026-10-20T02:56:12+00:00",
+ "seconds": 0.32,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "791ada18a24cb2b4da6ac1cf386066499a666630889565dc9acd98220f53574a",
+  "87c3564cffcda56bbcae46e7b28aad7ddbe3eab0a658bf9d8bfcfc3d5a98ea93",
+  "27ce37bb9a6b002b420a9e906a3ec53fe2f920d93dd992fd4d9087e8241f0996",
+  "6b820fab3be428f9482c8895ee40c5fc2e99947b35e6a95350adde55e4bccd3a",
+  "6422ccc6e94648f5093e747b55ea2f437cd4dead97a301ed88a1c1d68b0d168e",
+  "9933d7cf9f0909aa4fd0952889284cc4b59e8cab3169488a72b68bd6a282ce91"
+ ]
+}

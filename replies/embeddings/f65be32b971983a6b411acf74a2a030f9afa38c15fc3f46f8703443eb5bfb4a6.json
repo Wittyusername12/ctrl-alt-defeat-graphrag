@@ -1,0 +1,19 @@
+{
+ "key": "f65be32b971983a6b411acf74a2a030f9afa38c15fc3f46f8703443eb5bfb4a6",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double"
+ },
+ "created": "2026-10-20T02:56:22+00:00",
+ "seconds": 0.21,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "f6c983ef7a2248445bed603cc9aa518caa2d7bb8fc1b2f7b19b9e5609a673745",
+  "13b4f1a176c9427b2f94c388fe449d7cd717ede7354b6dc16fdcd5776b57cb74"
+ ]
+}

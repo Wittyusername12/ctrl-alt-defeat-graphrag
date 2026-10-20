@@ -1,0 +1,23 @@
+{
+ "key": "a49a487d2bc8cd5d8353a5d4f036d6e5fd501a53cbb278a025d657c66d55cc1d",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-08-18_information-stealer-ransomware-account-takeover"
+ },
+ "created": "2026-10-20T02:55:51+00:00",
+ "seconds": 0.53,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "8a051574699a5bd57267a9a91a158d65a812f345d71d18bfc947b27aa73ce51b",
+  "3816eb074cb31500494d21af06992ca93408641a37d5c70f521a744507144dce",
+  "a98a9cb9db68aa20512ba6dad9d1015523750d907abca9171b9ab949f947d472",
+  "a8436eed8c7a52511210dbd38ecaad3eda6433c300d02c3a3dde12f0535decb5",
+  "297543f8c1f1f6fce2a24a90b2ceee3f64eac66d800fa7da699598d30d4040bd",
+  "4c2fd809c3e624674f421c8236e332cb9454a63fccbf5bcd561a9d70f1ed1d8a"
+ ]
+}

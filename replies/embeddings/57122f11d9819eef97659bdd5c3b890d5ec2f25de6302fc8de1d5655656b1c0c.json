@@ -1,0 +1,19 @@
+{
+ "key": "57122f11d9819eef97659bdd5c3b890d5ec2f25de6302fc8de1d5655656b1c0c",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud"
+ },
+ "created": "2026-10-20T02:56:12+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "458c108b6205e59ff94a8acb147184f6949be90ff5c523e1c97618c72b7b2ace",
+  "3fd3786e3aa37315c58f77bd2ec46a9811f530d91adfc5dcbf277e0ca95905bb"
+ ]
+}

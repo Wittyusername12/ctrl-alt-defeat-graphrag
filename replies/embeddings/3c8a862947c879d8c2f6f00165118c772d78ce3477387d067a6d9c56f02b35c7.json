@@ -1,0 +1,22 @@
+{
+ "key": "3c8a862947c879d8c2f6f00165118c772d78ce3477387d067a6d9c56f02b35c7",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-07-28_ransomware-as-a-service-fivehands"
+ },
+ "created": "2026-10-20T02:55:49+00:00",
+ "seconds": 0.58,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 5,
+ "text_sha256": [
+  "463074b806dd3a1cdf98317230ee4951f035b26dd9305264c7dd9a954f4393d6",
+  "f2936d22eb06f64888a2aeefb8c8d881ca94f37ed899c56ee1ee93608c68444f",
+  "39168a6192aec2dd63ebfedb5e4b6d99ff92d8c08b4e640af4a9196ba86a0c1d",
+  "be3aa663f1737ed629203e45c65e0034368d140ab556ea42767ba459bcd5b492",
+  "02ee5cdb560d4f0e22948f913577f86b9bda9e369e4b2c11f9b12c07e8655aa9"
+ ]
+}

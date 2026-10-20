@@ -1,0 +1,23 @@
+{
+ "key": "690531fe27f2f7835501ffccc6aa5b136d255a693d28d66471ad6c027e07bfe8",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-09-09_cloudfall-targets-researchers-and-scientists"
+ },
+ "created": "2026-10-20T02:56:19+00:00",
+ "seconds": 0.32,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "ab65374e456cfd9e0bbc56c513a7f782ad2ca219a3b2aa8542b092401a60ad97",
+  "bd8d086fe1d78921cdc3cdca0a6a7a5c12a9cb01bfb6b5d5eadd0b773da25bc1",
+  "87437955e23913c5087eae107f7c3e3ddfaf6e8e4041cce081463ddc9a38d783",
+  "777fecf08581a99ffe7cd2134093ed769dac5914da139d455f1037c5893238be",
+  "4edcda036b7ddaa50cd2a9d629bbd427061ea5425bd978c9fbc5cfffa1bc4fe6",
+  "20331301b6cdc3933d03c28b4f539b0247e6c14c11eef22a930cc79712fa0068"
+ ]
+}

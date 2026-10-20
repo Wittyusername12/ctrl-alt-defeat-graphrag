@@ -1,0 +1,18 @@
+{
+ "key": "cf21cc30772f4f097424e9a75641e6136df8a13e8696a37fbb1f754532556676",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2022-01-24_new-transparentribe-operation-targeting-india"
+ },
+ "created": "2026-10-20T02:56:05+00:00",
+ "seconds": 0.22,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "4ce8c2d9485eb6ef3c86c97a2569965fbd9aeaa27edb0852609861c27986c4d8"
+ ]
+}

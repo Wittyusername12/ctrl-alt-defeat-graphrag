@@ -1,0 +1,21 @@
+{
+ "key": "e10036f262e3bff265bc1a83eddf05c135681a2ba69e4faa9be60b764a709277",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "zscaler_2021-10-22_new-multiloginbot-phishing-campaign"
+ },
+ "created": "2026-10-20T02:56:23+00:00",
+ "seconds": 0.25,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "810576fdef5e12a39b9cbab5de4a4161d6fe851ff891a14897d10c0aac967750",
+  "8b72582abe260677a6710a960a597f4dac0ec13b6e6c9cdaf9e7f7545b825b20",
+  "d73c1f85ac222e9342267e986f949311565d01d1e8068bee1d55e9c4bfee897d",
+  "dacabea75d6f38f9a73b48b19aaa541021fad48c20186f2359f726fa4f0cc104"
+ ]
+}

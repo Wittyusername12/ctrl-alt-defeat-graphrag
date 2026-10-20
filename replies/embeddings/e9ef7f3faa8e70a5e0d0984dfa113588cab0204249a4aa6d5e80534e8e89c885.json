@@ -1,0 +1,19 @@
+{
+ "key": "e9ef7f3faa8e70a5e0d0984dfa113588cab0204249a4aa6d5e80534e8e89c885",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-09-30_public-sector-cybersecurity-threats-2021"
+ },
+ "created": "2026-10-20T02:55:56+00:00",
+ "seconds": 0.28,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "dcba80846a69f473b0df194de04721eafae1bff46484425b094a7a74f5e693ac",
+  "c20d2f76cf027e4c1a6bb7c7d27ae89d137a751041e94007d2fa85135690c0c1"
+ ]
+}

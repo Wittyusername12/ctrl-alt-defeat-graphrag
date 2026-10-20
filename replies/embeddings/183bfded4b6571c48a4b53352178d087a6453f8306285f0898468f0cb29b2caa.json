@@ -1,0 +1,19 @@
+{
+ "key": "183bfded4b6571c48a4b53352178d087a6453f8306285f0898468f0cb29b2caa",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2021-04-29_chimera-apt-updates-on-its"
+ },
+ "created": "2026-10-20T02:56:01+00:00",
+ "seconds": 0.61,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "d7275d7ada9d0c04d218a022c2d28bc2a4c7e42c5624815cb6cc07ac18a6279d",
+  "895202dae3d46b7ba70538a94db8e392d89f276c6dc3896c6a9576bd33bc9386"
+ ]
+}

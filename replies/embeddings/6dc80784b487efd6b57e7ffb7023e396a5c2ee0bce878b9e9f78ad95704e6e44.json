@@ -1,0 +1,21 @@
+{
+ "key": "6dc80784b487efd6b57e7ffb7023e396a5c2ee0bce878b9e9f78ad95704e6e44",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-10-22_new-multiloginbot-phishing-campaign"
+ },
+ "created": "2026-10-20T02:56:23+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "51bd75c3319b525136acae707c44b0efa9a6114ea43b8bbe1f98cab5446e4489",
+  "34c19d86e5a2249de6a25e41e0ec8fad4f21f3696e6c603c450b040ee229ea09",
+  "cb622c3985d6ea45bb4ed5fb1f5b41d749d52c6e35685c0483673179b504f219",
+  "08ac0b1595cd2d72b765df721b0a84a64c6208c3cae905682b784560604f4f6f"
+ ]
+}

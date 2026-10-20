@@ -1,0 +1,20 @@
+{
+ "key": "5e4ee1d285a6371da9dc5e48f73b068a9dbee22465432b8afbc0cf541b310d2b",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber"
+ },
+ "created": "2026-10-20T02:56:16+00:00",
+ "seconds": 0.29,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "19ecb20850249cee7797e4f181fe046e2a096ff0c842d6bb6e636a4dadf1efd0",
+  "23d34a68d63e6466e2e5966474ef1e756bfbb3b41d2435898871d95d210eff64",
+  "c5435bfbc47e81731842f7955702688636e098a0fecc548319b5c56ca5997229"
+ ]
+}

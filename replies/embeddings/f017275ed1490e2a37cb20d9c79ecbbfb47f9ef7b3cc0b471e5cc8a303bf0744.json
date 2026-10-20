@@ -1,0 +1,27 @@
+{
+ "key": "f017275ed1490e2a37cb20d9c79ecbbfb47f9ef7b3cc0b471e5cc8a303bf0744",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "zscaler_2021-09-28_squirrelwaffle-new-loader-delivering-cobalt"
+ },
+ "created": "2026-10-20T02:56:20+00:00",
+ "seconds": 0.33,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 10,
+ "text_sha256": [
+  "1ee7ee09e93f5926d161fee054cf1689ee71ef311adb7dd5b97d2225b49e6a91",
+  "5eedadceb4b157dff85c619a4914e151b5e634da91cdc57df2295aa302a87f79",
+  "0e8bb35442cffa4f13f6cbf556b29d1193138b699368ca417e9e4f1455aaea87",
+  "efff16b5ec15c4a4a557ce375b64ed05d0c3e484360f50ecb3a40195599791fa",
+  "3d23647fc84f2e3754090ca170c2c5eb815e8ffa2b37db143c7e966dffec8f6b",
+  "47b6fce5d68ef1b33f6aab5c5b4dced8434b29d5d069a09f69a885ee8bc018dd",
+  "cfd354c056df2150c81ebb5aff4047ab3ad53f9d1b4ed8dabdfb4d2e4fee47cd",
+  "a541f7ef04faf21fe562620844d5e7aea51c28cb6cb5271966fd3d948a88f930",
+  "522383bfa4e85265534eae479c625a291ffad6d6d55982290c29a83c1d7d1f08",
+  "522383bfa4e85265534eae479c625a291ffad6d6d55982290c29a83c1d7d1f08"
+ ]
+}

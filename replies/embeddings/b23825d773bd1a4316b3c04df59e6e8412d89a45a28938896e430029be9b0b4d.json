@@ -1,0 +1,20 @@
+{
+ "key": "b23825d773bd1a4316b3c04df59e6e8412d89a45a28938896e430029be9b0b4d",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-08-23_shinyhunters-data-breach-mitre-attack"
+ },
+ "created": "2026-10-20T02:55:52+00:00",
+ "seconds": 0.6,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "2205a69f6faae76442adab969514e1b6aef6fd6cbe8193551371ebb6bf54710a",
+  "f566a01a8cc438a2688e8b3905808284837f5aca7d40996f76bf1d7849a2751b",
+  "6b625b843dcc0a9eca9834c9d00b7c0acf27f4a7b536ddd0457e8114f7db66c1"
+ ]
+}

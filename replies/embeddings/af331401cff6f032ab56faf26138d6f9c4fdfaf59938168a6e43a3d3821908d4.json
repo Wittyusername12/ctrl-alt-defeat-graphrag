@@ -1,0 +1,21 @@
+{
+ "key": "af331401cff6f032ab56faf26138d6f9c4fdfaf59938168a6e43a3d3821908d4",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "zscaler_2021-10-08_new-trickbot-and-bazarloader-campaigns"
+ },
+ "created": "2026-10-20T02:56:21+00:00",
+ "seconds": 0.28,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "fe9113cea54740177b71c27694b6f48ded83d4d7fccf8478d1bca8c18d9d67ff",
+  "1fe7f491fe81f69ad6ef3d9973c21d3ff2e0bac4a0a9413518dc657c0b40b6cd",
+  "9fba08ec01a657cd432eafe67349becef4feab1fc2e5432e8dd7a92f89ae2b4b",
+  "eff510532eeb61d97abba32007fb80dbb99152b9d59966912b147f0820045cbe"
+ ]
+}

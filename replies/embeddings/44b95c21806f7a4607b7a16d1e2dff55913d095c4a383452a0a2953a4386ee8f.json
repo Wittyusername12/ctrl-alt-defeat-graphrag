@@ -1,0 +1,20 @@
+{
+ "key": "44b95c21806f7a4607b7a16d1e2dff55913d095c4a383452a0a2953a4386ee8f",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-12-13_tinynuke-banking-malware-targets-french"
+ },
+ "created": "2026-10-20T02:56:11+00:00",
+ "seconds": 0.3,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "bf770aab2ae28ba88b831d6982d762ffe60c18c5c5746562c72233c12690ba38",
+  "1ed8cb45ff2d4f6602bc6f5601ac7edbf5bc19a3555920ca1ccb6b7e9c66c2e8",
+  "9e49d869605687138a9245d8abdbd34a03f1ec73f120d6c90de715bc059c6a9e"
+ ]
+}

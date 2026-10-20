@@ -1,0 +1,19 @@
+{
+ "key": "1e915a2d5458fd08cf25a1030c8328773033eb97d9ebdddb19f39f3c4dd979fc",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-11-02_shipping-companies-ransomware-credentials"
+ },
+ "created": "2026-10-20T02:55:57+00:00",
+ "seconds": 0.23,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "2699f2ec9042883ca246a939f2c7bfe111bfe4f914a04759bab3275399f1f7d1",
+  "61c001aa66459791fa011fe3b170903b1c90f1e8baa243ce271ceefbf3070f14"
+ ]
+}

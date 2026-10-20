@@ -1,0 +1,20 @@
+{
+ "key": "059cba85c1623de7869dde2ffac9a7ae66d463a6b81000dcda77141ffda20981",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2022-01-24_new-transparentribe-operation-targeting-india"
+ },
+ "created": "2026-10-20T02:56:06+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "3e3efd8d242448e8bc0c239667a23eca09b464f6c944ed21703087dbfb140daa",
+  "5ece080f163c4e68a26d1bd5dd7f06aba5634509d417ba25377ad4117aa0977f",
+  "5fe8c8365682f6d60f200d34cb838babfe8132508064e273bbf791c609cc426b"
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "key": "a1d24e14a3cf1f7922dfa78e7d5b7eee76d053f7cfa58375217332f79c2ee2c5",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "lab52_2022-01-12_tokyox-dll-side-loading-an"
+ },
+ "created": "2026-10-20T02:56:05+00:00",
+ "seconds": 0.31,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "702228340ca3812693f21f88159e0bede6af10dd16d88acee679161031df3721",
+  "224f57000053b2fbe6a9f972670fa8ae0542c6ce9df1b7a37977318094e1a9c3",
+  "18046162d1545b3b362119bd911582a910eac526998c1e6d5590765d4694a4da"
+ ]
+}

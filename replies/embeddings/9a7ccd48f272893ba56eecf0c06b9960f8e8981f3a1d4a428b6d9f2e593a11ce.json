@@ -1,0 +1,19 @@
+{
+ "key": "9a7ccd48f272893ba56eecf0c06b9960f8e8981f3a1d4a428b6d9f2e593a11ce",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-07-28_ransomware-as-a-service-fivehands"
+ },
+ "created": "2026-10-20T02:55:50+00:00",
+ "seconds": 0.51,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "fc2feb8b2b4f4fa5fdfb22b34c8b0305f7e3296a160c963f8a0db144ed83f37e",
+  "8c8ae756f02512bdf5f31d5d06014a9f317efef9711bf6a9b0ecb4ed17ecfbaf"
+ ]
+}

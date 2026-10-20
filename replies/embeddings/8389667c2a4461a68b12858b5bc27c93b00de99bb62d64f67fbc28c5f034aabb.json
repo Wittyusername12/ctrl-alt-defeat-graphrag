@@ -1,0 +1,20 @@
+{
+ "key": "8389667c2a4461a68b12858b5bc27c93b00de99bb62d64f67fbc28c5f034aabb",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "quoteintelligence_2021-02-16_dns-over-https-doh"
+ },
+ "created": "2026-10-20T02:56:14+00:00",
+ "seconds": 0.29,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "59b90fea82976e1814cf8e54971b5c7bbc86eb9272311f89b94b52f5f632ff43",
+  "7e52c5ee0269a209fff2b540694b81ff17e3e5de0c909028f2fa689fb94cfcfc",
+  "4d743b9e06d3914dac67f6efdb3e82b907634b617270ce6ac937368e87af80a1"
+ ]
+}

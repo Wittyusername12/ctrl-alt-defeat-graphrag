@@ -1,0 +1,20 @@
+{
+ "key": "66d0af14138ef02235b524f0ec0622ab71b960f90a1d2e362873ce68d5e14ec8",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2022-02-03_mfa-psa-oh-my"
+ },
+ "created": "2026-10-20T02:56:13+00:00",
+ "seconds": 0.28,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "e757526bea9d2bc0fe4cb29780fc460def4ee474a251eadafed55123c6eb3a87",
+  "2cc3f2a7313e4e2c20763fcef768994d77afe779166ae79a028f2d0d0af23b7b",
+  "49a640605556e8f7312ddd78b296c2917374af534e021adfadf9678ce85b36e3"
+ ]
+}

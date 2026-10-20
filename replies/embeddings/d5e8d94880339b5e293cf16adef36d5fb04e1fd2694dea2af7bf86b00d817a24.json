@@ -1,0 +1,21 @@
+{
+ "key": "d5e8d94880339b5e293cf16adef36d5fb04e1fd2694dea2af7bf86b00d817a24",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-12-09_emotet-returns-december-2021"
+ },
+ "created": "2026-10-20T02:55:58+00:00",
+ "seconds": 0.29,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 4,
+ "text_sha256": [
+  "2501fea35273df14eace205628829f60ac969bb0c49b2864b1e2178a0be910ba",
+  "c36c4b2a4e959207bd51db90e8e422cb7e3089cebd44f3771c5e7782ef3f6051",
+  "8c1386f7866601199983bac929d06daa80b10d65649cb3728c6a6b2de84e6f64",
+  "c97c3ccf53fcb2d746774eab721c84ac21b8fd3ecff6a1ee2280265e8eef0c30"
+ ]
+}

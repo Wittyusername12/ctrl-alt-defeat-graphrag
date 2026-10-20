@@ -1,0 +1,19 @@
+{
+ "key": "657d3a182e47c95bfa1d09b37662e544815585223afc29c9051a87c09b94afd1",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-11-02_shipping-companies-ransomware-credentials"
+ },
+ "created": "2026-10-20T02:55:57+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "7142718a098d2e20c8e353d10a56539d6641ee2f3565719fd9b9a0ee716ad243",
+  "9d15eec2d10808f7f956b4b7044ab5d8834798ba066febab245cc3449c76bbcc"
+ ]
+}

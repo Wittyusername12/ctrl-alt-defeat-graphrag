@@ -1,0 +1,23 @@
+{
+ "key": "a97cf915c79941cb39e43ac4e2eb7b97714e5dc2bce2b2c524b6c840de16a52a",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "lab52_2021-05-17_literature-lover-targeting-colombia-with"
+ },
+ "created": "2026-10-20T02:56:02+00:00",
+ "seconds": 0.33,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 6,
+ "text_sha256": [
+  "1a7044c36281d1c683b75bbe5cd215b92b7dd197c4ec1c2661527ec90dac9c14",
+  "8eab5255eef14ecac872b07535cb9c3a7f604998c452d1cb18c259e0ef4e6921",
+  "5639f9d4428fba6fb427fd14fa952f249b056a2379ed2f272f270d6cd5c96b5d",
+  "19063c10a2b40592cb335b8c8a31f2ef729c65880b5fadc3dde1657cb2389003",
+  "5639f9d4428fba6fb427fd14fa952f249b056a2379ed2f272f270d6cd5c96b5d",
+  "41921b9dc55937f14232d2bf625c79115fa41d8aa1f72f95c0b878ae5e5f1dc0"
+ ]
+}

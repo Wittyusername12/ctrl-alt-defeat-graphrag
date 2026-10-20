@@ -1,0 +1,29 @@
+{
+ "key": "f51e7515f12c30beade09fda154f9e4313d7c8e56f67169502fac707079fa739",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "proofpoint_2022-02-03_mfa-psa-oh-my"
+ },
+ "created": "2026-10-20T02:56:13+00:00",
+ "seconds": 0.34,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 12,
+ "text_sha256": [
+  "fc7b1f77a004d13f3558a2283ea88f32b8775c571c86b8fff1d307b4110ab3c5",
+  "6bc90045301aa2b76dbb3e0996f1daa52c5be6d962594ff2d97125adbccb4a91",
+  "57a85a22f17dc9edb0ba287d7036da1f58bd7f38ca3882a8d9a0b82b9162bf60",
+  "138cea919bc357da15eee48ddcd706e47f6cd7636e7ed1dcc9c5b7c738488703",
+  "ed18237e589673f66ed1ee84d9807ecab275e92bf4337219f25ccc31787056d5",
+  "f9cb6e72d856920ff6d670a45fdf0f35d688b45fbd9abaa7b2d674c2063ddc41",
+  "c4eca39fec442c859c6c86b22f5d3449392fc554f2a6ec46f8bae000317de189",
+  "70b8e249c8759b4c9974f8138774aafe4f81c82046c15a950c23dfaa9b70a157",
+  "068d3583ac3075e28367602f762ae98c0ddb6b41d8c056b1e4fbcd1ef69bce1b",
+  "5e19a8974d4e0395c56dda9470d2584314be5cc32bb9530c45b5d142cd86f735",
+  "dc12f71e43ce12561072f105c1c41c35a39f962776fdd6df8c20d65edeaba526",
+  "e4f616166e82bbe079300a79f6acb55b5e6abd55e4b6f82c79034221ad97909d"
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "key": "caebffcce74a4f37eb70da0f2d94e9ec700ab81f6e9ee972f17aa9da7200d3c3",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "quoteintelligence_2021-04-28_us-sanctions-against-russias-cyber"
+ },
+ "created": "2026-10-20T02:56:15+00:00",
+ "seconds": 0.33,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 10,
+ "text_sha256": [
+  "1c38f46d79cd12b5ad0a9c23aa6da85bbb081a55d43eabd670debaed9104da27",
+  "a9acda2be5f93ed04a72a8de4009a7e5b3e9092925554f864d0cc22252c0c6cd",
+  "9c769758e3328ec3f1d9ed96561fc968549a5fe30f26cee484e77ba59e16839b",
+  "ecf010563917a21ebfed122976018d4a030a73939cef2c7aaa8f03c181a5be0d",
+  "8c1ae3b6e75e5439e70b8188cb71530755e27a75175dc462e4700eff8010367b",
+  "549ed47bc1082de6d30aee2dca235e96ff521d0a80d1965239f2c40bf175a8a3",
+  "64c7fdb0cf911ba5d10d51f64c0d9e4559c1257af72d04f6a149784f6ed71a75",
+  "668bcdf07ea8b1ece964ba0473fbb9124161c14b99e36a9864b65dd0a252b009",
+  "c737b936fc5e47b115c6416ecee03ef6d84f24ead529c5457813368634d40837",
+  "c737b936fc5e47b115c6416ecee03ef6d84f24ead529c5457813368634d40837"
+ ]
+}

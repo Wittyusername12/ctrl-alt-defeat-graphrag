@@ -1,0 +1,19 @@
+{
+ "key": "8653043bf3f4d6ae70e75caac84ac78d17cf19825d101fc771ef9c85340f8224",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "intel471_2021-08-23_shinyhunters-data-breach-mitre-attack"
+ },
+ "created": "2026-10-20T02:55:53+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "add590b03ee8cf27828e2d6035bc1728cb53b5ff440d95da59973c14a73791bb",
+  "aa72529947b9a986ecf27b54329e19d4fb77ca36966cc436d117635e5d43d6b0"
+ ]
+}

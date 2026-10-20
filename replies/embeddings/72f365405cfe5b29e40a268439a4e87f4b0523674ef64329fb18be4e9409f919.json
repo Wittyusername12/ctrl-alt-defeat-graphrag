@@ -1,0 +1,18 @@
+{
+ "key": "72f365405cfe5b29e40a268439a4e87f4b0523674ef64329fb18be4e9409f919",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-11-18_triple-threat-north-korea-aligned"
+ },
+ "created": "2026-10-20T02:56:07+00:00",
+ "seconds": 0.21,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "5021b5689e11ae55852e4bb4d838710810c54ec69d4bd8b37238c26c9590492d"
+ ]
+}

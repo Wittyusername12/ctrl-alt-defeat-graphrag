@@ -1,0 +1,19 @@
+{
+ "key": "0b2dcbefcd6acdd33d85086c854b0fa74ebf477f157b6484c1d86f0153d5d26e",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns"
+ },
+ "created": "2026-10-20T02:56:09+00:00",
+ "seconds": 0.26,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 2,
+ "text_sha256": [
+  "80c6ba6f05b523c7dc2927cd603d5af40a643b395e2154892392a344ca685f14",
+  "4e58d593ede828a1fbe573c29face029d08730378b6b9e8e408dd11e0003cc25"
+ ]
+}

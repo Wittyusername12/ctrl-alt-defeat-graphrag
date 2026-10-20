@@ -1,0 +1,24 @@
+{
+ "key": "fc5c51d4c8d42581a8f397b9ec53fa96546de942af8d0df830eaeb4fd1cfeaf9",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "proofpoint_2021-10-28_ta575-uses-squid-game-lures"
+ },
+ "created": "2026-10-20T02:56:06+00:00",
+ "seconds": 0.29,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 7,
+ "text_sha256": [
+  "33843cd90c70c1869d3d203b8037699552fdbbe74938e435aae80f63ff57ed5f",
+  "8186dcc190b56440517edfd900c768fa049e51841c403fba57f3eed8c9d45bb6",
+  "c9ac62aec5868eff626392feabdccaa85c987e45c1598df92c0457756f92c9c7",
+  "192ac0512e7226a5af6e7a48a1ea0d299eadbdfbffec0fccbba59f77cef2b6c6",
+  "14189bee101bd0e422c0d4d7bab3c36f9ef11b5164a7522f0307aeeb788003d7",
+  "09ffe7fc478f23d64badaaf2f35f646abf9cdfb00d226c1688e2e97aeaf7fb55",
+  "2a5aff52a6f79875a917985adb50828e3b8e81679969472cdee3d5f9c98f6d90"
+ ]
+}

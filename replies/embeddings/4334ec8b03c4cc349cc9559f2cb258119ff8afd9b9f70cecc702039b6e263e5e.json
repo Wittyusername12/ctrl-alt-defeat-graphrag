@@ -1,0 +1,18 @@
+{
+ "key": "4334ec8b03c4cc349cc9559f2cb258119ff8afd9b9f70cecc702039b6e263e5e",
+ "kind": "embeddings",
+ "label": {
+  "use": "chunks",
+  "report_id": "proofpoint_2021-10-28_ta575-uses-squid-game-lures"
+ },
+ "created": "2026-10-20T02:56:06+00:00",
+ "seconds": 0.21,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "1240a69114ed1431aafdccfee327e886be71d0cc3dd2c9c5aeb65138abda82ad"
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "key": "abf9b7e6c89e73511509d592335edf1cd3149361525b85f35246d10719e3027d",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "intel471_2021-09-30_public-sector-cybersecurity-threats-2021"
+ },
+ "created": "2026-10-20T02:55:56+00:00",
+ "seconds": 0.23,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "9c8bbbc65ec863fdf1e9ee3fc66998b737f6519b8aa9490d413c3351b0235f66",
+  "8898877fd66fa4c8087483650b42167581efaa875fc0982bcd0fb7b02e607418",
+  "7f51745506d5a39fe4693bae411dd11c618c2d89ef2237e58198700104a0b510"
+ ]
+}

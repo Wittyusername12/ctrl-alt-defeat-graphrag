@@ -1,0 +1,33 @@
+{
+ "key": "d612175c0bce11ca1082fa13444b51b53315000813f80e9813b4a16a9fa3aaa7",
+ "kind": "embeddings",
+ "label": {
+  "use": "mention queries",
+  "report_id": "zscaler_2021-10-15_atomsilo-ransomware-enters-league-double"
+ },
+ "created": "2026-10-20T02:56:22+00:00",
+ "seconds": 0.33,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 16,
+ "text_sha256": [
+  "640f60a1a1e4a044bb3b8e772c9bedafd5961a1ef090d5769c0b6c454f4bdd12",
+  "7c85368ac0bc53b17fccb9639f754d4eb199a2c6659ddec8aa17be8e6adf26d2",
+  "9b8521b81c95239a85ebd33d233a64794d863fa716e4372679d4612a4efe0ffe",
+  "da718dc05f892d108540aab9cf9c36f00d1bb7e41ef501147abd44f3db928b65",
+  "b896a4e9339f478ad96a1b897d0623a4147fefc24636310c214ff73aa93b1f38",
+  "1cd8f7f6a1cf824391190295ff825b9c69d954cecb6fc46a9e5c931ad809bdf7",
+  "8a96bdbaf6e6c92b05952338c274b64ab57755bfff1da14e66ae7fecd289a226",
+  "34e8b5548407362a828513d914d366ced76bc19b752d98d03d310a037c702a71",
+  "5a51d85f869517a8157a35da8fe22a08251d5b8eada73a368eb1812da1f410d7",
+  "c93667ccacf1c2d2c45914468917c3d7b0d2a65dc653ede5b24218ecb0645ddb",
+  "5c02fbaddf62cabe65b74d1feaf925dca75b305ac3bf2d27f7ba44085d5ad0fc",
+  "edb05c4d165fc484c5b41201383f5d8f695f069ea131af1ecb0a75fc1b1a367f",
+  "5562aea0f680ff6a53cb760b0b7f8b100e8752aedc2236be73ea216d1fd1c5da",
+  "dd55cd62715e0d32239ffb1db498bdb78a6a9ef2ff8f84cbcf39e2cff282de55",
+  "1c13c6725401546027c122f5191b75cd489836228a912671562b096b12654fb1",
+  "244fb349455369c979cafd927237f8491a3faafad69134a262cf27c5bc54dda8"
+ ]
+}
