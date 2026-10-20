@@ -27,7 +27,8 @@ GraphRAG:
      sub-techniques of one technique count once, and each counted entry cites one edge (the direct one when
      it exists, otherwise the lowest edge ID to one of its sub-techniques). At most MAX_SUMMARY_LINES node
      lines, taken in turn from MITIGATES, USES and PART_OF_TACTIC; within a type, the highest counts first
-     (ties: the higher PageRank score, then the lower ID).
+     (ties: the higher PageRank score, then the lower ID), and within PART_OF_TACTIC the lines about a tactic
+     before the lines about a technique, so the tactics that hold the report's techniques are kept.
   6. Relationship facts among the kept nodes, ranked: those joining two seeds, then one step out, then two
      steps out; at most MAX_EDGES, taken in turn from each relationship type; and up to MAX_MENTION_FACTS
      mention facts for the chunks.
@@ -52,7 +53,7 @@ import llm
 from link import clean_description
 from schemas import (ATTACK_ID, ATTACK_RELATIONSHIPS, CHUNK, CHUNK_VECTOR_INDEX, EDGE_ID, EMBEDDING, HAS_CHUNK, KEY,
                      MENTIONS, MITIGATES, NAME, PART_OF_TACTIC, REPORT, SOURCE, SOURCE_ATTACK, SOURCE_TEXT,
-                     SUBTECHNIQUE_OF, TECHNIQUE, USES)
+                     SUBTECHNIQUE_OF, TACTIC, TECHNIQUE, USES)
 
 TOP_CHUNKS = 4
 TOP_NODES = 200
@@ -368,9 +369,13 @@ def report_lines(rows: list[dict]) -> tuple[list[str], list[str]]:
 
 def choose_node_lines(node_rows: list[dict], score_by_key: dict[str, float]) -> list[dict]:
     """At most MAX_SUMMARY_LINES node lines, taken from SUMMARY_ORDER's types in turn; within a type, the highest
-    counts first (ties: the higher PageRank score, then the lower ID)."""
-    ordered = sorted(node_rows, key=lambda row: (-row["entry_count"], -score_by_key.get(row["node_id"], 0.0),
-                                                 row["node_id"]))
+    counts first (ties: the higher PageRank score, then the lower ID). Within PART_OF_TACTIC, the lines about a
+    tactic come before the lines about a technique (decision 2, 19 Oct): a technique belonging to a tactic the
+    report names would otherwise take the place of a tactic that holds the report's techniques."""
+    def rank(row: dict) -> tuple:
+        technique_under_tactic = row["rel_type"] == PART_OF_TACTIC and row["label"] != TACTIC
+        return (technique_under_tactic, -row["entry_count"], -score_by_key.get(row["node_id"], 0.0), row["node_id"])
+    ordered = sorted(node_rows, key=rank)
     return take_in_turn([[row for row in ordered if row["rel_type"] == kind] for kind in SUMMARY_ORDER],
                         MAX_SUMMARY_LINES)
 

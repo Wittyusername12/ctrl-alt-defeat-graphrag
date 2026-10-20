@@ -132,6 +132,18 @@ def test_node_lines_are_shared_out_by_type_with_pagerank_breaking_ties(monkeypat
     assert [r["node_id"] for r in chosen] == ["M3", "G2", "TA1", "M2", "G1"]
 
 
+def test_tactic_lines_come_before_technique_lines_in_their_share(monkeypatch):
+    def row(node, label, count):
+        return {"node_id": node, "node_name": node, "label": label, "rel_type": "PART_OF_TACTIC", "entry_count": count,
+                "linked": []}
+    rows = [row("T1105", "Technique", 1), row("T1071.001", "Technique", 1), row("TA0002", "Tactic", 1),
+            row("TA0005", "Tactic", 3)]
+    monkeypatch.setattr(rag, "MAX_SUMMARY_LINES", 3)
+    # TA0002 has no PageRank score among the kept nodes, yet comes before the techniques that have one (decision 2)
+    assert [r["node_id"] for r in rag.choose_node_lines(rows, {"T1105": 0.3, "T1071.001": 0.2})] == [
+        "TA0005", "TA0002", "T1105"]
+
+
 def test_node_line_wording():
     row = {"node_id": "M1040", "node_name": "Behavior Prevention on Endpoint", "label": "Mitigation",
            "rel_type": "MITIGATES", "entry_count": 2,
