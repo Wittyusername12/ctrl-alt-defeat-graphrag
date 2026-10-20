@@ -1,0 +1,17 @@
+{
+ "key": "feda003213f0c85a78fbfc4f229e80d890eda201498eab4e1f9d3daf416606e7",
+ "kind": "embeddings",
+ "label": {
+  "use": "question"
+ },
+ "created": "2026-10-20T03:40:44+00:00",
+ "seconds": 1.98,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "7944eb7d6b7d4f7653b21fde5ed57eda8ffc4f3de20c3c8e3995de656bd9eb87"
+ ]
+}

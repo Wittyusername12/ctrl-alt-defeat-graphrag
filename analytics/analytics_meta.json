@@ -1,0 +1,14 @@
+{
+ "computed": "2026-10-20T03:30:10+00:00",
+ "gds_version": "2026.09.0",
+ "projection": {
+  "nodes": 1785,
+  "relationships": 40852
+ },
+ "louvain": {
+  "communities": 6,
+  "modularity": 0.29528413105944723,
+  "levels": 3
+ },
+ "settings": "analytics.cypher (PageRank damping 0.85; Louvain defaults; FastRP 128 numbers, iteration weights 0, 1, 1, seed 42; every algorithm with concurrency 1)"
+}
