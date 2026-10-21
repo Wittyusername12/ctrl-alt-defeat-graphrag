@@ -24,6 +24,27 @@ Subcommands:
            when newer than results/ratings.csv, which it is then copied to, else results/ratings.csv), check that
            all 144 scores are present and between 1 and 5, join them to the key, write results/human_ratings.csv and
            print each system's mean score per criterion and the per-question wins, ties and losses.
+  accuracy Answer accuracy (design document, section 7): per answer, the ATT&CK IDs of the kind the question asks
+           for that the answer names outside its citations (a sub-technique counts as its parent for technique
+           questions), against the question's answer IDs: precision (n/a when the answer names none), recall and
+           F1 = 2TP / (2TP + FP + FN); means over the 24 questions; results/answer_accuracy.csv. An entry named
+           without its ID does not count; the column named_by_name_only lists the reference items an answer gives by
+           their ATT&CK name alone.
+  operations  Citation-ID validity, tokens, list-price cost and the seconds of each stage, from the saved answers;
+           medians and maxima, and the end-to-end median against the design's target (under 10 s);
+           results/operations.csv.
+  extraction  The test split's extraction and linking (replayed from the saved replies exactly as link.py links,
+           the facts score.py reads from Neo4j) beside the exact-name baseline (every ATT&CK name or alias of a
+           technique, sub-technique, tactic, group or software entry found in the report text as a whole word,
+           ignoring case; a shared name links all its entries), both scored by score.py's scorer at sub-technique and
+           parent level, with the AnnoCTR paper's F1 for context; results/extraction_test.csv. No OpenAI or Neo4j
+           call.
+  ragas    RAGAS Faithfulness, AnswerRelevancy and ContextRecall for every saved answer, judged by gpt-6-astra
+           through judge.py (judge replies saved under replies/ragas and reused). The retrieved contexts are the
+           chunks as the answering model saw them plus, for GraphRAG, the knowledge-graph facts as one more text; the
+           reference is the question's reference answer. Question IDs limit the run (the trial: Q01 Q02). Stop rule:
+           the run stops after 3 answers in a row without a score, or once its new judge calls pass $40 at list
+           price. results/ragas_scores.json and results/ragas_scores.csv.
 """
 from __future__ import annotations
 
@@ -874,7 +895,424 @@ def ratings(argv: list[str]) -> int:
     return 0
 
 
-COMMANDS = {"answers": answers, "sheet": sheet, "ratings": ratings}
+# ---------------------------------------------------------------- answer accuracy
+
+ACCURACY_FILE = RESULTS / "answer_accuracy.csv"
+ATTACK_ID_IN_TEXT = re.compile(r"\b(TA\d{4}|T\d{4}(?:\.\d{3})?|G\d{4}|S\d{4}|M\d{4})\b")
+
+
+def id_kind(attack_id: str) -> str:
+    """M, TA, T, G or S: the kind of ATT&CK entry an ID names."""
+    return "TA" if attack_id.startswith("TA") else attack_id[0]
+
+
+def prose(answer: str) -> str:
+    """The answer without its citations: every bracket holding a chunk or edge ID removed."""
+    return BRACKETS.sub(lambda match: "" if rag.CITATION_ITEM.search(match.group(1)) else match.group(0), answer)
+
+
+def named_ids(answer: str, kind: str) -> set[str]:
+    """The IDs of one kind the answer names outside its citations; for techniques a sub-technique ID counts as its
+    parent (T1574.001 as T1574), because the benchmark's answers are parent techniques."""
+    found = {attack_id for attack_id in ATTACK_ID_IN_TEXT.findall(prose(answer)) if id_kind(attack_id) == kind}
+    return {attack_id.split(".")[0] for attack_id in found} if kind == "T" else found
+
+
+def whole_words(name: str, text: str) -> bool:
+    return re.search(r"(?<![A-Za-z0-9])" + re.escape(name) + r"(?![A-Za-z0-9])", text, re.IGNORECASE) is not None
+
+
+def accuracy_row(question: dict, mode: str, answer: str) -> dict:
+    """One answer's accuracy against the question's answer IDs (design document, section 7)."""
+    reference = {entry["attack_id"] for entry in question["answer"]}
+    (kind,) = {id_kind(attack_id) for attack_id in reference}
+    named = named_ids(answer, kind)
+    tp, fp, fn = len(named & reference), len(named - reference), len(reference - named)
+    text = prose(answer)
+    without_id = sorted(entry["attack_id"] for entry in question["answer"]
+                        if entry["attack_id"] not in named and whole_words(entry["name"], text))
+    return {"question": question["id"], "pattern": question["pattern"], "system": MODE_NAMES[mode],
+            "reference": " ".join(sorted(reference)), "named": " ".join(sorted(named)), "tp": tp, "fp": fp, "fn": fn,
+            "precision": tp / (tp + fp) if named else None, "recall": tp / len(reference),
+            "f1": 2 * tp / (2 * tp + fp + fn), "named_by_name_only": " ".join(without_id)}
+
+
+def rounded(value: float | None) -> str:
+    return "" if value is None else f"{value:.4f}"
+
+
+def accuracy_summary(rows: list[dict]) -> list[str]:
+    lines = []
+    for system in MODE_NAMES.values():
+        mine = [row for row in rows if row["system"] == system]
+        named = [row for row in mine if row["precision"] is not None]
+        precision = statistics.mean(row["precision"] for row in named) if named else None
+        lines.append(f"  {system:9} F1 {statistics.mean(row['f1'] for row in mine):.3f}, recall "
+                     f"{statistics.mean(row['recall'] for row in mine):.3f}, precision "
+                     f"{'n/a' if precision is None else f'{precision:.3f}'} (over the {len(named)} answers naming "
+                     f"an ID of the asked kind); F1 = 1 in {sum(1 for row in mine if row['f1'] == 1)} of {len(mine)}; "
+                     f"{sum(1 for row in mine if row['named_by_name_only'])} answer(s) give a reference item by name "
+                     f"without its ID")
+    return lines
+
+
+def accuracy(argv: list[str]) -> int:
+    argparse.ArgumentParser(prog="evaluate.py accuracy",
+                            description="Answer accuracy of the saved benchmark answers.").parse_args(argv)
+    results, questions = read_results(), load_questions()
+    rows = [accuracy_row(question, mode, results["questions"][question["id"]][mode]["answer"])
+            for question in questions for mode in MODES if mode in results["questions"].get(question["id"], {})]
+    if len(rows) != len(questions) * len(MODES):
+        print(f"RESULT: FAILED - {len(questions) * len(MODES) - len(rows)} answer(s) missing; run evaluate.py answers")
+        return 1
+    RESULTS.mkdir(exist_ok=True)
+    with ACCURACY_FILE.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows({**row, **{name: rounded(row[name]) for name in ("precision", "recall", "f1")}}
+                         for row in rows)
+    print("Answer accuracy: the IDs of the asked kind named outside the citations, against each question's answer IDs "
+          "(means over the 24 questions)")
+    for line in accuracy_summary(rows):
+        print(line)
+    print(f"\nRESULT: OK - {len(rows)} answers scored; {ACCURACY_FILE.relative_to(ACCURACY_FILE.parent.parent)} "
+          f"written")
+    return 0
+
+
+# ---------------------------------------------------------------- operations
+
+OPERATIONS_FILE = RESULTS / "operations.csv"
+STAGES = ("lookup", "chunks", "seeds", "pagerank", "facts", "answer", "total")
+LATENCY_TARGET = 10.0   # seconds, median end to end (design document)
+
+
+def operations_rows(results: dict, questions: list[dict]) -> list[dict]:
+    rows = []
+    for question in questions:
+        for mode in MODES:
+            record = results["questions"][question["id"]][mode]
+            usage = record["usage"]
+            rows.append({"question": question["id"], "system": MODE_NAMES[mode],
+                         "prompt_tokens": usage.get("prompt_tokens") or 0,
+                         "completion_tokens": usage.get("completion_tokens") or 0, "cost": record["cost"],
+                         "citations": record["check"]["cited"], "outside_context": len(record["check"]["invalid"]),
+                         "answer_call_seconds": record["answer_seconds"],
+                         **{f"{stage}_seconds": record["timings"].get(stage) for stage in STAGES}})
+    return rows
+
+
+def spread(values: list[float], digits: int = 2) -> str:
+    return f"median {statistics.median(values):,.{digits}f}, max {max(values):,.{digits}f}"
+
+
+def operations_summary(rows: list[dict]) -> list[str]:
+    lines = []
+    for system in MODE_NAMES.values():
+        mine = [row for row in rows if row["system"] == system]
+        cited, outside = sum(row["citations"] for row in mine), sum(row["outside_context"] for row in mine)
+        tokens_in, tokens_out = [r["prompt_tokens"] for r in mine], [r["completion_tokens"] for r in mine]
+        costs = [r["cost"] for r in mine]
+        lines.append(f"  {system}: citation-ID validity {cited - outside} of {cited} "
+                     f"({(cited - outside) / cited if cited else 0:.1%}); tokens in {spread(tokens_in, 0)}, "
+                     f"out {spread(tokens_out, 0)}; cost per question ${statistics.mean(costs):.4f} "
+                     f"(all {len(mine)}: ${sum(costs):.2f})")
+        stages = [stage for stage in STAGES if any(row[f"{stage}_seconds"] is not None for row in mine)]
+        for stage in stages:
+            values = [row[f"{stage}_seconds"] for row in mine if row[f"{stage}_seconds"] is not None]
+            lines.append(f"    {stage:9} seconds: {spread(values)}")
+        lines.append(f"    answer call (OpenAI) seconds: {spread([row['answer_call_seconds'] for row in mine])}")
+        median = statistics.median(row["total_seconds"] for row in mine)
+        lines.append(f"    end to end: median {median:.2f} s against the target of a median under "
+                     f"{LATENCY_TARGET:.0f} s ({'met' if median < LATENCY_TARGET else 'not met'})")
+    return lines
+
+
+def operations(argv: list[str]) -> int:
+    argparse.ArgumentParser(prog="evaluate.py operations",
+                            description="Citation validity, tokens, cost and seconds per stage.").parse_args(argv)
+    results, questions = read_results(), load_questions()
+    try:
+        rows = operations_rows(results, questions)
+    except KeyError as exc:
+        print(f"RESULT: FAILED - no saved answer for {exc}; run evaluate.py answers")
+        return 1
+    RESULTS.mkdir(exist_ok=True)
+    with OPERATIONS_FILE.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    print("Operations of the benchmark run (seconds as measured when each answer was made)")
+    for line in operations_summary(rows):
+        print(line)
+    print(f"\nRESULT: OK - {len(rows)} answers; {OPERATIONS_FILE.relative_to(OPERATIONS_FILE.parent.parent)} written")
+    return 0
+
+
+# ---------------------------------------------------------------- extraction against the exact-name baseline
+
+EXTRACTION_FILE = RESULTS / "extraction_test.csv"
+# The AnnoCTR paper's best document-level F1 on its test split, sub-techniques collapsed to parents (Lange et al.,
+# LREC-COLING 2024), quoted for context: its setting differs from this project's.
+PAPER_F1 = {"Technique": 56.6, "Tactic": 47.7}
+
+
+def plain(text: str) -> str:
+    return re.sub(r"\s+", " ", text.translate(rag.PLAIN_PUNCTUATION))
+
+
+def baseline_names(attack) -> dict[str, list[str]]:
+    """Every name and alias of a technique, sub-technique, tactic, group or software entry, in lower case, with the
+    entries it names (a name shared by several entries names all of them)."""
+    names: dict[str, set[str]] = {}
+    for attack_id, node in attack.node.items():
+        if node.label in gold.GOLD_LABELS:
+            for name in (node.name, *node.aliases):
+                if name and name.strip():
+                    names.setdefault(plain(name).strip().lower(), set()).add(attack_id)
+    return {name: sorted(ids) for name, ids in sorted(names.items())}
+
+
+def baseline_facts(text: str, names: dict[str, list[str]]) -> dict[str, set[str]]:
+    """The exact-name baseline for one report: name -> the entries linked, for every name found in the text as a
+    whole word (not inside a longer word), ignoring case."""
+    text = plain(text).lower()
+    found = {}
+    for name, ids in names.items():
+        if re.search(r"(?<![a-z0-9])" + re.escape(name) + r"(?![a-z0-9])", text):
+            found[name] = set(ids)
+    return found
+
+
+def system_facts(report_id: str, index, entry_vectors) -> set[str]:
+    """The report's linked ATT&CK IDs, replayed from the saved extraction replies and embeddings exactly as link.py
+    links them (the MENTIONS facts score.py reads from Neo4j)."""
+    import extract
+    import link
+    result = extract.extract_report(report_id, call_model=False)
+    mentions = [mention for chunk in result["chunks"] for mention in chunk["mentions"]]
+
+    def embed_queries(texts):
+        return llm.embed("embeddings", texts, {"use": "mention queries", "report_id": report_id})[0]
+    return {decision["attack_id"] for decision in link.link_mentions(mentions, index, entry_vectors, embed_queries)
+            if decision["attack_id"]}
+
+
+def extraction_rows(name: str, results: list[dict]) -> list[dict]:
+    rows = []
+    for result in results:
+        for kind, values in [("all", result), *result["by_label"].items()]:
+            rows.append({"system": name, "level": result["level"], "kind": kind,
+                         **{key: values[key] for key in ("gold", "system", "tp", "fp", "fn")},
+                         **{key: rounded(values[key]) for key in ("precision", "recall", "f1")}})
+    return rows
+
+
+def extraction(argv: list[str]) -> int:
+    argparse.ArgumentParser(prog="evaluate.py extraction",
+                            description="The test split's extraction and linking beside the exact-name baseline."
+                            ).parse_args(argv)
+    import contextlib
+    import io
+
+    import link
+    import score
+    gold_file = json.loads(gold.GOLD_FILE.read_text(encoding="utf-8"))
+    gold_facts = gold.gold_by_report(gold_file, "test")
+    attack, _, _ = gold.load()
+    names = baseline_names(attack)
+    with contextlib.redirect_stdout(io.StringIO()):          # extract.py prints its replay report by report
+        index, _, _ = link.load_index()
+        entry_vectors, _ = llm.embed("embeddings", index.embedding_texts(),
+                                     {"use": "ATT&CK entries, name and description"})
+        ours = {report_id: system_facts(report_id, index, entry_vectors) for report_id in sorted(gold_facts)}
+    found = {report_id: baseline_facts(annoctr.text(report_id), names) for report_id in sorted(gold_facts)}
+    theirs = {report_id: set().union(*by_name.values()) if by_name else set() for report_id, by_name in found.items()}
+    systems = {"extraction and linking (gpt-6-sol)": ours, "exact-name baseline": theirs}
+    rows = []
+    print(f"Extraction and linking on the {len(gold_facts)} test reports ({sum(map(len, gold_facts.values()))} gold "
+          f"facts) beside the exact-name baseline (every ATT&CK name or alias found in the text as a whole word, "
+          f"ignoring case; {len(names):,} names)")
+    for name, facts in systems.items():
+        results = [score.score(gold_facts, facts, attack.label),
+                   score.score(gold_facts, facts, attack.label, attack.parent)]
+        rows += extraction_rows(name, results)
+        print(f"\n{name}:")
+        score.show(results)
+    false_names: Counter = Counter()
+    for report_id, by_name in found.items():
+        wanted = {attack.up(attack_id) for attack_id in gold_facts[report_id]}
+        for name, ids in by_name.items():
+            if not {attack.up(attack_id) for attack_id in ids} & wanted:
+                false_names[name] += 1
+    print("\nbaseline names linked most often outside the gold (reports): "
+          + ", ".join(f"\"{name}\" {count}" for name, count in false_names.most_common(10)))
+    print("AnnoCTR paper, best document-level F1 on its test split (sub-techniques collapsed to parents), for context: "
+          + ", ".join(f"{kind} {value}" for kind, value in PAPER_F1.items()))
+    RESULTS.mkdir(exist_ok=True)
+    with EXTRACTION_FILE.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"\nRESULT: OK - {EXTRACTION_FILE.relative_to(EXTRACTION_FILE.parent.parent)} written")
+    return 0
+
+
+# ---------------------------------------------------------------- RAGAS
+
+RAGAS_FILE = RESULTS / "ragas_scores.json"
+RAGAS_TABLE = RESULTS / "ragas_scores.csv"
+MAX_SPENT = 40.0                 # US dollars of new judge calls in one run, at list price (stop rule)
+MAX_UNSCORED_IN_A_ROW = 3        # answers in a row with no metric scored (stop rule)
+
+
+def ragas_contexts(record: dict, chunks: dict[str, dict]) -> list[str]:
+    """What the judge reads as the retrieved contexts: each chunk as the answering model saw it (its [chunk:ID] line
+    with the report's title, vendor and date, then the text) and, for GraphRAG, the knowledge-graph facts as one more
+    text, headed as in the prompt."""
+    rows = []
+    for chunk in record["chunks"]:
+        meta = annoctr.metadata(chunks[chunk["chunk_id"]]["report_id"])
+        rows.append({"chunk_id": chunk["chunk_id"], "title": meta["title"], "vendor": meta["vendor"],
+                     "date": meta["date"], "text": chunks[chunk["chunk_id"]]["text"]})
+    contexts = rag.chunk_context(rows)
+    if record["fact_lines"]:
+        contexts.append("Knowledge-graph facts:\n" + "\n".join(record["fact_lines"]))
+    return contexts
+
+
+def read_ragas() -> dict:
+    if RAGAS_FILE.is_file():
+        return json.loads(RAGAS_FILE.read_text(encoding="utf-8"))
+    return {"questions": {}}
+
+
+def write_ragas(scores: dict, questions: list[dict]) -> None:
+    RESULTS.mkdir(exist_ok=True)
+    import judge
+    document = {"about": f"RAGAS {', '.join(judge.METRICS)} per benchmark answer, judged by {judge.JUDGE_MODEL} "
+                         f"(reasoning effort {judge.JUDGE_REASONING_EFFORT}, "
+                         f"{judge.JUDGE_MAX_COMPLETION_TOKENS:,}-token cap); written by evaluate.py ragas from the "
+                         "saved answers and the saved judge replies (replies/ragas).",
+                "questions": dict(sorted(scores["questions"].items()))}
+    RAGAS_FILE.write_text(json.dumps(document, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+    pattern = {question["id"]: question["pattern"] for question in questions}
+    with RAGAS_TABLE.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(["question", "pattern", "system", *judge.METRICS])
+        for question_id, by_mode in sorted(document["questions"].items()):
+            for mode in MODES:
+                if mode in by_mode:
+                    writer.writerow([question_id, pattern.get(question_id, ""), MODE_NAMES[mode],
+                                     *(rounded(by_mode[mode].get(metric)) for metric in judge.METRICS)])
+
+
+def ragas_line(question_id: str, mode: str, result: dict) -> str:
+    import judge
+    values = "  ".join(f"{metric.replace('_', ' ')} {'n/a ' if result.get(metric) is None else f'{result[metric]:.2f}'}"
+                       for metric in judge.METRICS)
+    return (f"  {question_id} {MODE_NAMES[mode]:9} {values}  {result.get('calls', 0)} calls "
+            f"({result.get('reused_calls', 0)} saved), ${result.get('spent', 0):.2f} spent, "
+            f"{result.get('seconds', 0):.1f} s")
+
+
+def ragas_totals(scores: dict, wanted: list[str]) -> list[str]:
+    import judge
+    lines = []
+    for mode in MODES:
+        records = [scores["questions"][qid][mode] for qid in wanted if mode in scores["questions"].get(qid, {})]
+        means = []
+        for metric in judge.METRICS:
+            values = [record[metric] for record in records if record.get(metric) is not None]
+            means.append(f"{metric} {statistics.mean(values):.3f} (n={len(values)})" if values else f"{metric} n/a")
+        cost = sum(record.get("cost", 0) for record in records)
+        lines.append(f"  {MODE_NAMES[mode]:9} {len(records)} answers; mean " + ", ".join(means)
+                     + f"; judge cost of these answers at list price ${cost:.2f}")
+    return lines
+
+
+def ragas(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(prog="evaluate.py ragas", description="RAGAS scores for the saved answers.")
+    parser.add_argument("ids", nargs="*", help="question IDs (for example Q01 Q02); default all 24")
+    args = parser.parse_args(argv)
+    questions, results = load_questions(), read_results()
+    if args.ids:
+        unknown = sorted(set(args.ids) - {question["id"] for question in questions})
+        if unknown:
+            parser.error(f"unknown question IDs: {', '.join(unknown)}")
+    chosen = [question for question in questions if not args.ids or question["id"] in args.ids]
+    missing = [q["id"] for q in chosen if any(mode not in results["questions"].get(q["id"], {}) for mode in MODES)]
+    if missing:
+        print(f"RESULT: FAILED - no saved answers for {', '.join(missing)}; run evaluate.py answers first")
+        return 1
+    import judge
+    print(f"RAGAS for {len(chosen) * len(MODES)} answers ({len(chosen)} question(s), GraphRAG and the baseline): "
+          f"{', '.join(judge.METRICS)}; judge {judge.JUDGE_MODEL}, reasoning effort {judge.JUDGE_REASONING_EFFORT}, "
+          f"{judge.JUDGE_MAX_COMPLETION_TOKENS:,}-token cap. The run stops after {MAX_UNSCORED_IN_A_ROW} answers in "
+          f"a row without a score, or once its new judge calls pass ${MAX_SPENT:.0f} at list price")
+    started = time.perf_counter()
+    try:
+        scorer = judge.Scorer()
+    except judge.JudgeError as exc:
+        print(f"\nRESULT: FAILED - {exc}")
+        return 1
+    scores = read_ragas()
+    problems, notes, stopped, unscored_in_a_row, asked = [], [], "", 0, 0
+    reference = {question["id"]: question["reference_answer"] for question in questions}
+    try:
+        for question in chosen:
+            for mode in MODES:
+                record = results["questions"][question["id"]][mode]
+                result = scorer.score(question["question"], record["answer"], ragas_contexts(record, results["chunks"]),
+                                      reference[question["id"]], scope=f"{question['id']} {mode}")
+                asked += 1
+                scores["questions"].setdefault(question["id"], {})[mode] = result
+                write_ragas(scores, questions)
+                print(ragas_line(question["id"], mode, result))
+                for metric, reason in result["errors"].items():
+                    text = f"{question['id']} {MODE_NAMES[mode]} {metric}: {reason}"
+                    (notes if reason.startswith("RAGAS gave no number") else problems).append(text)
+                unscored = all(result.get(metric) is None for metric in judge.METRICS)
+                unscored_in_a_row = unscored_in_a_row + 1 if unscored else 0
+                spent = scorer.judge.snapshot()["spent"]
+                if unscored_in_a_row >= MAX_UNSCORED_IN_A_ROW:
+                    stopped = f"{MAX_UNSCORED_IN_A_ROW} answers in a row without a score"
+                elif spent >= MAX_SPENT:
+                    stopped = f"the new judge calls reached ${spent:.2f}, the limit is ${MAX_SPENT:.0f}"
+                if stopped:
+                    break
+            if stopped:
+                break
+    finally:
+        scorer.close()
+    totals = scorer.judge.snapshot()
+    print(f"\nRun total ({time.perf_counter() - started:.0f} s): {totals['calls']} judge calls, "
+          f"{totals['new_calls']} new and {totals['reused_calls']} saved; {totals['prompt_tokens']:,} tokens in "
+          f"({totals['cached_tokens']:,} cached), {totals['completion_tokens']:,} out ({totals['reasoning_tokens']:,} "
+          f"reasoning); "
+          f"${totals['spent']:.2f} spent in this run at list price")
+    for line in ragas_totals(scores, [question["id"] for question in chosen]):
+        print(line)
+    for text in notes:
+        print(f"  note  {text}")
+    not_asked = len(chosen) * len(MODES) - asked
+    if stopped:
+        print(f"\nRESULT: STOPPED - {stopped}; {not_asked} answer(s) not scored")
+        for text in problems:
+            print(f"  - {text}")
+        return 1
+    if problems:
+        print(f"\nRESULT: {len(problems)} problem(s)")
+        for text in problems:
+            print(f"  - {text}")
+        return 1
+    print(f"\nRESULT: OK - {asked} answers scored; {RAGAS_FILE.relative_to(RAGAS_FILE.parent.parent)} and "
+          f"{RAGAS_TABLE.name} written")
+    return 0
+
+
+COMMANDS = {"answers": answers, "sheet": sheet, "ratings": ratings, "accuracy": accuracy, "operations": operations,
+            "extraction": extraction, "ragas": ragas}
 
 
 def main(argv: list[str] | None = None) -> int:

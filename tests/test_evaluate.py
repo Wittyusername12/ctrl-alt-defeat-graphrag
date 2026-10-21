@@ -265,3 +265,116 @@ def test_scores_from_another_sheet_are_refused(sheet_files, capsys):
     capsys.readouterr()
     assert evaluate.main(["ratings"]) == 1
     assert "4 row(s) come from a different sheet" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------- accuracy, operations, extraction baseline, RAGAS
+
+ACCURACY_QUESTION = {"id": "Q09", "pattern": "group_techniques", "answer": [
+    {"attack_id": "T1574", "name": "Hijack Execution Flow"}, {"attack_id": "T1055", "name": "Process Injection"},
+    {"attack_id": "T1027", "name": "Obfuscated Files or Information"}]}
+
+
+def test_accuracy_counts_ids_of_the_asked_kind_outside_citations_at_parent_level():
+    answer = ("Chimera uses DLL Side-Loading (T1574.001) and T1574.002 [edge:attack:USES:G0114:T1055], Masquerading "
+              "(T1036) and Obfuscated Files or Information; its tool is S0013 and it targets TA0005.")
+    row = evaluate.accuracy_row(ACCURACY_QUESTION, "graph", answer)
+    assert row["named"] == "T1036 T1574"         # T1055 only inside a citation; S0013 and TA0005 are other kinds
+    assert (row["tp"], row["fp"], row["fn"]) == (1, 1, 2)
+    assert row["precision"] == 0.5 and row["recall"] == 1 / 3 and row["f1"] == 2 / 5
+    assert row["named_by_name_only"] == "T1027" and row["system"] == "GraphRAG"
+
+
+def test_an_answer_naming_no_id_has_no_precision_and_f1_zero():
+    row = evaluate.accuracy_row(ACCURACY_QUESTION, "text", "The context does not say [chunk:r#0].")
+    assert row["precision"] is None and row["recall"] == 0 and row["f1"] == 0
+    assert evaluate.named_ids("TA0005 and T1059.003 and TA0011", "TA") == {"TA0005", "TA0011"}
+
+
+def test_operations_summarise_citations_tokens_and_stage_seconds():
+    results = {"questions": {"Q01": {mode: {"usage": {"prompt_tokens": 100 * (i + 1), "completion_tokens": 10},
+                                            "cost": 0.01, "check": {"cited": 4, "invalid": ["edge:x"] if i else []},
+                                            "answer_seconds": 2.0 + i,
+                                            "timings": {"lookup": 0.1, "answer": 2.0 + i, "total": 2.5 + i}}
+                                     for i, mode in enumerate(evaluate.MODES)}}}
+    rows = evaluate.operations_rows(results, [{"id": "Q01"}])
+    lines = evaluate.operations_summary(rows)
+    assert rows[0]["system"] == "GraphRAG" and rows[1]["outside_context"] == 1 and rows[0]["seeds_seconds"] is None
+    assert "citation-ID validity 4 of 4 (100.0%)" in lines[0] and any("3 of 4 (75.0%)" in line for line in lines)
+    assert any("end to end: median 2.50 s against the target of a median under 10 s (met)" in line for line in lines)
+
+
+def test_the_exact_name_baseline_matches_whole_words_ignoring_case():
+    names = {"at": ["S0110"], "cobalt strike": ["S0154"], "dll side-loading": ["T1574.001"], "tor": ["S0183"]}
+    found = evaluate.baseline_facts("Attackers used COBALT Strike at night via DLL Side‐Loading; a "
+                                    "factor of two.", names)
+    assert found == {"at": {"S0110"}, "cobalt strike": {"S0154"}}   # "tor" inside "factor" and the odd hyphen miss
+    assert evaluate.plain("a’b  “c”") == "a'b \"c\""
+
+
+class FakeScorer:
+    def __init__(self, unscored=False, spent=0.0):
+        self.unscored, self.per_answer = unscored, spent
+        self.judge = self
+        self.totals = {name: 0 for name in ("calls", "new_calls", "reused_calls", "prompt_tokens", "cached_tokens",
+                                            "completion_tokens", "reasoning_tokens")}
+        self.totals["spent"] = self.totals["cost"] = 0.0
+        self.contexts = []
+
+    def snapshot(self):
+        return dict(self.totals)
+
+    def score(self, question, answer, contexts, reference, scope=""):
+        self.contexts.append((scope, contexts))
+        self.totals["calls"] += 6
+        self.totals["new_calls"] += 6
+        self.totals["spent"] += self.per_answer
+        if self.unscored:
+            return {"faithfulness": None, "answer_relevancy": None, "context_recall": None, "calls": 6,
+                    "reused_calls": 0, "spent": self.per_answer, "cost": self.per_answer, "seconds": 1.0,
+                    "errors": {name: "no connection to OpenAI" for name in ("faithfulness", "answer_relevancy",
+                                                                             "context_recall")}}
+        return {"faithfulness": 0.75, "answer_relevancy": 0.5, "context_recall": None, "calls": 6, "reused_calls": 0,
+                "spent": self.per_answer, "cost": self.per_answer, "seconds": 1.0,
+                "errors": {"context_recall": "RAGAS gave no number (NaN), for example no statements found"}}
+
+    def close(self):
+        pass
+
+
+def ragas_results() -> dict:
+    record = {"chunks": [{"chunk_id": f"{TRACER}#0", "score": 0.8}], "answer": "x [chunk:x]", "fact_lines": []}
+    graph = dict(record, fact_lines=["Summary: a", "[edge:attack:USES:G0129:S0013] b"])
+    return {"questions": {q["id"]: {"graph": graph, "text": record} for q in SHEET_QUESTIONS},
+            "chunks": {f"{TRACER}#0": {"report_id": TRACER, "text": "First chunk text."}}}
+
+
+def test_ragas_scores_every_answer_with_the_contexts_the_model_saw(sheet_files, monkeypatch, capsys):
+    import judge
+    (sheet_files / "benchmark_answers.json").write_text(json.dumps(ragas_results()), encoding="utf-8")
+    monkeypatch.setattr(evaluate, "RAGAS_FILE", sheet_files / "ragas_scores.json")
+    monkeypatch.setattr(evaluate, "RAGAS_TABLE", sheet_files / "ragas_scores.csv")
+    fake = FakeScorer(spent=0.4)
+    monkeypatch.setattr(judge, "Scorer", lambda: fake)
+    assert evaluate.main(["ragas"]) == 0
+    out = capsys.readouterr().out
+    scope, contexts = fake.contexts[0]
+    assert scope == "Q01 graph" and contexts[0].startswith(f"[chunk:{TRACER}#0] (report \"Mustang Panda")
+    assert contexts[1] == "Knowledge-graph facts:\nSummary: a\n[edge:attack:USES:G0129:S0013] b"
+    assert len(fake.contexts[1][1]) == 1                        # the baseline: the chunk only
+    assert "note  Q01 GraphRAG context_recall: RAGAS gave no number" in out and "RESULT: OK - 4 answers scored" in out
+    table = list(csv.DictReader((sheet_files / "ragas_scores.csv").open(encoding="utf-8")))
+    assert len(table) == 4 and table[0]["faithfulness"] == "0.7500" and table[0]["context_recall"] == ""
+
+
+def test_ragas_stops_after_three_unscored_answers_or_at_the_spending_limit(sheet_files, monkeypatch, capsys):
+    import judge
+    (sheet_files / "benchmark_answers.json").write_text(json.dumps(ragas_results()), encoding="utf-8")
+    monkeypatch.setattr(evaluate, "RAGAS_FILE", sheet_files / "ragas_scores.json")
+    monkeypatch.setattr(evaluate, "RAGAS_TABLE", sheet_files / "ragas_scores.csv")
+    monkeypatch.setattr(judge, "Scorer", lambda: FakeScorer(unscored=True))
+    assert evaluate.main(["ragas"]) == 1
+    assert "RESULT: STOPPED - 3 answers in a row without a score; 1 answer(s) not scored" in capsys.readouterr().out
+    monkeypatch.setattr(judge, "Scorer", lambda: FakeScorer(spent=25.0))
+    assert evaluate.main(["ragas", "Q01", "Q02"]) == 1
+    assert "RESULT: STOPPED - the new judge calls reached $50.00, the limit is $40; 2 answer(s) not scored" \
+        in capsys.readouterr().out

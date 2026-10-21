@@ -4,7 +4,7 @@ Term project for CS 6338 Knowledge Engineering, Angelo State University. Team CT
 
 The system answers questions about cyber threat reports. A knowledge graph in Neo4j joins MITRE ATT&CK v20.0 (Enterprise) with the AnnoCTR threat reports. A language model answers from retrieved report text plus the graph, and every answer cites the report chunks and graph edges it used. The same pipeline without the graph is the text-only baseline.
 
-**Status:** evaluation (Phase 6). Every stage runs: ATT&CK loading, extraction, linking and loading, graph analytics, scoring, and question answering with and without the graph, from Command Prompt or from a chat page. Extraction, linking and scoring take one report or a whole split (`--split dev`, `--split test`). A question that names a report by its title is answered from that report, with summary lines that count the report's links in ATT&CK. The benchmark (gold triples, evaluation questions) and the scorer are in place, `evaluate.py answers` answers the 24 benchmark questions with both systems, and `evaluate.py sheet` and `ratings` run the blind human rating.
+**Status:** evaluation (Phase 6). Every stage runs: ATT&CK loading, extraction, linking and loading, graph analytics, scoring, and question answering with and without the graph, from Command Prompt or from a chat page. Extraction, linking and scoring take one report or a whole split (`--split dev`, `--split test`). A question that names a report by its title is answered from that report, with summary lines that count the report's links in ATT&CK. The benchmark (gold triples, evaluation questions) and the scorer are in place, `evaluate.py` answers the 24 benchmark questions with both systems and measures them: answer accuracy, operations (citation validity, tokens, cost, seconds per stage), extraction beside an exact-name baseline, RAGAS scores from a judge model, and a blind human rating.
 
 ## Repository layout
 
@@ -29,10 +29,11 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `models.py` | Pydantic data models for the graph (ATT&CK entries, relationships, chunks) and for the question-answering payloads (`QueryRequest`, `QueryResponse`); the extraction reply models are in `extract.py` |
 | `gold.py` | writes the benchmark: the experts' facts as gold triples, and 24 multi-hop questions with answers computed from those facts and ATT&CK; `--neo4j` recomputes every answer with Cypher in Neo4j |
 | `score.py` | precision, recall and F1 of the system's facts in Neo4j against the gold triples, at sub-technique and parent-technique level |
-| `evaluate.py` | the evaluation: `answers` asks the 24 benchmark questions with GraphRAG and with the text-only baseline, exactly as `rag.py` asks, and saves both answers with their context, citation check, tokens, cost at list price and seconds in `results/benchmark_answers.json`; a run stops after 3 questions in a row without an answer. `sheet` writes the blind rating sheet (`results/rating_sheet.html`: each question's two answers as A and B in an order drawn with a fixed seed, citations replaced by numbers, the cited texts listed in one format for both systems) and its key (`results/rating_key.json`); `ratings` checks the 144 scores saved from the sheet, joins them to the key and writes `results/human_ratings.csv` |
+| `evaluate.py` | the evaluation: `answers` asks the 24 benchmark questions with GraphRAG and with the text-only baseline, exactly as `rag.py` asks, and saves both answers with their context, citation check, tokens, cost at list price and seconds in `results/benchmark_answers.json`; a run stops after 3 questions in a row without an answer. `sheet` writes the blind rating sheet (`results/rating_sheet.html`: each question's two answers as A and B in an order drawn with a fixed seed, citations replaced by numbers, the cited texts listed in one format for both systems) and its key (`results/rating_key.json`); `ratings` checks the 144 scores saved from the sheet, joins them to the key and writes `results/human_ratings.csv`; `accuracy` scores the ATT&CK IDs each answer names against the question's answer IDs; `operations` gives citation-ID validity, tokens, cost and the seconds of each stage; `extraction` scores the test split's extraction and linking beside an exact-name baseline; `ragas` gets RAGAS Faithfulness, AnswerRelevancy and ContextRecall from the judge model |
+| `judge.py` | the RAGAS judge (gpt-6-astra, reasoning effort low, 16,000-token cap): a client that removes temperature from every request and saves every judge reply under `replies/ragas` for reruns, and the three metrics, one answer at a time |
 | `benchmark/` | `gold_triples.json` and `eval_queries.json`, written by `gold.py` only (see `benchmark/README.md`) |
-| `replies/` | saved model replies and embeddings (`extract`, `embeddings`, `answers`, `ollama`) and the PageRank scores each question used (`pagerank`); committing them makes every rerun identical |
-| `results/` | tables computed from saved replies: the dev calibration table, the benchmark answers, the rating sheet and its key, the scores and the scores joined to the key |
+| `replies/` | saved model replies and embeddings (`extract`, `embeddings`, `answers`, `ollama`, `ragas`) and the PageRank scores each question used (`pagerank`); committing them makes every rerun identical |
+| `results/` | tables computed from saved replies: the dev calibration table, the benchmark answers, the rating sheet and its key, the scores and the scores joined to the key, answer accuracy, operations, extraction against the baseline, RAGAS scores |
 | `analytics/` | the saved GDS results: PageRank score and community of every ATT&CK entry, FastRP vectors, and how they were computed |
 | `data/` | the data files, their licences and their SHA-256 list (see `data/README.md`) |
 | `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine; `check_summaries.py`, which compares rag.py's summary-line Cypher with the same count in Python; `try_ollama.py`, one report chunk through a local model |
@@ -157,6 +158,17 @@ Keep the repository and the virtual environment outside any folder that OneDrive
     ```
     start results\rating_sheet.html
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe evaluate.py ratings
+    ```
+20. Measure the saved answers and the test split's extraction (no Neo4j or OpenAI needed): answer accuracy, operations, and extraction beside the exact-name baseline:
+    ```
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe evaluate.py accuracy
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe evaluate.py operations
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe evaluate.py extraction
+    ```
+21. RAGAS scores from the judge model (OpenAI; saved judge replies are reused). Run the two-question trial first, then all 24 questions; a run stops after 3 answers in a row without a score, or once its new judge calls pass $40 at list price:
+    ```
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe evaluate.py ragas Q01 Q02
+    %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe evaluate.py ragas
     ```
 
 ## Tests
