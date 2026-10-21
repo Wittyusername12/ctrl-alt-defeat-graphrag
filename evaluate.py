@@ -998,12 +998,20 @@ def operations_rows(results: dict, questions: list[dict]) -> list[dict]:
                          "completion_tokens": usage.get("completion_tokens") or 0, "cost": record["cost"],
                          "citations": record["check"]["cited"], "outside_context": len(record["check"]["invalid"]),
                          "answer_call_seconds": record["answer_seconds"],
-                         **{f"{stage}_seconds": record["timings"].get(stage) for stage in STAGES}})
+                         **{stage_column(stage): record["timings"].get(stage) for stage in STAGES}})
     return rows
 
 
+def stage_column(stage: str) -> str:
+    """The operations table's column for one stage's seconds ("total" is the whole question, end to end)."""
+    return "end_to_end_seconds" if stage == "total" else f"{stage}_stage_seconds"
+
+
 def spread(values: list[float], digits: int = 2) -> str:
-    return f"median {statistics.median(values):,.{digits}f}, max {max(values):,.{digits}f}"
+    """Median and maximum; with digits=0 (token counts) a median halfway between two counts keeps its .5."""
+    def shown(value: float) -> str:
+        return f"{value:,.1f}" if digits == 0 and value != int(value) else f"{value:,.{digits}f}"
+    return f"median {shown(statistics.median(values))}, max {shown(max(values))}"
 
 
 def operations_summary(rows: list[dict]) -> list[str]:
@@ -1017,12 +1025,12 @@ def operations_summary(rows: list[dict]) -> list[str]:
                      f"({(cited - outside) / cited if cited else 0:.1%}); tokens in {spread(tokens_in, 0)}, "
                      f"out {spread(tokens_out, 0)}; cost per question ${statistics.mean(costs):.4f} "
                      f"(all {len(mine)}: ${sum(costs):.2f})")
-        stages = [stage for stage in STAGES if any(row[f"{stage}_seconds"] is not None for row in mine)]
+        stages = [stage for stage in STAGES if any(row[stage_column(stage)] is not None for row in mine)]
         for stage in stages:
-            values = [row[f"{stage}_seconds"] for row in mine if row[f"{stage}_seconds"] is not None]
+            values = [row[stage_column(stage)] for row in mine if row[stage_column(stage)] is not None]
             lines.append(f"    {stage:9} seconds: {spread(values)}")
         lines.append(f"    answer call (OpenAI) seconds: {spread([row['answer_call_seconds'] for row in mine])}")
-        median = statistics.median(row["total_seconds"] for row in mine)
+        median = statistics.median(row["end_to_end_seconds"] for row in mine)
         lines.append(f"    end to end: median {median:.2f} s against the target of a median under "
                      f"{LATENCY_TARGET:.0f} s ({'met' if median < LATENCY_TARGET else 'not met'})")
     return lines
@@ -1102,8 +1110,8 @@ def extraction_rows(name: str, results: list[dict]) -> list[dict]:
     rows = []
     for result in results:
         for kind, values in [("all", result), *result["by_label"].items()]:
-            rows.append({"system": name, "level": result["level"], "kind": kind,
-                         **{key: values[key] for key in ("gold", "system", "tp", "fp", "fn")},
+            rows.append({"system": name, "level": result["level"], "kind": kind, "gold": values["gold"],
+                         "facts": values["system"], **{key: values[key] for key in ("tp", "fp", "fn")},
                          **{key: rounded(values[key]) for key in ("precision", "recall", "f1")}})
     return rows
 
@@ -1145,8 +1153,9 @@ def extraction(argv: list[str]) -> int:
         for name, ids in by_name.items():
             if not {attack.up(attack_id) for attack_id in ids} & wanted:
                 false_names[name] += 1
-    print("\nbaseline names linked most often outside the gold (reports): "
-          + ", ".join(f"\"{name}\" {count}" for name, count in false_names.most_common(10)))
+    ranked = sorted(false_names.items(), key=lambda item: (-item[1], item[0]))[:10]
+    print("\nbaseline names whose entries are all outside a report's gold, most reports first (ties by name): "
+          + ", ".join(f"\"{name}\" {count}" for name, count in ranked))
     print("AnnoCTR paper, best document-level F1 on its test split (sub-techniques collapsed to parents), for context: "
           + ", ".join(f"{kind} {value}" for kind, value in PAPER_F1.items()))
     RESULTS.mkdir(exist_ok=True)

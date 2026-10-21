@@ -298,7 +298,9 @@ def test_operations_summarise_citations_tokens_and_stage_seconds():
                                      for i, mode in enumerate(evaluate.MODES)}}}
     rows = evaluate.operations_rows(results, [{"id": "Q01"}])
     lines = evaluate.operations_summary(rows)
-    assert rows[0]["system"] == "GraphRAG" and rows[1]["outside_context"] == 1 and rows[0]["seeds_seconds"] is None
+    assert rows[0]["system"] == "GraphRAG" and rows[1]["outside_context"] == 1
+    assert rows[0]["seeds_stage_seconds"] is None
+    assert rows[0]["answer_stage_seconds"] == 2.0 and rows[0]["end_to_end_seconds"] == 2.5
     assert "citation-ID validity 4 of 4 (100.0%)" in lines[0] and any("3 of 4 (75.0%)" in line for line in lines)
     assert any("end to end: median 2.50 s against the target of a median under 10 s (met)" in line for line in lines)
 
@@ -378,3 +380,18 @@ def test_ragas_stops_after_three_unscored_answers_or_at_the_spending_limit(sheet
     assert evaluate.main(["ragas", "Q01", "Q02"]) == 1
     assert "RESULT: STOPPED - the new judge calls reached $50.00, the limit is $40; 2 answer(s) not scored" \
         in capsys.readouterr().out
+
+
+def test_extraction_rows_keep_the_system_name_beside_the_fact_count():
+    result = {"level": "parent", "gold": 3, "system": 4, "tp": 2, "fp": 2, "fn": 1, "precision": 0.5, "recall": 2 / 3,
+              "f1": 4 / 7, "by_label": {"Tactic": {"gold": 1, "system": 0, "tp": 0, "fp": 0, "fn": 1,
+                                                   "precision": None, "recall": 0.0, "f1": 0.0}}}
+    rows = evaluate.extraction_rows("exact-name baseline", [result])
+    assert list(rows[0]) == ["system", "level", "kind", "gold", "facts", "tp", "fp", "fn", "precision", "recall", "f1"]
+    assert rows[0]["system"] == "exact-name baseline" and rows[0]["facts"] == 4 and rows[0]["f1"] == "0.5714"
+    assert rows[1]["kind"] == "Tactic" and rows[1]["precision"] == ""
+
+
+def test_a_token_median_halfway_between_two_counts_keeps_its_half():
+    assert evaluate.spread([100, 107, 108, 324], 0) == "median 107.5, max 324"
+    assert evaluate.spread([1.234, 2.0], 2) == "median 1.62, max 2.00"

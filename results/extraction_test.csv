@@ -1,21 +1,21 @@
-system,level,kind,gold,tp,fp,fn,precision,recall,f1
-458,sub-technique,all,469,251,207,218,0.5480,0.5352,0.5415
-320,sub-technique,Technique,327,145,175,182,0.4531,0.4434,0.4482
-69,sub-technique,Tactic,85,51,18,34,0.7391,0.6000,0.6623
-19,sub-technique,Group,13,13,6,0,0.6842,1.0000,0.8125
-50,sub-technique,Software,44,42,8,2,0.8400,0.9545,0.8936
-414,parent,all,469,313,101,156,0.7560,0.6674,0.7089
-276,parent,Technique,327,207,69,120,0.7500,0.6330,0.6866
-69,parent,Tactic,85,51,18,34,0.7391,0.6000,0.6623
-19,parent,Group,13,13,6,0,0.6842,1.0000,0.8125
-50,parent,Software,44,42,8,2,0.8400,0.9545,0.8936
-643,sub-technique,all,469,201,442,268,0.3126,0.4286,0.3615
-422,sub-technique,Technique,327,106,316,221,0.2512,0.3242,0.2830
-80,sub-technique,Tactic,85,45,35,40,0.5625,0.5294,0.5455
-21,sub-technique,Group,13,11,10,2,0.5238,0.8462,0.6471
-120,sub-technique,Software,44,39,81,5,0.3250,0.8864,0.4756
-568,parent,all,469,229,339,240,0.4032,0.4883,0.4417
-347,parent,Technique,327,134,213,193,0.3862,0.4098,0.3976
-80,parent,Tactic,85,45,35,40,0.5625,0.5294,0.5455
-21,parent,Group,13,11,10,2,0.5238,0.8462,0.6471
-120,parent,Software,44,39,81,5,0.3250,0.8864,0.4756
+system,level,kind,gold,facts,tp,fp,fn,precision,recall,f1
+extraction and linking (gpt-6-sol),sub-technique,all,469,458,251,207,218,0.5480,0.5352,0.5415
+extraction and linking (gpt-6-sol),sub-technique,Technique,327,320,145,175,182,0.4531,0.4434,0.4482
+extraction and linking (gpt-6-sol),sub-technique,Tactic,85,69,51,18,34,0.7391,0.6000,0.6623
+extraction and linking (gpt-6-sol),sub-technique,Group,13,19,13,6,0,0.6842,1.0000,0.8125
+extraction and linking (gpt-6-sol),sub-technique,Software,44,50,42,8,2,0.8400,0.9545,0.8936
+extraction and linking (gpt-6-sol),parent,all,469,414,313,101,156,0.7560,0.6674,0.7089
+extraction and linking (gpt-6-sol),parent,Technique,327,276,207,69,120,0.7500,0.6330,0.6866
+extraction and linking (gpt-6-sol),parent,Tactic,85,69,51,18,34,0.7391,0.6000,0.6623
+extraction and linking (gpt-6-sol),parent,Group,13,19,13,6,0,0.6842,1.0000,0.8125
+extraction and linking (gpt-6-sol),parent,Software,44,50,42,8,2,0.8400,0.9545,0.8936
+exact-name baseline,sub-technique,all,469,643,201,442,268,0.3126,0.4286,0.3615
+exact-name baseline,sub-technique,Technique,327,422,106,316,221,0.2512,0.3242,0.2830
+exact-name baseline,sub-technique,Tactic,85,80,45,35,40,0.5625,0.5294,0.5455
+exact-name baseline,sub-technique,Group,13,21,11,10,2,0.5238,0.8462,0.6471
+exact-name baseline,sub-technique,Software,44,120,39,81,5,0.3250,0.8864,0.4756
+exact-name baseline,parent,all,469,568,229,339,240,0.4032,0.4883,0.4417
+exact-name baseline,parent,Technique,327,347,134,213,193,0.3862,0.4098,0.3976
+exact-name baseline,parent,Tactic,85,80,45,35,40,0.5625,0.5294,0.5455
+exact-name baseline,parent,Group,13,21,11,10,2,0.5238,0.8462,0.6471
+exact-name baseline,parent,Software,44,120,39,81,5,0.3250,0.8864,0.4756
