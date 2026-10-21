@@ -1,0 +1,103 @@
+{
+ "about": "Which system wrote answer A and answer B of each question on rating_sheet.html (graph = GraphRAG, text = the text-only baseline): one draw per question, in question order, from Python's random.Random(7). Written by evaluate.py sheet; read by evaluate.py ratings after the scores are in.",
+ "seed": 7,
+ "sheet": "b66dd92829b6269d",
+ "labels": {
+  "Q01": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q02": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q03": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q04": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q05": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q06": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q07": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q08": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q09": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q10": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q11": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q12": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q13": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q14": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q15": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q16": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q17": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q18": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q19": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q20": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q21": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q22": {
+   "A": "graph",
+   "B": "text"
+  },
+  "Q23": {
+   "A": "text",
+   "B": "graph"
+  },
+  "Q24": {
+   "A": "graph",
+   "B": "text"
+  }
+ }
+}

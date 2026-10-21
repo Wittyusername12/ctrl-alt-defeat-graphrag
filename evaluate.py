@@ -15,17 +15,34 @@ Subcommands:
            for which a system got no answer (an OpenAI or Neo4j error). The output ends with a line that starts
            with RESULT, followed by the problems when there are any; exit code 0 when every answer asked for is
            saved.
+  sheet    Write the blind rating sheet, results/rating_sheet.html, and its key, results/rating_key.json, from the
+           saved answers. Per question the sheet shows the question, the reference answer and its items, and the two
+           answers as A and B, in an order drawn from random.Random(7); every citation becomes a number ([1], [2], ...
+           in order of first use) and the cited texts are listed under the answer in one format for both systems.
+           The page keeps the rater's choices in the browser and saves them as ratings.csv. No OpenAI or Neo4j call.
+  ratings  Read the scores (a file named on the command line, else the newest ratings*.csv in the Downloads folder
+           when newer than results/ratings.csv, which it is then copied to, else results/ratings.csv), check that
+           all 144 scores are present and between 1 and 5, join them to the key, write results/human_ratings.csv and
+           print each system's mean score per criterion and the per-question wins, ties and losses.
 """
 from __future__ import annotations
 
 import argparse
+import csv
+import html
 import json
+import random
+import re
+import shutil
+import statistics
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 from neo4j.exceptions import DriverError, Neo4jError
 
+import annoctr
 import db
 import gold
 import llm
@@ -237,7 +254,627 @@ def answers(argv: list[str]) -> int:
     return 0
 
 
-COMMANDS = {"answers": answers}
+# ---------------------------------------------------------------- the blind rating sheet
+
+SHEET_FILE = RESULTS / "rating_sheet.html"
+KEY_FILE = RESULTS / "rating_key.json"
+RATINGS_FILE = RESULTS / "ratings.csv"
+HUMAN_FILE = RESULTS / "human_ratings.csv"
+SHEET_SEED = 7
+LABELS = ("A", "B")
+CRITERIA = ("factuality", "completeness", "coherence")
+RATINGS_COLUMNS = ("sheet", "question", "answer") + CRITERIA + ("note",)
+# The rating anchors of the design document (section 7, Table "Rating anchors").
+RUBRIC = {
+    "factuality": {5: "every statement correct and supported by its citation",
+                   4: "one minor slip, no wrong ATT&CK fact", 3: "one material error", 2: "several errors",
+                   1: "mostly wrong or unsupported"},
+    "completeness": {5: "every item", 4: "at least three quarters of the items", 3: "at least half of the items",
+                     2: "at least one item", 1: "none of the items"},
+    "coherence": {5: "direct and well organised", 4: "clear, small redundancy", 3: "understandable, some disorder",
+                  2: "hard to follow", 1: "incoherent or off the question"},
+}
+BRACKETS = re.compile(r"\[([^\[\]]+)\]")
+
+
+def assign_labels(question_ids: list[str], seed: int = SHEET_SEED) -> dict[str, dict[str, str]]:
+    """Which system's answer is A and which is B for each question: one draw per question, in question order, from a
+    random number generator started with a fixed seed, so the same seed always gives the same key."""
+    rng = random.Random(seed)
+    labels = {}
+    for question_id in question_ids:
+        labels[question_id] = {"A": "graph", "B": "text"} if rng.random() < 0.5 else {"A": "text", "B": "graph"}
+    return labels
+
+
+def neutral_citations(answer: str, source_of=lambda item: item) -> tuple[str, list]:
+    """The answer with its citations replaced by numbers, and the cited sources in number order. Each cited
+    (kind, ID) pair is mapped by source_of to the source the rater will see, and each distinct source gets a number
+    in order of first use, so two IDs that show the same text share a number. Brackets with nothing but spaces
+    between them are merged ("[chunk:x][edge:y]" becomes "[1, 2]"), numbers within a bracket are sorted, and
+    brackets holding no chunk or edge ID are left as they are."""
+    order: dict = {}
+    pieces: list = []
+    position = 0
+    for match in BRACKETS.finditer(answer):
+        items = rag.CITATION_ITEM.findall(match.group(1))
+        if not items:
+            continue
+        between = answer[position:match.start()]
+        numbers = {order.setdefault(source_of(item), len(order) + 1) for item in items}
+        if pieces and isinstance(pieces[-1], set) and not between.strip():
+            pieces[-1] |= numbers
+        else:
+            pieces += [between, numbers]
+        position = match.end()
+    pieces.append(answer[position:])
+    text = "".join(piece if isinstance(piece, str) else "[" + ", ".join(map(str, sorted(piece))) + "]"
+                   for piece in pieces)
+    return text, sorted(order, key=order.get)
+
+
+def strip_citations(line: str) -> str:
+    """A context line without its bracketed chunk and edge IDs."""
+    text = BRACKETS.sub(lambda match: "" if rag.CITATION_ITEM.search(match.group(1)) else match.group(0), line)
+    return re.sub(r"[ \t]+([;,.:])", r"\1", re.sub(r"[ \t]{2,}", " ", text)).strip()
+
+
+# The two context lines that hold many edges: a summary line ("Summary: <node> has <type> relationships with <n> of
+# the anchored report's entries: <entry> [edge]; ...") and a report line ("Report "<title>" mentions <n> techniques:
+# <entry> [edge]; ...").
+MANY_EDGES = re.compile(r'^(Summary: .* entries|Report ".*" mentions \d+ [a-z ]+): (.*)$')
+
+
+def fact_text(line: str, edge_id: str) -> str:
+    """What a context line says about one edge: the whole line when the line is the edge's own fact, otherwise the
+    line's head with the one entry the edge belongs to, the other entries left out (marked …)."""
+    if not line.startswith(f"[edge:{edge_id}]"):
+        match = MANY_EDGES.match(line)
+        if match:
+            parts = match.group(2).split("; ")
+            mine = [number for number, part in enumerate(parts) if ("edge", edge_id) in rag.citations(part)]
+            if mine:
+                before = "… " if mine[0] > 0 else ""
+                after = " …" if mine[-1] < len(parts) - 1 else ""
+                return strip_citations(f"{match.group(1)}: {before}" + "; ".join(parts[n] for n in mine)) + after
+    return strip_citations(line)
+
+
+def source_key(item: tuple[str, str], fact_lines: list[str]) -> tuple:
+    """The source the rater sees for one cited ID: a chunk, or the context text holding an edge (the edge's own
+    fact line when there is one, otherwise the summary or report lines that list the edge)."""
+    kind, cid = item
+    if kind == "chunk":
+        return ("chunk", cid)
+    holding = [line for line in fact_lines if ("edge", cid) in rag.citations(line)]
+    own = [line for line in holding if line.startswith(f"[edge:{cid}]")]
+    lines = tuple(dict.fromkeys(fact_text(line, cid) for line in (own or holding)))
+    return ("fact", lines or ("(this ID is not in the answer's context)",))
+
+
+def chunk_source(chunk_id: str, chunks: dict[str, dict]) -> dict:
+    report_id, index = chunk_id.rsplit("#", 1)
+    meta = annoctr.metadata(report_id)
+    parts = len(annoctr.chunk_spans(len(annoctr.text(report_id))))
+    return {"kind": "chunk", "label": f"Report text: “{meta['title']}” ({meta['vendor']}, {meta['date']}), part "
+                                      f"{int(index) + 1} of {parts}", "lines": [], "text": chunks[chunk_id]["text"]}
+
+
+def sheet_items(results: dict, questions: list[dict], labels: dict[str, dict[str, str]]) -> list[dict]:
+    """Everything the sheet shows, question by question, with the answers in A/B order and no system names."""
+    items = []
+    for question in questions:
+        record = results["questions"][question["id"]]
+        answers = []
+        for label in LABELS:
+            answer = record[labels[question["id"]][label]]
+            text, keys = neutral_citations(answer["answer"], lambda item: source_key(item, answer["fact_lines"]))
+            sources = [chunk_source(key[1], results["chunks"]) if key[0] == "chunk" else
+                       {"kind": "fact", "label": "Knowledge-graph fact", "lines": list(key[1]), "text": None}
+                       for key in keys]
+            answers.append({"label": label, "text": text, "sources": sources})
+        items.append({"id": question["id"], "pattern": question["pattern"], "question": question["question"],
+                      "reference": question["reference_answer"],
+                      "items": [[entry["attack_id"], entry["name"]] for entry in question["answer"]],
+                      "answers": answers})
+    return items
+
+
+def inline_markdown(text: str) -> str:
+    text = html.escape(text, quote=False)
+    text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+    return re.sub(r"\[(\d+(?:, \d+)*)\]", r'<span class="cite">[\1]</span>', text)
+
+
+def render_markdown(text: str) -> str:
+    """The answer's Markdown as HTML, for the few forms the answers use: paragraphs, bulleted and numbered lists,
+    headings, bold and code. Everything else stays text."""
+    out, items, kind, paragraph = [], [], None, []
+
+    def flush() -> None:
+        nonlocal items, kind, paragraph
+        if items:
+            out.append(f"<{kind}>" + "".join(f"<li>{item}</li>" for item in items) + f"</{kind}>")
+        if paragraph:
+            out.append("<p>" + "<br>".join(paragraph) + "</p>")
+        items, kind, paragraph = [], None, []
+
+    for line in text.strip().split("\n"):
+        bullet = re.match(r"\s*[-*•]\s+(.*)", line)
+        number = re.match(r"\s*\d+[.)]\s+(.*)", line)
+        heading = re.match(r"\s*#{1,6}\s+(.*)", line)
+        if not line.strip():
+            flush()
+        elif bullet or number:
+            wanted = "ul" if bullet else "ol"
+            if paragraph or (items and kind != wanted):
+                flush()
+            kind = wanted
+            items.append(inline_markdown((bullet or number).group(1)))
+        elif heading:
+            flush()
+            out.append(f"<p><strong>{inline_markdown(heading.group(1))}</strong></p>")
+        else:
+            if items:
+                flush()
+            paragraph.append(inline_markdown(line.strip()))
+    flush()
+    return "\n".join(out)
+
+
+def scale_html(question_id: str, label: str, criterion: str) -> str:
+    name = f"{question_id}|{label}|{criterion}"
+    options = "".join(f'<label title="{value}: {html.escape(RUBRIC[criterion][value])}"><input type="radio" '
+                      f'name="{name}" value="{value}"><span>{value}</span></label>' for value in range(1, 6))
+    return (f'<fieldset class="scale"><legend>{criterion.capitalize()}</legend><div class="pills">{options}</div>'
+            f'<div class="anchor" data-for="{name}"></div></fieldset>')
+
+
+def source_html(number: int, source: dict) -> str:
+    if source["kind"] == "chunk":
+        body = (f'<details><summary>Show the report text ({len(source["text"]):,} characters)</summary>'
+                f'<pre class="chunk">{html.escape(source["text"])}</pre></details>')
+    else:
+        body = "".join(f'<div class="fact">{html.escape(line)}</div>' for line in source["lines"])
+    return f'<li><span class="num">[{number}]</span> <span class="src">{html.escape(source["label"])}</span>{body}</li>'
+
+
+def question_html(item: dict) -> str:
+    reference_items = "; ".join(f"{attack_id} {html.escape(name)}" for attack_id, name in item["items"])
+    answers = []
+    for answer in item["answers"]:
+        sources = "".join(source_html(number, source) for number, source in enumerate(answer["sources"], 1))
+        listing = (f'<details class="sources" open><summary>Cited sources ({len(answer["sources"])})</summary>'
+                   f'<ol>{sources}</ol></details>' if answer["sources"] else '<p class="none">No citations.</p>')
+        scales = "".join(scale_html(item["id"], answer["label"], criterion) for criterion in CRITERIA)
+        answers.append(f'<article class="answer" data-label="{answer["label"]}"><h3>Answer {answer["label"]}</h3>'
+                       f'<div class="answer-text">{render_markdown(answer["text"])}</div>{listing}'
+                       f'<div class="ratings">{scales}<label class="note">Note (optional) <input type="text" '
+                       f'name="{item["id"]}|{answer["label"]}|note" maxlength="500"></label></div></article>')
+    return (f'<section class="question" id="{item["id"]}"><h2><span class="qid">{item["id"]}</span> '
+            f'{html.escape(item["question"])}</h2><div class="reference"><h4>Reference answer</h4>'
+            f'<p>{html.escape(item["reference"])}</p><p class="items">Reference items ({len(item["items"])}): '
+            f'{reference_items}</p></div><div class="answers">{"".join(answers)}</div></section>')
+
+
+SHEET_STYLE = """
+:root { --bg: #f7f7f5; --card: #ffffff; --ink: #1d1d1b; --muted: #5f5f5a; --line: #d9d9d4; --accent: #2b5fab;
+  --accent-ink: #ffffff; --soft: #eef2f8; --cite: #2b5fab; --ok: #2f7d4f; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161616; --card: #202020; --ink: #ececea; --muted: #a8a8a3;
+  --line: #3a3a38; --accent: #7aa7ea; --accent-ink: #101010; --soft: #26303d; --cite: #9cc0f5; --ok: #6cc08f; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI",
+  Roboto, sans-serif; }
+.bar { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 1px solid var(--line); }
+.bar-inner { max-width: 1280px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 8px 14px;
+  align-items: center; }
+.bar button, .bar .load { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--card); color: var(--ink); cursor: pointer; }
+.bar button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.bar .load input { display: none; }
+#progress { font-variant-numeric: tabular-nums; }
+#status { max-width: 1280px; margin: 0 auto; padding: 0 16px 6px; color: var(--muted); font-size: 14px; min-height: 0; }
+main { max-width: 1280px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 24px; margin: 8px 0 12px; }
+.intro p { max-width: 900px; }
+.rubric-wrap { overflow-x: auto; }
+table.rubric { border-collapse: collapse; margin: 12px 0; background: var(--card); font-size: 14px; }
+table.rubric th, table.rubric td { border: 1px solid var(--line); padding: 4px 8px; text-align: left;
+  vertical-align: top; }
+nav.index { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
+nav.index a { padding: 2px 8px; border: 1px solid var(--line); border-radius: 5px; text-decoration: none;
+  color: var(--ink); background: var(--card); font-size: 14px; }
+nav.index a.done { border-color: var(--ok); color: var(--ok); }
+.question { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+  margin: 18px 0; scroll-margin-top: 70px; overflow-wrap: anywhere; }
+@media (max-width: 600px) { main { padding: 8px; } .question { padding: 10px; } .answer { padding: 8px; } }
+.question h2 { font-size: 18px; margin: 0 0 10px; }
+.qid { display: inline-block; background: var(--soft); border-radius: 5px; padding: 0 8px; margin-right: 6px; }
+.reference { background: var(--soft); border-radius: 8px; padding: 8px 12px; }
+.reference h4 { margin: 0 0 4px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--muted); }
+.reference p { margin: 4px 0; }
+.items { font-size: 14px; color: var(--muted); }
+.answers { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+@media (min-width: 960px) { .answers { grid-template-columns: 1fr 1fr; } }
+.answer { border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-width: 0; }
+.answer h3 { margin: 0 0 6px; font-size: 16px; }
+.answer-text { overflow-wrap: anywhere; }
+.answer-text code { font-size: 14px; background: var(--soft); padding: 0 3px; border-radius: 3px; }
+.cite { color: var(--cite); font-size: 13px; }
+.sources { margin: 10px 0; font-size: 14px; }
+.sources summary { cursor: pointer; color: var(--muted); }
+.sources ol { list-style: none; padding-left: 0; margin: 6px 0; }
+.sources li { margin: 6px 0; overflow-wrap: anywhere; }
+.num { color: var(--cite); font-weight: 600; }
+.src { color: var(--muted); }
+.fact { margin: 2px 0 0 26px; }
+.chunk { white-space: pre-wrap; font: 13px/1.45 ui-monospace, Consolas, monospace; background: var(--soft);
+  padding: 8px; border-radius: 6px; max-height: 420px; overflow: auto; }
+.none { color: var(--muted); font-size: 14px; }
+.ratings { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+.scale { border: 0; padding: 0; margin: 6px 0; }
+.scale legend { font-weight: 600; font-size: 14px; padding: 0; }
+.pills { display: flex; gap: 6px; margin-top: 2px; }
+.pills label { position: relative; }
+.pills input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pills span { display: inline-block; min-width: 40px; text-align: center; padding: 5px 0; border: 1px solid var(--line);
+  border-radius: 6px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.pills input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.pills input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.anchor { font-size: 13px; color: var(--muted); min-height: 1.2em; }
+.note { display: block; font-size: 14px; color: var(--muted); margin-top: 6px; }
+.note input { width: 100%; font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+  background: var(--card); color: var(--ink); }
+"""
+
+SHEET_SCRIPT = """
+const SHEET = document.body.dataset.sheet;
+const STORE = "ctrl-alt-defeat-ratings-" + SHEET;
+const CRITERIA = ["factuality", "completeness", "coherence"];
+const RUBRIC = __RUBRIC__;
+const QUESTIONS = [...document.querySelectorAll("section.question")].map(s => s.id);
+const TOTAL = QUESTIONS.length * 2 * CRITERIA.length;
+const status = document.getElementById("status");
+let storageWorks = true;
+
+function current() {
+  const values = {};
+  document.querySelectorAll("input[type=radio]:checked").forEach(i => { values[i.name] = i.value; });
+  document.querySelectorAll("input[type=text]").forEach(i => { if (i.value) values[i.name] = i.value; });
+  return values;
+}
+function apply(values) {
+  for (const [name, value] of Object.entries(values)) {
+    const radio = document.querySelector(
+      `input[type=radio][name="${CSS.escape(name)}"][value="${CSS.escape(String(value))}"]`);
+    if (radio) radio.checked = true;
+    const text = document.querySelector(`input[type=text][name="${CSS.escape(name)}"]`);
+    if (text) text.value = value;
+  }
+}
+function remember() {
+  try { localStorage.setItem(STORE, JSON.stringify(current())); }
+  catch (e) { storageWorks = false; }
+}
+function anchors() {
+  document.querySelectorAll(".anchor").forEach(div => {
+    const checked = document.querySelector(`input[type=radio][name="${CSS.escape(div.dataset.for)}"]:checked`);
+    const criterion = div.dataset.for.split("|")[2];
+    div.textContent = checked ? `${checked.value}: ${RUBRIC[criterion][checked.value]}` : "";
+  });
+}
+function progress() {
+  const given = document.querySelectorAll("input[type=radio]:checked").length;
+  document.getElementById("progress").textContent = `${given} of ${TOTAL} scores given`;
+  QUESTIONS.forEach(id => {
+    const done = document.querySelectorAll(`section#${id} input[type=radio]:checked`).length === 2 * CRITERIA.length;
+    document.querySelector(`nav.index a[href="#${id}"]`).classList.toggle("done", done);
+  });
+  anchors();
+  if (!storageWorks) {
+    status.textContent = "This browser is not keeping your choices: press Save scores before closing the page.";
+  }
+}
+function csvField(value) {
+  const text = String(value ?? "");
+  return /[",\\n\\r]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+}
+function csvText() {
+  const values = current();
+  const rows = [["sheet", "question", "answer", ...CRITERIA, "note"].join(",")];
+  QUESTIONS.forEach(id => ["A", "B"].forEach(label => {
+    const key = `${id}|${label}|`;
+    rows.push([SHEET, id, label, ...CRITERIA.map(c => values[key + c] || ""), values[key + "note"] || ""]
+      .map(csvField).join(","));
+  }));
+  return rows.join("\\r\\n") + "\\r\\n";
+}
+function save() {
+  const blob = new Blob([csvText()], {type: "text/csv"});
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "ratings.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+  const given = document.querySelectorAll("input[type=radio]:checked").length;
+  status.textContent = `Saved ratings.csv with ${given} of ${TOTAL} scores to the browser's downloads. ` +
+    "Saving again later is fine: the newest file counts.";
+}
+function parseCsv(text) {
+  const rows = []; let row = [], field = "", quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else field += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") { row.push(field); field = ""; }
+    else if (ch === "\\n" || ch === "\\r") {
+      if (ch === "\\r" && text[i + 1] === "\\n") i++;
+      row.push(field); rows.push(row); row = []; field = "";
+    } else field += ch;
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(cell => cell !== ""));
+}
+function load(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCsv(String(reader.result).replace(/^\\ufeff/, ""));
+    const header = rows.shift() || [];
+    const at = name => header.indexOf(name);
+    if (at("question") < 0 || at("answer") < 0) {
+      status.textContent = "That file is not a scores file from this sheet.";
+      return;
+    }
+    const values = {}; let other = 0;
+    rows.forEach(r => {
+      if (at("sheet") >= 0 && r[at("sheet")] !== SHEET) { other++; return; }
+      const key = `${r[at("question")]}|${r[at("answer")]}|`;
+      CRITERIA.forEach(c => { if (at(c) >= 0 && r[at(c)]) values[key + c] = r[at(c)]; });
+      if (at("note") >= 0 && r[at("note")]) values[key + "note"] = r[at("note")];
+    });
+    apply(values); remember(); progress();
+    status.textContent = other ? `Skipped ${other} rows from a different sheet.`
+                               : `Loaded the scores from ${file.name}.`;
+  };
+  reader.readAsText(file);
+}
+function nextUnrated() {
+  for (const id of QUESTIONS) {
+    for (const label of ["A", "B"]) {
+      for (const c of CRITERIA) {
+        if (!document.querySelector(`input[type=radio][name="${CSS.escape(`${id}|${label}|${c}`)}"]:checked`)) {
+          document.getElementById(id).scrollIntoView({behavior: "smooth", block: "start"});
+          return;
+        }
+      }
+    }
+  }
+  status.textContent = `All ${TOTAL} scores are given. Press Save scores.`;
+}
+try { apply(JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) { storageWorks = false; }
+document.addEventListener("change", event => { if (event.target.matches("input")) { remember(); progress(); } });
+document.addEventListener("input", event => { if (event.target.matches("input[type=text]")) remember(); });
+document.getElementById("save").addEventListener("click", save);
+document.getElementById("next").addEventListener("click", nextUnrated);
+document.getElementById("load").addEventListener("change", event => {
+  if (event.target.files[0]) load(event.target.files[0]);
+});
+progress();
+"""
+
+
+def sheet_html(items: list[dict], fingerprint: str) -> str:
+    rubric_rows = "".join(f"<tr><th>{score}</th>" + "".join(f"<td>{html.escape(RUBRIC[criterion][score])}</td>"
+                                                            for criterion in CRITERIA) + "</tr>"
+                          for score in range(5, 0, -1))
+    index = "".join(f'<a href="#{item["id"]}">{item["id"]}</a>' for item in items)
+    scores = len(items) * len(LABELS) * len(CRITERIA)
+    script = SHEET_SCRIPT.replace("__RUBRIC__", json.dumps({c: {str(k): v for k, v in RUBRIC[c].items()}
+                                                            for c in CRITERIA}, ensure_ascii=False))
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind Rating Sheet</title>
+<style>{SHEET_STYLE}</style>
+</head>
+<body data-sheet="{fingerprint}">
+<header class="bar"><div class="bar-inner"><strong>Blind rating sheet</strong><span id="progress">0 of {scores} scores
+given</span><button id="next" type="button">Next unrated</button><button id="save" class="primary" type="button">Save
+scores</button><label class="load">Load a scores file<input type="file" id="load" accept=".csv,text/csv"></label></div>
+<div id="status" role="status"></div></header>
+<main>
+<section class="intro">
+<h1>Blind rating sheet: {len(items)} questions, {len(items) * len(LABELS)} answers</h1>
+<p>Each question has two answers, A and B, one from each system, in an order drawn at random; the sheet does not say
+which system wrote which. Rate every answer from 1 to 5 on Factuality, Completeness and Coherence, against the
+reference answer and the anchors in the table (2 and 4 lie between the neighbouring anchors). Completeness follows the
+share of the reference answer's items that the answer gives, so a one-item reference scores 5 or 1. Each answer's
+citations are numbered [1], [2], … and the cited texts are listed under the answer.</p>
+<p>Your choices are kept in this browser as you go. <strong>Save scores</strong> downloads ratings.csv to the
+browser's downloads folder; saving again later is fine, the newest file counts. Sheet {fingerprint}.</p>
+<div class="rubric-wrap"><table class="rubric"><thead><tr><th>Score</th><th>Factuality</th><th>Completeness</th>
+<th>Coherence</th></tr></thead><tbody>{rubric_rows}</tbody></table></div>
+<nav class="index">{index}</nav>
+</section>
+{"".join(question_html(item) for item in items)}
+</main>
+<script>{script}</script>
+</body>
+</html>
+"""
+
+
+def sheet(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(prog="evaluate.py sheet", description="Write the blind rating sheet and its key.")
+    parser.parse_args(argv)
+    results, questions = read_results(), load_questions()
+    missing = [q["id"] for q in questions if any(mode not in results["questions"].get(q["id"], {}) for mode in MODES)]
+    if missing:
+        print(f"RESULT: FAILED - no saved answers for {', '.join(missing)}; run evaluate.py answers first")
+        return 1
+    labels = assign_labels([question["id"] for question in questions])
+    items = sheet_items(results, questions, labels)
+    fingerprint = llm.digest(items)[:16]
+    RESULTS.mkdir(exist_ok=True)
+    SHEET_FILE.write_text(sheet_html(items, fingerprint), encoding="utf-8", newline="\n")
+    key = {"about": "Which system wrote answer A and answer B of each question on rating_sheet.html (graph = GraphRAG, "
+                    "text = the text-only baseline): one draw per question, in question order, from Python's "
+                    f"random.Random({SHEET_SEED}). Written by evaluate.py sheet; read by evaluate.py ratings after the "
+                    "scores are in.",
+           "seed": SHEET_SEED, "sheet": fingerprint, "labels": labels}
+    KEY_FILE.write_text(json.dumps(key, indent=1) + "\n", encoding="utf-8", newline="\n")
+    cited = sum(len(answer["sources"]) for item in items for answer in item["answers"])
+    print(f"Rating sheet {fingerprint}: {len(items)} questions, {len(items) * len(LABELS)} answers, "
+          f"{len(items) * len(LABELS) * len(CRITERIA)} scores to give, {cited} cited sources listed")
+    print(f"  sheet  {SHEET_FILE.relative_to(SHEET_FILE.parent.parent)}")
+    print(f"  key    {KEY_FILE.relative_to(KEY_FILE.parent.parent)} (opened only after the ratings are in)")
+    print("\nRESULT: OK - rating sheet written")
+    return 0
+
+
+# ---------------------------------------------------------------- the ratings, joined to the key
+
+def find_ratings(explicit: str | None) -> tuple[Path | None, str]:
+    """The scores file to read: a file named on the command line, else the newest ratings*.csv in the Downloads
+    folder when it is newer than results/ratings.csv, else results/ratings.csv. A file found elsewhere is copied to
+    results/ratings.csv first."""
+    if explicit:
+        source = Path(explicit)
+        if not source.is_file():
+            return None, f"no file at {source}"
+    else:
+        downloads = Path.home() / "Downloads"
+        found = (sorted(downloads.glob("ratings*.csv"), key=lambda path: path.stat().st_mtime)
+                 if downloads.is_dir() else [])
+        newest = found[-1] if found else None
+        if newest is None or (RATINGS_FILE.is_file() and RATINGS_FILE.stat().st_mtime >= newest.stat().st_mtime):
+            return (RATINGS_FILE, f"{RATINGS_FILE.relative_to(RATINGS_FILE.parent.parent)}") if RATINGS_FILE.is_file() \
+                else (None, f"no ratings*.csv in {downloads} and no {RATINGS_FILE.name} in results")
+        source = newest
+    if source.resolve() != RATINGS_FILE.resolve():
+        RESULTS.mkdir(exist_ok=True)
+        shutil.copyfile(source, RATINGS_FILE)
+        return RATINGS_FILE, f"{source}, copied to {RATINGS_FILE.relative_to(RATINGS_FILE.parent.parent)}"
+    return RATINGS_FILE, f"{RATINGS_FILE.relative_to(RATINGS_FILE.parent.parent)}"
+
+
+def read_ratings(path: Path, key: dict) -> tuple[dict[tuple[str, str], dict], list[str]]:
+    """The scores by (question, label), and the problems: rows from another sheet, unknown rows, scores missing or
+    outside 1-5."""
+    problems, scores = [], {}
+    with path.open(encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if tuple(reader.fieldnames or ()) != RATINGS_COLUMNS:
+            return {}, [f"{path.name} has columns {reader.fieldnames}, expected {list(RATINGS_COLUMNS)}"]
+        rows = list(reader)
+    other = sum(1 for row in rows if row["sheet"] != key["sheet"])
+    if other:
+        problems.append(f"{other} row(s) come from a different sheet than {key['sheet']}")
+    missing = []
+    for row in rows:
+        pair = (row["question"], row["answer"])
+        if pair[0] not in key["labels"] or pair[1] not in LABELS:
+            problems.append(f"unknown row {pair[0]} {pair[1]}")
+            continue
+        entry = {"note": (row["note"] or "").strip()}
+        for criterion in CRITERIA:
+            value = (row[criterion] or "").strip()
+            if not value:
+                missing.append(f"{pair[0]} {pair[1]} {criterion}")
+            elif value not in {"1", "2", "3", "4", "5"}:
+                problems.append(f"{pair[0]} {pair[1]} {criterion}: {value!r} is not a score from 1 to 5")
+            else:
+                entry[criterion] = int(value)
+        scores[pair] = entry
+    for question_id in key["labels"]:
+        for label in LABELS:
+            if (question_id, label) not in scores:
+                missing += [f"{question_id} {label} {criterion}" for criterion in CRITERIA]
+    if missing:
+        problems.append(f"{len(missing)} score(s) missing: " + ", ".join(missing[:12])
+                        + (" ..." if len(missing) > 12 else ""))
+    return scores, problems
+
+
+def joined_ratings(scores: dict, key: dict, questions: list[dict]) -> list[dict]:
+    pattern = {question["id"]: question["pattern"] for question in questions}
+    rows = []
+    for question_id, labels in key["labels"].items():
+        for label in LABELS:
+            mode = labels[label]
+            rows.append({"question": question_id, "pattern": pattern[question_id], "system": MODE_NAMES[mode],
+                         "label": label, **{c: scores[(question_id, label)][c] for c in CRITERIA},
+                         "note": scores[(question_id, label)]["note"]})
+    return sorted(rows, key=lambda row: (row["question"], row["system"] != "GraphRAG"))
+
+
+def rating_summary(rows: list[dict]) -> list[str]:
+    lines = ["  per question (factuality / completeness / coherence):"]
+    by_question: dict[str, dict[str, dict]] = {}
+    for row in rows:
+        by_question.setdefault(row["question"], {})[row["system"]] = row
+    for question_id, pair in sorted(by_question.items()):
+        lines.append(f"    {question_id}  GraphRAG " + "/".join(str(pair["GraphRAG"][c]) for c in CRITERIA)
+                     + "   baseline " + "/".join(str(pair["baseline"][c]) for c in CRITERIA))
+    lines.append("  mean score (24 answers each):")
+    for system in ("GraphRAG", "baseline"):
+        mine = [row for row in rows if row["system"] == system]
+        lines.append(f"    {system:9} " + "  ".join(f"{c} {statistics.mean(row[c] for row in mine):.2f}"
+                                                   for c in CRITERIA))
+    lines.append("  GraphRAG against the baseline, per question (wins / ties / losses):")
+    for criterion in CRITERIA + ("total",):
+        def value(row: dict) -> int:
+            return sum(row[c] for c in CRITERIA) if criterion == "total" else row[criterion]
+        outcome = Counter((value(p["GraphRAG"]) > value(p["baseline"])) - (value(p["GraphRAG"]) < value(p["baseline"]))
+                          for p in by_question.values())
+        lines.append(f"    {criterion:12} {outcome[1]} / {outcome[0]} / {outcome[-1]}")
+    return lines
+
+
+def ratings(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(prog="evaluate.py ratings",
+                                     description="Check the scores from the rating sheet and join them to the key.")
+    parser.add_argument("file", nargs="?", help="the scores file; default the newest ratings*.csv in Downloads, "
+                                                "else results/ratings.csv")
+    args = parser.parse_args(argv)
+    if not KEY_FILE.is_file():
+        print(f"RESULT: FAILED - no {KEY_FILE.name} in results; run evaluate.py sheet first")
+        return 1
+    key = json.loads(KEY_FILE.read_text(encoding="utf-8"))
+    path, where = find_ratings(args.file)
+    if path is None:
+        print(f"RESULT: FAILED - {where}")
+        return 1
+    print(f"Scores from {where}")
+    scores, problems = read_ratings(path, key)
+    if problems:
+        print(f"\nRESULT: {len(problems)} problem(s); the key was not joined")
+        for text in problems:
+            print(f"  - {text}")
+        return 1
+    rows = joined_ratings(scores, key, load_questions())
+    with HUMAN_FILE.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["question", "pattern", "system", "label", *CRITERIA, "note"],
+                                lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    for line in rating_summary(rows):
+        print(line)
+    print(f"\nRESULT: OK - {len(rows) * len(CRITERIA)} scores from {len(rows)} answers joined to the key; "
+          f"{HUMAN_FILE.relative_to(HUMAN_FILE.parent.parent)} written")
+    return 0
+
+
+COMMANDS = {"answers": answers, "sheet": sheet, "ratings": ratings}
 
 
 def main(argv: list[str] | None = None) -> int:
