@@ -1,0 +1,1642 @@
+{
+ "key": "d2dde2adbf92c620034aea8ffc0bae8bb25278091eeb2bef5684aa2373bc8611",
+ "kind": "pagerank",
+ "created": "2026-10-21T21:40:25+00:00",
+ "question": "Which of the techniques described in Intel 471's September 2021 report “The public sector is a juicy target for cybercriminals” does MITRE ATT&CK record REvil as using?",
+ "anchored_reports": [
+  "intel471_2021-09-30_public-sector-cybersecurity-threats-2021"
+ ],
+ "seeds": [
+  "S0496",
+  "T1190",
+  "T1684.001",
+  "TA0001",
+  "software:darkside",
+  "tactic:defense impairment",
+  "tactic:impact",
+  "technique:data from information repositories",
+  "technique:masquerading",
+  "technique:phishing",
+  "technique:social engineering tactics",
+  "technique:sqli vulnerability allegedly impacting resources"
+ ],
+ "graph": {
+  "node_count": 2258,
+  "relationship_count": 41450
+ },
+ "settings": {
+  "relationships": [
+   "USES",
+   "SUBTECHNIQUE_OF",
+   "PART_OF_TACTIC",
+   "MITIGATES"
+  ],
+  "orientation": "UNDIRECTED",
+  "dampingFactor": 0.85,
+  "maxIterations": 40,
+  "concurrency": 1,
+  "top": 200
+ },
+ "nodes": [
+  {
+   "key": "T1190",
+   "name": "Exploit Public-Facing Application",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.21553747837378048
+  },
+  {
+   "key": "software:darkside",
+   "name": "DarkSide",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.2035329739246231
+  },
+  {
+   "key": "technique:masquerading",
+   "name": "Masquerading",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.20011592242118642
+  },
+  {
+   "key": "S0496",
+   "name": "REvil",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.17374791958884653
+  },
+  {
+   "key": "TA0001",
+   "name": "Initial Access",
+   "labels": [
+    "Tactic"
+   ],
+   "score": 0.16581952291357238
+  },
+  {
+   "key": "technique:phishing",
+   "name": "Phishing",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.1601016802550397
+  },
+  {
+   "key": "T1684.001",
+   "name": "Impersonation",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.15812064797284867
+  },
+  {
+   "key": "tactic:defense impairment",
+   "name": "Defense Impairment",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.15000000000000002
+  },
+  {
+   "key": "tactic:impact",
+   "name": "Impact",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.15000000000000002
+  },
+  {
+   "key": "technique:data from information repositories",
+   "name": "Data from Information Repositories",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.15000000000000002
+  },
+  {
+   "key": "technique:social engineering tactics",
+   "name": "social engineering tactics",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.15000000000000002
+  },
+  {
+   "key": "technique:sqli vulnerability allegedly impacting resources",
+   "name": "SQLi vulnerability allegedly impacting resources",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.15000000000000002
+  },
+  {
+   "key": "software:vmprotect",
+   "name": "VMProtect",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.0900274087824849
+  },
+  {
+   "key": "group:ta2722",
+   "name": "TA2722",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.08685258560599779
+  },
+  {
+   "key": "T1486",
+   "name": "Data Encrypted for Impact",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.06314997107791818
+  },
+  {
+   "key": "G0127",
+   "name": "TA551",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.061033995309218714
+  },
+  {
+   "key": "T1105",
+   "name": "Ingress Tool Transfer",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.060659009994327516
+  },
+  {
+   "key": "software:bitmix",
+   "name": "BitMix",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.04743325277636667
+  },
+  {
+   "key": "T1071.001",
+   "name": "Web Protocols",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.044224985561687795
+  },
+  {
+   "key": "software:kpot stealer",
+   "name": "KPOT Stealer",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.043250729626344485
+  },
+  {
+   "key": "T1082",
+   "name": "System Information Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.0432070193660059
+  },
+  {
+   "key": "T1059.003",
+   "name": "Windows Command Shell",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.042689844213994035
+  },
+  {
+   "key": "T1027.002",
+   "name": "Software Packing",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.040835579772673256
+  },
+  {
+   "key": "T1083",
+   "name": "File and Directory Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.03965051097320928
+  },
+  {
+   "key": "group:e.k.p",
+   "name": "E.K.P",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.039508823791739
+  },
+  {
+   "key": "S0367",
+   "name": "Emotet",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.03849204468312752
+  },
+  {
+   "key": "T1566.001",
+   "name": "Spearphishing Attachment",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.03725765127376461
+  },
+  {
+   "key": "T1140",
+   "name": "Deobfuscate/Decode Files or Information",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.03725316981414164
+  },
+  {
+   "key": "T1057",
+   "name": "Process Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.0329679613997723
+  },
+  {
+   "key": "group:ta575",
+   "name": "TA575",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.03260847201108513
+  },
+  {
+   "key": "T1070.004",
+   "name": "File Deletion",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.03252318734962439
+  },
+  {
+   "key": "T1204.002",
+   "name": "Malicious File",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.029849847798924963
+  },
+  {
+   "key": "T1059.001",
+   "name": "PowerShell",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.02976732952456335
+  },
+  {
+   "key": "S0332",
+   "name": "Remcos",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.02936202443689708
+  },
+  {
+   "key": "T1027.013",
+   "name": "Encrypted/Encoded File",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.028731999096724792
+  },
+  {
+   "key": "T1547.001",
+   "name": "Registry Run Keys / Startup Folder",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.028404435475853234
+  },
+  {
+   "key": "T1016",
+   "name": "System Network Configuration Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.028281850048210922
+  },
+  {
+   "key": "software:owlproxy",
+   "name": "OwlProxy",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.02735764541621352
+  },
+  {
+   "key": "T1106",
+   "name": "Native API",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.027171186579834743
+  },
+  {
+   "key": "T1027",
+   "name": "Obfuscated Files or Information",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.0270506854643072
+  },
+  {
+   "key": "S0336",
+   "name": "NanoCore",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.02670083498080369
+  },
+  {
+   "key": "T1036.005",
+   "name": "Match Legitimate Resource Name or Location",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.02546817759181007
+  },
+  {
+   "key": "G0094",
+   "name": "Kimsuky",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.024465471910382442
+  },
+  {
+   "key": "T1112",
+   "name": "Modify Registry",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.023372679681961814
+  },
+  {
+   "key": "T1033",
+   "name": "System Owner/User Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.02301164237803435
+  },
+  {
+   "key": "T1041",
+   "name": "Exfiltration Over C2 Channel",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.022800121401003553
+  },
+  {
+   "key": "G0007",
+   "name": "APT28",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.022455560209201423
+  },
+  {
+   "key": "TA0005",
+   "name": "Stealth",
+   "labels": [
+    "Tactic"
+   ],
+   "score": 0.02189252131235258
+  },
+  {
+   "key": "T1005",
+   "name": "Data from Local System",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.021493382392183527
+  },
+  {
+   "key": "G0096",
+   "name": "APT41",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.021107708754086667
+  },
+  {
+   "key": "T1566",
+   "name": "Phishing",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.020519621374749726
+  },
+  {
+   "key": "T1053.005",
+   "name": "Scheduled Task",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01980489784583803
+  },
+  {
+   "key": "T1685",
+   "name": "Disable or Modify Tools",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01972136526272601
+  },
+  {
+   "key": "T1047",
+   "name": "Windows Management Instrumentation",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.019633552352447417
+  },
+  {
+   "key": "T1543.003",
+   "name": "Windows Service",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01954589176964956
+  },
+  {
+   "key": "G0082",
+   "name": "APT38",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.019372878570090495
+  },
+  {
+   "key": "T1573.001",
+   "name": "Symmetric Cryptography",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.018076151994833544
+  },
+  {
+   "key": "T1059.005",
+   "name": "Visual Basic",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.017867297211900206
+  },
+  {
+   "key": "T1113",
+   "name": "Screen Capture",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.017782345123298113
+  },
+  {
+   "key": "G0069",
+   "name": "MuddyWater",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.017407049654044472
+  },
+  {
+   "key": "T1056.001",
+   "name": "Keylogging",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.017081685055609256
+  },
+  {
+   "key": "T1566.002",
+   "name": "Spearphishing Link",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.016848111046572634
+  },
+  {
+   "key": "T1574.001",
+   "name": "DLL",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.016710354643200274
+  },
+  {
+   "key": "T1078",
+   "name": "Valid Accounts",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.016464185035200172
+  },
+  {
+   "key": "G1055",
+   "name": "VOID MANTICORE",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.016334848163395095
+  },
+  {
+   "key": "G0046",
+   "name": "FIN7",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.01595769642788978
+  },
+  {
+   "key": "G0034",
+   "name": "Sandworm Team",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.015856902539723425
+  },
+  {
+   "key": "S0640",
+   "name": "Avaddon",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.01584098094172352
+  },
+  {
+   "key": "M1017",
+   "name": "User Training",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.01571704784626753
+  },
+  {
+   "key": "T1189",
+   "name": "Drive-by Compromise",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.015486271214926918
+  },
+  {
+   "key": "G0016",
+   "name": "APT29",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.015471928686423008
+  },
+  {
+   "key": "G1059",
+   "name": "NIMBUS MANTICORE",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.015227040067279417
+  },
+  {
+   "key": "T1195",
+   "name": "Supply Chain Compromise",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.015100075241174345
+  },
+  {
+   "key": "T1012",
+   "name": "Query Registry",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.014832501654169099
+  },
+  {
+   "key": "T1132.001",
+   "name": "Standard Encoding",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.014516578985622485
+  },
+  {
+   "key": "M1026",
+   "name": "Privileged Account Management",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.01416578543782502
+  },
+  {
+   "key": "G1054",
+   "name": "MirrorFace",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.01407508908647639
+  },
+  {
+   "key": "G1015",
+   "name": "Scattered Spider",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.013837828179510297
+  },
+  {
+   "key": "M1018",
+   "name": "User Account Management",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.013562589923498089
+  },
+  {
+   "key": "T1573.002",
+   "name": "Asymmetric Cryptography",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01352953796851312
+  },
+  {
+   "key": "T1074.001",
+   "name": "Local Data Staging",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.013499368681967869
+  },
+  {
+   "key": "T1055",
+   "name": "Process Injection",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.013416217043585444
+  },
+  {
+   "key": "S0154",
+   "name": "Cobalt Strike",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.013383586553443638
+  },
+  {
+   "key": "G1056",
+   "name": "TeamPCP",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.013255087739016406
+  },
+  {
+   "key": "G0059",
+   "name": "Magic Hound",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.013210437577433842
+  },
+  {
+   "key": "T1518.001",
+   "name": "Security Software Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01319993662559736
+  },
+  {
+   "key": "T1218.011",
+   "name": "Rundll32",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.012833447437601182
+  },
+  {
+   "key": "T1680",
+   "name": "Local Storage Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.012768585225922944
+  },
+  {
+   "key": "G0099",
+   "name": "APT-C-36",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.012677099742586368
+  },
+  {
+   "key": "G1017",
+   "name": "Volt Typhoon",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.012635851357178454
+  },
+  {
+   "key": "S0384",
+   "name": "Dridex",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.012622592013947082
+  },
+  {
+   "key": "G0027",
+   "name": "Threat Group-3390",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.012071711217616164
+  },
+  {
+   "key": "T1133",
+   "name": "External Remote Services",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.012067259826428456
+  },
+  {
+   "key": "G0032",
+   "name": "Lazarus Group",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.012021848963947493
+  },
+  {
+   "key": "T1490",
+   "name": "Inhibit System Recovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.011656205268672847
+  },
+  {
+   "key": "M1047",
+   "name": "Audit",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.011611332039920246
+  },
+  {
+   "key": "G1046",
+   "name": "Storm-1811",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.011565180830211397
+  },
+  {
+   "key": "G0049",
+   "name": "OilRig",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.01153137804575863
+  },
+  {
+   "key": "T1588.002",
+   "name": "Tool",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.011413574988595538
+  },
+  {
+   "key": "G1052",
+   "name": "Contagious Interview",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.011397634942825379
+  },
+  {
+   "key": "S0650",
+   "name": "QakBot",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.01120281615859278
+  },
+  {
+   "key": "T1489",
+   "name": "Service Stop",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.011168730883477883
+  },
+  {
+   "key": "G1004",
+   "name": "LAPSUS$",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.010959251217763501
+  },
+  {
+   "key": "T1505.003",
+   "name": "Web Shell",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.010944214240325425
+  },
+  {
+   "key": "G0129",
+   "name": "Mustang Panda",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.0109272611446715
+  },
+  {
+   "key": "T1078.002",
+   "name": "Domain Accounts",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.010768728492393612
+  },
+  {
+   "key": "T1078.004",
+   "name": "Cloud Accounts",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.010591302557622093
+  },
+  {
+   "key": "G0065",
+   "name": "Leviathan",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.010519719720668813
+  },
+  {
+   "key": "TA0003",
+   "name": "Persistence",
+   "labels": [
+    "Tactic"
+   ],
+   "score": 0.010452103348698007
+  },
+  {
+   "key": "T1018",
+   "name": "Remote System Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01040380606481698
+  },
+  {
+   "key": "T1195.002",
+   "name": "Compromise Software Supply Chain",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01038097622065492
+  },
+  {
+   "key": "G0035",
+   "name": "Dragonfly",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.01028536918861244
+  },
+  {
+   "key": "T1070.006",
+   "name": "Timestomp",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.010076042255531414
+  },
+  {
+   "key": "T1555.003",
+   "name": "Credentials from Web Browsers",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.01007108777253293
+  },
+  {
+   "key": "T1007",
+   "name": "System Service Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.010029967194114043
+  },
+  {
+   "key": "T1078.003",
+   "name": "Local Accounts",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009985179933554501
+  },
+  {
+   "key": "G0045",
+   "name": "menuPass",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009922118626889622
+  },
+  {
+   "key": "T1204.001",
+   "name": "Malicious Link",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009884841191625901
+  },
+  {
+   "key": "G1051",
+   "name": "Medusa Group",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.00986052433265358
+  },
+  {
+   "key": "T1059.007",
+   "name": "JavaScript",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009834492493538924
+  },
+  {
+   "key": "T1566.003",
+   "name": "Spearphishing via Service",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009797836661874856
+  },
+  {
+   "key": "T1091",
+   "name": "Replication Through Removable Media",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009797405212943425
+  },
+  {
+   "key": "G0050",
+   "name": "APT32",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009732644718614757
+  },
+  {
+   "key": "T1027.010",
+   "name": "Command Obfuscation",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009706436989150026
+  },
+  {
+   "key": "G0010",
+   "name": "Turla",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009616462649141823
+  },
+  {
+   "key": "T1095",
+   "name": "Non-Application Layer Protocol",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009574905866877316
+  },
+  {
+   "key": "T1195.001",
+   "name": "Compromise Software Dependencies and Development Tools",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009562297822820726
+  },
+  {
+   "key": "T1036",
+   "name": "Masquerading",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009558840898028768
+  },
+  {
+   "key": "G1003",
+   "name": "Ember Bear",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009549639632429609
+  },
+  {
+   "key": "T1135",
+   "name": "Network Share Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009538539424850537
+  },
+  {
+   "key": "G0092",
+   "name": "TA505",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009436140501882212
+  },
+  {
+   "key": "T1049",
+   "name": "System Network Connections Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009400247674211616
+  },
+  {
+   "key": "T1199",
+   "name": "Trusted Relationship",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009397049418893844
+  },
+  {
+   "key": "S1242",
+   "name": "Qilin",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.009306568134692881
+  },
+  {
+   "key": "G1057",
+   "name": "ShinyHunters",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009304063551337786
+  },
+  {
+   "key": "T1124",
+   "name": "System Time Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009276371141368677
+  },
+  {
+   "key": "G0102",
+   "name": "Wizard Spider",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009249068464074618
+  },
+  {
+   "key": "T1036.004",
+   "name": "Masquerade Task or Service",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009240740029993312
+  },
+  {
+   "key": "G0087",
+   "name": "APT39",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009180792380276002
+  },
+  {
+   "key": "T1003.001",
+   "name": "LSASS Memory",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.009165678963752281
+  },
+  {
+   "key": "G1043",
+   "name": "BlackByte",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.009154175804762018
+  },
+  {
+   "key": "S0331",
+   "name": "Agent Tesla",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.009123634255145183
+  },
+  {
+   "key": "TA0004",
+   "name": "Privilege Escalation",
+   "labels": [
+    "Tactic"
+   ],
+   "score": 0.00907575314806126
+  },
+  {
+   "key": "S0363",
+   "name": "Empire",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.008952501317557442
+  },
+  {
+   "key": "T1553.002",
+   "name": "Code Signing",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.008933820801609161
+  },
+  {
+   "key": "T1560.001",
+   "name": "Archive via Utility",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.008922806599955901
+  },
+  {
+   "key": "G0090",
+   "name": "WIRTE",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008889908718658633
+  },
+  {
+   "key": "G1044",
+   "name": "APT42",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008857528290476237
+  },
+  {
+   "key": "T1090",
+   "name": "Proxy",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.008836817021527967
+  },
+  {
+   "key": "S0483",
+   "name": "IcedID",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.008817017038724095
+  },
+  {
+   "key": "G1016",
+   "name": "FIN13",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008728196025133094
+  },
+  {
+   "key": "M1051",
+   "name": "Update Software",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.008658796935271686
+  },
+  {
+   "key": "technique:obfuscated files or information",
+   "name": "Obfuscated Files or Information",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.008643951466254489
+  },
+  {
+   "key": "G1045",
+   "name": "Salt Typhoon",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008615019788453712
+  },
+  {
+   "key": "G1053",
+   "name": "Storm-0501",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008613157063769444
+  },
+  {
+   "key": "G0004",
+   "name": "Ke3chang",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008593273480315942
+  },
+  {
+   "key": "G1048",
+   "name": "UNC3886",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008562306824605036
+  },
+  {
+   "key": "G0115",
+   "name": "GOLD SOUTHFIELD",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008523562643360688
+  },
+  {
+   "key": "G0125",
+   "name": "HAFNIUM",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.00837830500180198
+  },
+  {
+   "key": "T1614.001",
+   "name": "System Language Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.008350469244207674
+  },
+  {
+   "key": "S0386",
+   "name": "Ursnif",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.008321520776971719
+  },
+  {
+   "key": "G1006",
+   "name": "Earth Lusca",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.00829537750047513
+  },
+  {
+   "key": "M1056",
+   "name": "Pre-compromise",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.0082343442195746
+  },
+  {
+   "key": "T1485",
+   "name": "Data Destruction",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.008116767777547914
+  },
+  {
+   "key": "M1030",
+   "name": "Network Segmentation",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.008085231914985792
+  },
+  {
+   "key": "G0047",
+   "name": "Gamaredon Group",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.008055749421344679
+  },
+  {
+   "key": "T1021.002",
+   "name": "SMB/Windows Admin Shares",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007917553003263245
+  },
+  {
+   "key": "S0198",
+   "name": "NETWIRE",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.007908323928960468
+  },
+  {
+   "key": "T1021.001",
+   "name": "Remote Desktop Protocol",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007860207821333074
+  },
+  {
+   "key": "T1078.001",
+   "name": "Default Accounts",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007854146179097675
+  },
+  {
+   "key": "T1548.002",
+   "name": "Bypass User Account Control",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007848375191094775
+  },
+  {
+   "key": "G1033",
+   "name": "Star Blizzard",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.007803600928138978
+  },
+  {
+   "key": "S0633",
+   "name": "Sliver",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.007799641342683767
+  },
+  {
+   "key": "T1046",
+   "name": "Network Service Discovery",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.00779588910926924
+  },
+  {
+   "key": "G1031",
+   "name": "Saint Bear",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.007742549894437505
+  },
+  {
+   "key": "G0093",
+   "name": "GALLIUM",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.007620897113290569
+  },
+  {
+   "key": "T1069.002",
+   "name": "Domain Groups",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007617338856294028
+  },
+  {
+   "key": "T1119",
+   "name": "Automated Collection",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007614548834467485
+  },
+  {
+   "key": "S0002",
+   "name": "Mimikatz",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.007581144084985952
+  },
+  {
+   "key": "group:gold southfield",
+   "name": "GOLD SOUTHFIELD",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.0075198903308868964
+  },
+  {
+   "key": "T1569.002",
+   "name": "Service Execution",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007507407433457058
+  },
+  {
+   "key": "S0266",
+   "name": "TrickBot",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.00745270291733726
+  },
+  {
+   "key": "M1037",
+   "name": "Filter Network Traffic",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.007443932986726352
+  },
+  {
+   "key": "S9037",
+   "name": "RustyWater",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.007440756038224846
+  },
+  {
+   "key": "M1038",
+   "name": "Execution Prevention",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.00739394074201063
+  },
+  {
+   "key": "T1566.004",
+   "name": "Spearphishing Voice",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007386941072936462
+  },
+  {
+   "key": "T1087.002",
+   "name": "Domain Account",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007359564297538175
+  },
+  {
+   "key": "T1583.001",
+   "name": "Domains",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007354659644056693
+  },
+  {
+   "key": "G0117",
+   "name": "Fox Kitten",
+   "labels": [
+    "Group"
+   ],
+   "score": 0.007354402717489169
+  },
+  {
+   "key": "T1195.003",
+   "name": "Compromise Hardware Supply Chain",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007320793927286742
+  },
+  {
+   "key": "software:exploit builder",
+   "name": "Exploit Builder",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.0073004122979286965
+  },
+  {
+   "key": "technique:phishing: spearphishing attachment",
+   "name": "Phishing: Spearphishing Attachment",
+   "labels": [
+    "Entity"
+   ],
+   "score": 0.0073004122979286965
+  },
+  {
+   "key": "T1059.006",
+   "name": "Python",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007267864821314345
+  },
+  {
+   "key": "M1032",
+   "name": "Multi-factor Authentication",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.007264201820807541
+  },
+  {
+   "key": "T1564.003",
+   "name": "Hidden Window",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007184071675721615
+  },
+  {
+   "key": "T1659",
+   "name": "Content Injection",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007183020714165943
+  },
+  {
+   "key": "M1042",
+   "name": "Disable or Remove Feature or Program",
+   "labels": [
+    "Mitigation"
+   ],
+   "score": 0.007162559991932875
+  },
+  {
+   "key": "S0013",
+   "name": "PlugX",
+   "labels": [
+    "Software"
+   ],
+   "score": 0.00716162151984083
+  },
+  {
+   "key": "T1200",
+   "name": "Hardware Additions",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007161267996733105
+  },
+  {
+   "key": "T1203",
+   "name": "Exploitation for Client Execution",
+   "labels": [
+    "Technique"
+   ],
+   "score": 0.007153153564394445
+  }
+ ]
+}

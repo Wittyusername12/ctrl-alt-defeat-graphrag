@@ -1,0 +1,17 @@
+{
+ "key": "084b9c66819dbb34bf95a0c8ba34c7814e291dbb374360c17cac3ba7a3f6c87d",
+ "kind": "embeddings",
+ "label": {
+  "use": "question"
+ },
+ "created": "2026-10-21T21:40:25+00:00",
+ "seconds": 0.2,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 1,
+ "text_sha256": [
+  "a149f185f02e8326bcce3b1531c40d8544a920dbdb69d3320a9fdc92e7eef8b3"
+ ]
+}
