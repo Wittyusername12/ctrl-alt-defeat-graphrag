@@ -4,7 +4,7 @@ Term project for CS 6338 Knowledge Engineering, Angelo State University. Team CT
 
 The system answers questions about cyber threat reports. A knowledge graph in Neo4j joins MITRE ATT&CK v20.0 (Enterprise) with the AnnoCTR threat reports. A language model answers from retrieved report text plus the graph, and every answer cites the report chunks and graph edges it used. The same pipeline without the graph is the text-only baseline.
 
-**Status:** built and evaluated; the measured results are summarized in `results/README.md`, and the final technical report, with the scripts behind its numbers, is in `docs/final/`. Every stage runs: ATT&CK loading, extraction, linking and loading, graph analytics, scoring, and question answering with and without the graph, from Command Prompt or from a chat page. Extraction, linking and scoring take one report or a whole split (`--split dev`, `--split test`). A question that names a report by its title is answered from that report, with summary lines that count the report's links in ATT&CK. The benchmark (gold triples, evaluation questions) and the scorer are in place, `evaluate.py` answers the 24 benchmark questions with both systems and measures them: answer accuracy, operations (citation validity, tokens, cost, seconds per stage), extraction beside an exact-name baseline, RAGAS scores from a judge model, and a blind human rating.
+**Status:** built and evaluated; the measured results are summarized in `results/README.md`, and the final technical report, with the scripts behind its numbers, is in `docs/final/`. Every stage runs: ATT&CK loading, extraction, linking and loading, graph analytics, scoring, and question answering with and without the graph, from Command Prompt or from a chat page. Extraction, linking and scoring take one report or a whole split (`--split dev`, `--split test`). A question that names a report by its title is answered from that report, with summary lines that count the report's links in ATT&CK. The benchmark (gold triples, evaluation questions) and the scorer are in place, `evaluate.py` answers the 24 benchmark questions with both systems and measures them: answer accuracy, operations (citation validity, tokens, cost, seconds per stage), extraction beside an exact-name baseline, RAGAS scores from a judge model, and a blind human rating. On 22 Oct 2026 a fresh clone, set up from this README alone, passed the tests and rebuilt the graph in an empty database with the same counts and scores and the same answers to the tracer question (`docs/fresh-clone.md`).
 
 ## Repository layout
 
@@ -39,6 +39,9 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `scripts/` | `try_openai.py` and `check_setup.py`, the checks for a new machine; `check_summaries.py`, which compares rag.py's summary-line Cypher with the same count in Python; `try_ollama.py`, one report chunk through a local model |
 | `tests/` | `pytest` tests |
 | `docs/milestones/` | the proposal and design document (PDF and LaTeX sources) |
+| `docs/final/` | the final technical report (PDF and LaTeX source) and the scripts behind its numbers |
+| `docs/fresh-clone.md` | the fresh-clone check of 22 Oct 2026: README steps 1–13 in a new folder and an empty database, with every result line |
+| `docs/chat-page.png` | the chat page screenshot shown in step 14 |
 
 ## What you need
 
@@ -131,7 +134,7 @@ Keep the repository and the virtual environment outside any folder that OneDrive
     ```
     Below each GraphRAG answer, the relationships and chunks it cites are drawn as a graph, read from Neo4j by their edge IDs (blue: recorded by ATT&CK; orange: from the report's text; a dashed box: a name the linker left unlinked). The session's earlier questions and answers stay on the page, newest first, until the browser tab is closed or reloaded. The page on 22 Oct 2026, answering benchmark question Q10 with GraphRAG (left) and the text-only baseline (right) after the tracer question, all from saved answers:
 
-    ![The chat page: question Q10 answered by GraphRAG and by the text-only baseline, with the citation checks, GraphRAG's cited facts drawn as a graph, the FastRP neighbours of APT-C-36, and the tracer question under Earlier in this session](docs/chat-page.png)
+    ![The chat page: question Q10 answered by GraphRAG and by the text-only baseline, with the citation checks, GraphRAG's cited facts drawn as a graph, the FastRP neighbors of APT-C-36, and the tracer question under Earlier in this session](docs/chat-page.png)
 15. Local model (needs Ollama with `qwen3:4b` pulled): one report chunk through `qwen3:4b` with the extraction prompt and reply format, checked like the gpt-6-sol replies. On a laptop processor the chunk takes minutes; the reply is saved under `replies/ollama`, and a rerun reuses it without Ollama:
     ```
     %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe scripts\try_ollama.py
@@ -181,6 +184,24 @@ Keep the repository and the virtual environment outside any folder that OneDrive
 ```
 %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe -m pytest
 ```
+
+The 176 tests call no model and need no database: stand-ins take the place of OpenAI and Neo4j, so the tests show what the code sends and how it handles each kind of reply. What OpenAI and Neo4j really return is shown by the runs themselves, for example the fresh-clone check in `docs/fresh-clone.md`, where the tests gave `176 passed in 47.86s` (Windows 11, Python 3.11.9, 22 Oct 2026).
+
+| File | Tests | What they check |
+|---|---|---|
+| `test_pipeline_logic.py` | 30 | the parts of extraction, linking and answering that need neither OpenAI nor Neo4j |
+| `test_evaluate.py` | 27 | `evaluate.py`: the answer runner, the blind rating sheet and its join, answer accuracy, operations, the exact-name baseline, the RAGAS runs, the hallucination rate and the bootstrap intervals |
+| `test_questions.py` | 24 | question answering: report lookup, summary lines, saved PageRank scores, the stages of `rag.ask`, the chat page with its cited-facts drawing and earlier questions, the summary-line check and the Ollama script |
+| `test_runs.py` | 19 | whole-split runs: the report choice, `extract.py`'s stop rule and spend line, `link.py`'s short summaries |
+| `test_models.py` | 15 | the Pydantic data models: their names match `schemas.py`, their constraints hold, and `rag.ask` results convert |
+| `test_gold.py` | 12 | the benchmark files: written only by `gold.py`, complete, and consistent with the experts' labels |
+| `test_score.py` | 11 | the scorer, on made-up cases whose answers are known in advance |
+| `test_names.py` | 9 | every name in `schema.cypher`, in the loader's and the scorer's Cypher and in the benchmark files comes from `schemas.py` |
+| `test_judge.py` | 8 | the RAGAS judge's three metrics, through RAGAS's own prompts, with a stand-in judge model |
+| `test_enrich.py` | 6 | `enrich.py`: the GDS queries it sends, the saved files, and what it writes back |
+| `test_load_attack.py` | 6 | the ATT&CK loader: the STIX file, the RDF graph, the Turtle file and the rows for Neo4j |
+| `test_neo4j_code_with_stand_in.py` | 6 | the Neo4j code paths, against a stand-in driver that records what would be sent |
+| `test_calibrate.py` | 3 | `calibrate.py` on a hand-worked case |
 
 ## Why RDF is built with rdflib, not n10s
 
