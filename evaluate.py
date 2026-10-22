@@ -1032,8 +1032,8 @@ def operations_summary(rows: list[dict]) -> list[str]:
         costs = [r["cost"] for r in mine]
         lines.append(f"  {system}: citation-ID validity {cited - outside} of {cited} "
                      f"({(cited - outside) / cited if cited else 0:.1%}); tokens in {spread(tokens_in, 0)}, "
-                     f"out {spread(tokens_out, 0)}; cost per question ${statistics.mean(costs):.4f} "
-                     f"(all {len(mine)}: ${sum(costs):.2f})")
+                     f"out {spread(tokens_out, 0)}; cost per question: mean ${statistics.mean(costs):.4f} "
+                     f"(total for all {len(mine)}: ${sum(costs):.2f})")
         stages = [stage for stage in STAGES if any(row[stage_column(stage)] is not None for row in mine)]
         for stage in stages:
             values = [row[stage_column(stage)] for row in mine if row[stage_column(stage)] is not None]
@@ -1071,8 +1071,11 @@ def operations(argv: list[str]) -> int:
 EXTRACTION_FILE = RESULTS / "extraction_test.csv"
 EXTRACTION_REPORTS_FILE = RESULTS / "extraction_test_reports.csv"   # per report, for the bootstrap intervals
 # The AnnoCTR paper's best document-level F1 on its test split, sub-techniques collapsed to parents (Lange et al.,
-# LREC-COLING 2024), quoted for context: its setting differs from this project's.
+# LREC-COLING 2024, Table 9, F1 micro-averaged over documents), quoted for context: its setting differs from this
+# project's. PAPER_F1: its systems find the mentions themselves (the technique and tactic figures come from two
+# different setups). PAPER_F1_GIVEN_MENTIONS: the experts' mentions are given ("gold technique/mention detection").
 PAPER_F1 = {"Technique": 56.6, "Tactic": 47.7}
+PAPER_F1_GIVEN_MENTIONS = {"Technique": 65.7, "Tactic": 84.2}
 
 
 def plain(text: str) -> str:
@@ -1172,8 +1175,11 @@ def extraction(argv: list[str]) -> int:
     ranked = sorted(false_names.items(), key=lambda item: (-item[1], item[0]))[:10]
     print("\nbaseline names whose entries are all outside a report's gold, most reports first (ties by name): "
           + ", ".join(f"\"{name}\" {count}" for name, count in ranked))
-    print("AnnoCTR paper, best document-level F1 on its test split (sub-techniques collapsed to parents), for context: "
-          + ", ".join(f"{kind} {value}" for kind, value in PAPER_F1.items()))
+    print("AnnoCTR paper, best document-level F1 on its test split (sub-techniques collapsed to parents; Table 9), "
+          "for context: finding the mentions itself "
+          + ", ".join(f"{kind} {value}" for kind, value in PAPER_F1.items())
+          + " (two different setups); given the experts' mentions "
+          + ", ".join(f"{kind} {value}" for kind, value in PAPER_F1_GIVEN_MENTIONS.items()))
     RESULTS.mkdir(exist_ok=True)
     for path, table in ((EXTRACTION_FILE, rows), (EXTRACTION_REPORTS_FILE, report_rows)):
         with path.open("w", encoding="utf-8", newline="") as handle:
