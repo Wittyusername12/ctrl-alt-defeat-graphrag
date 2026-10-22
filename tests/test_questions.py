@@ -251,6 +251,16 @@ class StandIns:
         if query == rag.node_lines_query():
             assert params["entries"] == ["G0129", "S0013", "T1055", "T1574"]
             return rag.node_lines_reference(*self.attack, params["entries"])
+        if query == rag.cited_edges_query():   # the chat page's drawing of the cited facts
+            names = {"M1040": "Behavior Prevention on Endpoint", "T1055": "Process Injection",
+                     "T1574": "Hijack Execution Flow"}
+            rows = []
+            for edge_id in params["edge_ids"]:
+                _, kind, start, end = edge_id.split(":")
+                rows.append({"edge_id": edge_id, "type": kind, "source": "attack", "a_label": "Mitigation",
+                             "a_key": start, "a_name": names[start], "b_label": "Technique", "b_key": end,
+                             "b_name": names[end]})
+            return rows
         if "db.index.vector.queryNodes('fastrp_" in query:   # the chat page's FastRP search
             return [{"attack_id": params["attack_id"], "name": "the entry itself", "score": 1.0},
                     {"attack_id": "G0027", "name": "Threat Group-3390", "score": 0.93}]
@@ -319,7 +329,7 @@ def test_a_query_response_carries_the_new_fields_and_defaults_without_them(stand
 
 # ---------------------------------------------------------------- the chat page
 
-def test_the_chat_page_shows_both_answers(stand_ins, monkeypatch):
+def test_the_chat_page_shows_both_answers_the_cited_facts_and_earlier_questions(stand_ins, monkeypatch):
     from streamlit.testing.v1 import AppTest
     monkeypatch.setattr(rag.db, "connect", lambda: ("driver", "neo4j"))
     page = AppTest.from_file(str(REPO / "app.py"), default_timeout=60)
@@ -330,6 +340,50 @@ def test_the_chat_page_shows_both_answers(stand_ins, monkeypatch):
     assert [header.value for header in page.subheader][:2] == ["GraphRAG (chunks + graph)",
                                                                "Text-only baseline (chunks only)"]
     assert len(page.success) == 2 and not page.error
+    charts = page.get("graphviz_chart")                         # only the GraphRAG answer is drawn
+    assert len(charts) == 1
+    spec = charts[0].proto.spec
+    assert spec.count(" -> ") == 2 and '"Mitigation:M1040" -> "Technique:T1574" [label="MITIGATES"' in spec
+    assert f'"Chunk:{stand_ins.chunk["chunk_id"]}" [' in spec   # the cited chunk is drawn too
+    assert not any(header.value.startswith("Earlier in this session") for header in page.subheader)
+    page.text_area[0].input(f'Which tactics does "{rag.TRACER_TITLE}" describe?')
+    page.button[0].click().run()
+    assert not page.exception
+    assert page.markdown[0].value != "" and any(header.value == "Earlier in this session (1)"
+                                                 for header in page.subheader)
+    assert any(item.value == f"**1. Question:** {rag.TRACER_QUESTION}" for item in page.markdown)
+
+
+def test_cited_graph_draws_each_cited_relationship_and_chunk_once():
+    cited = [("edge", "text:MENTIONS:r#0/m18"), ("edge", "attack:USES:G0099:S0385"), ("edge", "text:MENTIONS:r#1/m7"),
+             ("chunk", "r#1"), ("edge", "attack:USES:G0099:S0385"), ("edge", "attack:USES:G9999:S9999")]
+    rows = [{"edge_id": "attack:USES:G0099:S0385", "type": "USES", "source": "attack", "a_label": "Group",
+             "a_key": "G0099", "a_name": 'APT-C-36 "Blind Eagle"', "b_label": "Software", "b_key": "S0385",
+             "b_name": "njRAT"},
+            {"edge_id": "text:MENTIONS:r#0/m18", "type": "MENTIONS", "source": "text", "a_label": "Chunk",
+             "a_key": "r#0", "a_name": None, "b_label": "Software", "b_key": "S0385", "b_name": "njRAT"},
+            {"edge_id": "text:MENTIONS:r#1/m7", "type": "MENTIONS", "source": "text", "a_label": "Chunk",
+             "a_key": "r#1", "a_name": None, "b_label": "Entity", "b_key": "software:limerat", "b_name": "LimeRAT"}]
+    dot, missing = rag.cited_graph(cited, rows)
+    assert missing == ["attack:USES:G9999:S9999"]                # cited, but no relationship carries the ID
+    assert dot.startswith("digraph cited {") and dot.endswith("}") and dot.count(" -> ") == 3
+    boxes = [line.split(" [")[0].strip() for line in dot.splitlines() if " [label=" in line and " -> " not in line]
+    assert boxes == ['"Group:G0099"', '"Software:S0385"', '"Chunk:r#0"', '"Chunk:r#1"', '"Entity:software:limerat"']
+    assert '"Group:G0099" -> "Software:S0385" [label="USES", color="#3B5B92"' in dot      # ATT&CK: blue
+    assert '"Chunk:r#0" -> "Software:S0385" [label="MENTIONS", color="#B5651D"' in dot    # report text: orange
+    assert 'label="G0099\\nAPT-C-36 \\"Blind Eagle\\""' in dot      # a line break and quotes, escaped
+    assert 'label="Entity (unlinked)\\nLimeRAT", style="rounded,filled,dashed"' in dot
+    assert 'label="Chunk #1\\nr"' in dot
+    assert rag.cited_graph([], []) == ("\n".join(['digraph cited {', '  rankdir=LR;',
+                                                   '  node [shape=box, fontname="Helvetica", fontsize=10];',
+                                                   '  edge [fontname="Helvetica", fontsize=9];', '}']), [])
+
+
+def test_the_cited_edges_query_reads_both_ends_by_their_keys():
+    query = rag.cited_edges_query()
+    assert "WHERE r.`edge_id` IN $edge_ids" in query
+    assert "coalesce(a.`attack_id`, a.`chunk_id`, a.`entity_id`, a.`report_id`) AS a_key" in query
+    assert "coalesce(b.`attack_id`, b.`chunk_id`, b.`entity_id`, b.`report_id`) AS b_key" in query
 
 
 # ---------------------------------------------------------------- the Ollama script

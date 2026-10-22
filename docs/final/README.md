@@ -1,6 +1,16 @@
-# Final report: the scripts behind its numbers
+# Final technical report
 
-The final technical report takes every number from files committed in this repository: the ATT&CK file, the AnnoCTR reports, the saved model replies under `replies/`, the GDS results under `analytics/` and the results under `results/`. `evaluate.py` prints most of the results; the scripts below print or write the rest. None of them calls OpenAI or needs Neo4j, and only `report_data.py` writes files.
+| File | What it is |
+|---|---|
+| `CTRLALTDEFEAT_GraphRAG_FinalReport.pdf` | the final technical report (10 pages, IEEE conference format) |
+| `report.tex`, `data/*.dat` | its LaTeX source and the chart data that `report_data.py` writes |
+| the five scripts below | the numbers the report takes from the repository's files |
+
+To rebuild the PDF, run `pdflatex` twice on `report.tex` in this folder (TeX Live with the IEEEtran class, TikZ and pgfplots).
+
+## The scripts behind its numbers
+
+The report takes every number from files committed in this repository: the ATT&CK file, the AnnoCTR reports, the saved model replies under `replies/`, the GDS results under `analytics/` and the results under `results/`. `evaluate.py` prints most of the results; the scripts below print or write the rest. None of them calls OpenAI or needs Neo4j, and only `report_data.py` writes files.
 
 | Script | Report sections | What it prints or writes |
 |---|---|---|
@@ -16,4 +26,4 @@ Run each one from the repository folder in Command Prompt with the project's Pyt
 %USERPROFILE%\.venvs\ctrl-alt-defeat-graphrag\Scripts\python.exe docs\final\graph_metrics.py
 ```
 
-The last line of each run starts with `RESULT`. The report's LaTeX source and PDF are added to this folder when the report is final.
+The last line of each run starts with `RESULT`.

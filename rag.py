@@ -51,8 +51,8 @@ from neo4j.exceptions import DriverError, Neo4jError
 import db
 import llm
 from link import clean_description
-from schemas import (ATTACK_ID, ATTACK_RELATIONSHIPS, CHUNK, CHUNK_VECTOR_INDEX, EDGE_ID, EMBEDDING, HAS_CHUNK, KEY,
-                     MENTIONS, MITIGATES, NAME, PART_OF_TACTIC, REPORT, SOURCE, SOURCE_ATTACK, SOURCE_TEXT,
+from schemas import (ATTACK_ID, ATTACK_RELATIONSHIPS, CHUNK, CHUNK_VECTOR_INDEX, EDGE_ID, EMBEDDING, ENTITY, HAS_CHUNK,
+                     KEY, MENTIONS, MITIGATES, NAME, PART_OF_TACTIC, REPORT, SOURCE, SOURCE_ATTACK, SOURCE_TEXT,
                      SUBTECHNIQUE_OF, TACTIC, TECHNIQUE, USES)
 
 TOP_CHUNKS = 4
@@ -458,6 +458,79 @@ def check_citations(answer: str, chunk_ids: list[str], edge_ids: list[str]) -> d
     allowed = {"chunk": set(chunk_ids), "edge": set(edge_ids)}
     invalid = [f"{kind}:{cid}" for kind, cid in cited if cid not in allowed[kind]]
     return {"cited": len(cited), "distinct": len(set(cited)), "invalid": invalid}
+
+
+# ---------------------------------------------------------------- the cited facts as a graph (chat page)
+
+ATTACK_FILL, ATTACK_LINE = "#E8EFF9", "#3B5B92"   # recorded by MITRE ATT&CK (blue, as in the report's figures)
+TEXT_FILL, TEXT_LINE = "#FDF0E2", "#B5651D"       # from a report's text (orange)
+NODE_KEYS = (ATTACK_ID, KEY[CHUNK], KEY[ENTITY], KEY[REPORT])   # a Chunk also holds report_id, so chunk_id comes first
+
+
+def cited_edges_query() -> str:
+    """Every relationship whose edge ID an answer cites, with both ends: label, key and name."""
+    def end(var: str) -> str:
+        keys = ", ".join(f"{var}.`{key}`" for key in NODE_KEYS)
+        return f"labels({var})[0] AS {var}_label, coalesce({keys}) AS {var}_key, {var}.`{NAME}` AS {var}_name"
+    return (f"MATCH (a)-[r]->(b)\n"
+            f"WHERE r.`{EDGE_ID}` IN $edge_ids\n"
+            f"RETURN r.`{EDGE_ID}` AS edge_id, type(r) AS type, r.`{SOURCE}` AS source,\n"
+            f"       {end('a')},\n"
+            f"       {end('b')}\n"
+            f"ORDER BY edge_id")
+
+
+def _dot(text: str) -> str:
+    """Text for a quoted Graphviz DOT string: backslashes and quotes escaped, line breaks written as \\n."""
+    return str(text).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
+def _short(text: str, limit: int = 32) -> str:
+    return text if len(text) <= limit else text[:limit - 1] + "…"
+
+
+def _node_label(label: str, key: str, name: str | None) -> str:
+    if label == CHUNK:
+        report, _, number = key.rpartition("#")
+        return f"Chunk #{number}\n{_short(report)}"
+    if label == ENTITY:
+        return f"Entity (unlinked)\n{_short(name or key)}"
+    if label == REPORT:
+        return f"Report\n{_short(key)}"
+    return f"{key}\n{_short(name or '')}"
+
+
+def cited_graph(cited: list[tuple[str, str]], rows: list[dict]) -> tuple[str, list[str]]:
+    """The relationships and chunks an answer cites, drawn as a Graphviz DOT graph (rows from cited_edges_query),
+    and the cited edge IDs that no relationship carries. Blue: ATT&CK; orange: report text; dashed: Entity nodes."""
+    nodes: dict[str, str] = {}
+
+    def node(label: str, key: str, name: str | None) -> str:
+        node_id = f"{label}:{key}"
+        if node_id not in nodes:
+            text_side = label in (CHUNK, REPORT, ENTITY)
+            fill, line = (TEXT_FILL, TEXT_LINE) if text_side else (ATTACK_FILL, ATTACK_LINE)
+            style = "rounded,filled,dashed" if label == ENTITY else "rounded,filled"
+            nodes[node_id] = (f'  "{_dot(node_id)}" [label="{_dot(_node_label(label, key, name))}", '
+                              f'style="{style}", fillcolor="{fill}", color="{line}"];')
+        return node_id
+
+    edges, found = [], set()
+    for row in rows:
+        a = node(row["a_label"], row["a_key"], row["a_name"])
+        b = node(row["b_label"], row["b_key"], row["b_name"])
+        colour = TEXT_LINE if row["source"] == SOURCE_TEXT else ATTACK_LINE
+        edges.append(f'  "{_dot(a)}" -> "{_dot(b)}" [label="{_dot(row["type"])}", color="{colour}", '
+                     f'fontcolor="{colour}"];')
+        found.add(row["edge_id"])
+    for kind, cited_id in cited:
+        if kind == "chunk":
+            node(CHUNK, cited_id, None)
+    missing = sorted({cited_id for kind, cited_id in cited if kind == "edge"} - found)
+    dot = "\n".join(['digraph cited {', '  rankdir=LR;',
+                     '  node [shape=box, fontname="Helvetica", fontsize=10];',
+                     '  edge [fontname="Helvetica", fontsize=9];', *nodes.values(), *edges, '}'])
+    return dot, missing
 
 
 def ask(driver, database: str, question: str, mode: str, use_procedure: bool = False) -> dict:

@@ -1,0 +1,7 @@
+y label a am ap b bm bp
+5 {Answer-ID F1} 0.4921 0.1484 0.1458 0.1250 0.1042 0.1250
+4 {Answer-ID recall} 0.5708 0.1687 0.1584 0.1292 0.1042 0.1291
+3 {RAGAS faithfulness} 0.9760 0.0291 0.0240 0.9870 0.0213 0.0130
+2 {RAGAS answer relevancy} 0.7367 0.0817 0.0631 0.1691 0.1287 0.1412
+1 {RAGAS context recall} 0.3668 0.1096 0.1126 0.0510 0.0510 0.0771
+0 {Hallucination rate} 0.0180 0.0180 0.0231 0.0165 0.0165 0.0240
