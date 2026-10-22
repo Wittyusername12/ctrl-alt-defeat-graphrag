@@ -1,6 +1,6 @@
 # Fresh-clone check (22 Oct 2026)
 
-This check asks whether the repository works from the README alone. On 22 Oct 2026 the repository was cloned from GitHub into an empty folder on the project laptop, its virtual environment was made again from `requirements.txt`, the tests were run, and the whole knowledge graph was built in a new, empty Neo4j database from the saved model replies, following README steps 1–13. Every count and score equals the original runs of 19 Oct 2026, and both answers to the tracer question were found among the saved replies. Dates are US Central time.
+This check asks whether the repository works from the README alone. On 22 Oct 2026 the repository was cloned from GitHub into an empty folder on the project laptop, its virtual environment was made again from `requirements.txt`, the tests were run, and the whole knowledge graph was built in a new, empty Neo4j database from the saved model replies, following README steps 1–13. Every count and score equals the original runs of 19 Oct 2026, both answers to the tracer question were found among the saved replies, and the rebuild sent no request to OpenAI. Dates are US Central time.
 
 ## Setup
 
@@ -41,6 +41,7 @@ README step 6 creates a Neo4j instance. Instead, this check created the empty da
 | 17 | `score.py --split test` | `RESULT: OK - 34 report(s) scored`: parent level precision 0.756, recall 0.667, F1 0.709; sub-technique level 0.548, 0.535, 0.542 |
 | 12 | `scripts\check_summaries.py` | `RESULT: OK - the summary-line Cypher gives the hand-worked values and equals the Python count on every report` (40,864 rows over the 49 reports with ATT&CK entries) |
 | 13 | `rag.py` | `RESULT: OK - every citation names a chunk or fact that was in the context; answers saved under replies/answers`: both answers reused from the saved replies; GraphRAG's 19 citations all name IDs in its context |
+| — | `git status`, after the rebuild | `nothing to commit, working tree clean` |
 
 ## Compared with the original runs
 
@@ -59,6 +60,8 @@ Two outputs show that the build is deterministic, not only close:
 
 - **Personalized PageRank.** `rag.py` compares the 200 scores it computes with the scores saved for the same question in the original run (`replies/pagerank/bfb2c38e912b07a983d73a934ae88b51761309ee05302d4a50958d561864bed2.json`) and printed `scores same as the saved scores`: all 200 scores were exactly equal, although the database and its internal node IDs were new (GDS runs with one thread).
 - **The saved answers.** `llm.py` names each saved reply by the SHA-256 of the whole request: the model, its settings and every message. Both of the tracer question's answers were found under their saved names, so the prompts built from the new graph (its chunks, summary lines and fact lines) were identical, character for character, to the prompts of the original run.
+
+No request went to OpenAI during the rebuild. After `rag.py`, `git status` in the fresh folder printed `nothing to commit, working tree clean`: no committed file had changed and no new file had appeared. `llm.py` saves every new OpenAI reply and embedding as a new file under `replies/`, so a request would have left a new file behind. The only requests in the whole check were the two that `scripts\try_openai.py` sends: one short chat request and one embedding.
 
 ## What the check does not cover
 
