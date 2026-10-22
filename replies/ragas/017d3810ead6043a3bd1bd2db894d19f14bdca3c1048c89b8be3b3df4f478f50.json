@@ -1,0 +1,79 @@
+{
+ "key": "017d3810ead6043a3bd1bd2db894d19f14bdca3c1048c89b8be3b3df4f478f50",
+ "kind": "ragas",
+ "scope": "Q08 graph",
+ "created": "2026-10-21T23:58:41+00:00",
+ "seconds": 1.96,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 1064,
+  "completion_tokens": 47,
+  "reasoning_tokens": 0,
+  "cached_tokens": 1061
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"ATT&CK places the techniques described in the report under four tactics:\\n\\n- **Reconnaissance (TA0043):** Phishing for Information (T1598), including spearphishing links and attachments. [edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#0/m3][edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#0/m7][edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#0/m12][edge:attack:PART_OF_TACTIC:T1598:TA0043]\\n- **Initial Access (TA0001):** Phishing (T1566), including spearphishing links. [edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#0/m1][edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#1/m3][edge:attack:PART_OF_TACTIC:T1566:TA0001]\\n- **Credential Access (TA0006):** Multi-Factor Authentication Interception (T1111). [edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#1/m5][edge:attack:PART_OF_TACTIC:T1111:TA0006]\\n- **Stealth (TA0005):** Masquerading (T1036), reflected in spoofed login pages and MFA providers. [edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#0/m10][edge:text:MENTIONS:proofpoint_2021-12-07_university-targeted-credential-phishing-campaigns#1/m6][edge:attack:PART_OF_TACTIC:T1036:TA0005]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbaUZBtJ1gFIK7G2Bhmpkq7oYNbqB",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Which ATT&CK tactics and techniques are associated with the university-targeted credential phishing campaigns described in the Proofpoint report?\",\n  \"noncommittal\": 0\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627119,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 47,
+   "prompt_tokens": 1064,
+   "total_tokens": 1111,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 1061,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

@@ -1,0 +1,79 @@
+{
+ "key": "f7ef85ad83c8f6006d55261cfed148369040f4893fd4375a98e162329e2c5cb0",
+ "kind": "ragas",
+ "scope": "Q09 text",
+ "created": "2026-10-21T23:59:13+00:00",
+ "seconds": 2.96,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 734,
+  "completion_tokens": 46,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"The supplied context describes cookie theft through cross-site scripting and malware, followed by use of stolen cookies to impersonate users and access their accounts. [chunk:quoteintelligence_2021-05-20_how-the-demise-of-third#1] It does **not** provide MITRE ATT&CK mappings or tactic names, so the tactics under which ATT&CK places those techniques cannot be determined from the supplied context. [chunk:quoteintelligence_2021-05-20_how-the-demise-of-third#1]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbaV4n0n8GGm8nSNj7pMOk6ux26aK",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Under which MITRE ATT&CK tactics are cookie theft and the use of stolen cookies to impersonate users classified?\",\n  \"noncommittal\": 1\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627150,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 46,
+   "prompt_tokens": 734,
+   "total_tokens": 780,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

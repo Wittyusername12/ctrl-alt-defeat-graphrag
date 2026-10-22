@@ -1,0 +1,79 @@
+{
+ "key": "113d3dca3af4ac1bddfe6678352bd2b556af26f8724c91043c9b716a2ad7ddd3",
+ "kind": "ragas",
+ "scope": "Q15 graph",
+ "created": "2026-10-22T00:05:41+00:00",
+ "seconds": 2.9,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 905,
+  "completion_tokens": 87,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"**Cobalt Group (G0080)** is the answer supported by the supplied MITRE ATT&CK facts: the report names Cobalt Group, FIN6, and Evilnum, and the facts record Cobalt Group using two techniques the report describes—Ingress Tool Transfer (T1105) and Web Protocols (T1071.001). [edge:text:MENTIONS:quoteintelligence_2021-06-30_daily-operations-of-a-nigerian#3/m11][edge:text:MENTIONS:quoteintelligence_2021-06-30_daily-operations-of-a-nigerian#3/m16][edge:text:MENTIONS:quoteintelligence_2021-06-30_daily-operations-of-a-nigerian#3/m18][edge:attack:USES:G0080:T1105][edge:attack:USES:G0080:T1071.001] The supplied facts do not give comparable ATT&CK technique counts for FIN6 or Evilnum, so they do not establish that Cobalt Group has the *largest* count of the three. [edge:text:MENTIONS:quoteintelligence_2021-06-30_daily-operations-of-a-nigerian#3/m16][edge:text:MENTIONS:quoteintelligence_2021-06-30_daily-operations-of-a-nigerian#3/m18]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbabJEukswoCmlf1ZS6YbKSeVBZeU",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Which group named in the report is documented in the supplied MITRE ATT&CK facts as using both Ingress Tool Transfer (T1105) and Web Protocols (T1071.001), and do those facts establish that it has the largest technique count among Cobalt Group, FIN6, and Evilnum?\",\n  \"noncommittal\": 0\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627537,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 87,
+   "prompt_tokens": 905,
+   "total_tokens": 992,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

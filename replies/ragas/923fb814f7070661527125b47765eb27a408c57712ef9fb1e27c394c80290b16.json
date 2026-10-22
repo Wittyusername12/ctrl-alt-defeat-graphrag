@@ -1,0 +1,79 @@
+{
+ "key": "923fb814f7070661527125b47765eb27a408c57712ef9fb1e27c394c80290b16",
+ "kind": "ragas",
+ "scope": "Q21 text",
+ "created": "2026-10-22T00:08:24+00:00",
+ "seconds": 2.61,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 905,
+  "completion_tokens": 57,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"The techniques described in both reports are:\\n\\n- **Process Injection (T1055):** Intel 471 describes injecting modules and DLLs into memory; Zscaler lists Process Injection in its ATT&CK mapping. [chunk:intel471_2021-12-09_emotet-returns-december-2021#2] [chunk:zscaler_2021-11-16_return-emotet-malware#0]\\n- **Process Discovery (T1057):** Intel 471 describes Emotet sending a process list to its C2; Zscaler lists Process Discovery. [chunk:intel471_2021-12-09_emotet-returns-december-2021#2] [chunk:zscaler_2021-11-16_return-emotet-malware#0]\\n- **Rundll32 (T1218):** Intel 471 describes using `rundll32.exe` to execute DLLs; Zscaler lists Rundll32. [chunk:intel471_2021-12-09_emotet-returns-december-2021#0] [chunk:intel471_2021-12-09_emotet-returns-december-2021#2] [chunk:zscaler_2021-11-16_return-emotet-malware#0]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-Ebadx1V4XjhEyDPezzDHFl9b3wdkb",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Which MITRE ATT&CK techniques are described in both Intel 471’s December 2021 and Zscaler’s November 2021 reports on Emotet?\",\n  \"noncommittal\": 0\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627701,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 57,
+   "prompt_tokens": 905,
+   "total_tokens": 962,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

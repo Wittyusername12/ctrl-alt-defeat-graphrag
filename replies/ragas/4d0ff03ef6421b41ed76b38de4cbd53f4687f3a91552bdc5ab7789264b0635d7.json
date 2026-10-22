@@ -1,0 +1,79 @@
+{
+ "key": "4d0ff03ef6421b41ed76b38de4cbd53f4687f3a91552bdc5ab7789264b0635d7",
+ "kind": "ragas",
+ "scope": "Q23 text",
+ "created": "2026-10-22T00:09:20+00:00",
+ "seconds": 3.8,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 2790,
+  "completion_tokens": 218,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"$defs\": {\n    \"StatementFaithfulnessAnswer\": {\n      \"description\": \"Individual statement with reason and verdict for NLI evaluation.\",\n      \"properties\": {\n        \"statement\": {\n          \"description\": \"the original statement, word-by-word\",\n          \"title\": \"Statement\",\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"the reason of the verdict\",\n          \"title\": \"Reason\",\n          \"type\": \"string\"\n        },\n        \"verdict\": {\n          \"description\": \"the verdict(0/1) of the faithfulness\",\n          \"title\": \"Verdict\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"statement\",\n        \"reason\",\n        \"verdict\"\n      ],\n      \"title\": \"StatementFaithfulnessAnswer\",\n      \"type\": \"object\"\n    }\n  },\n  \"description\": \"Structured output for NLI statement evaluation.\",\n  \"properties\": {\n    \"statements\": {\n      \"description\": \"Evaluated statements with verdicts\",\n      \"items\": {\n        \"$ref\": \"#/$defs/StatementFaithfulnessAnswer\"\n      },\n      \"title\": \"Statements\",\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"statements\"\n  ],\n  \"title\": \"NLIStatementOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Your task is to judge the faithfulness of a series of statements based on a given context. For each statement you must return verdict as 1 if the statement can be directly inferred based on the context or 0 if the statement can not be directly inferred based on the context.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"$defs\": {\"StatementFaithfulnessAnswer\": {\"description\": \"Individual statement with reason and verdict for NLI evaluation.\", \"properties\": {\"statement\": {\"description\": \"the original statement, word-by-word\", \"title\": \"Statement\", \"type\": \"string\"}, \"reason\": {\"description\": \"the reason of the verdict\", \"title\": \"Reason\", \"type\": \"string\"}, \"verdict\": {\"description\": \"the verdict(0/1) of the faithfulness\", \"title\": \"Verdict\", \"type\": \"integer\"}}, \"required\": [\"statement\", \"reason\", \"verdict\"], \"title\": \"StatementFaithfulnessAnswer\", \"type\": \"object\"}}, \"description\": \"Structured output for NLI statement evaluation.\", \"properties\": {\"statements\": {\"description\": \"Evaluated statements with verdicts\", \"items\": {\"$ref\": \"#/$defs/StatementFaithfulnessAnswer\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"NLIStatementOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"context\": \"John is a student at XYZ University. He is pursuing a degree in Computer Science. He is enrolled in several courses this semester, including Data Structures, Algorithms, and Database Management. John is a diligent student and spends a significant amount of time studying and completing assignments. He often stays late in the library to work on his projects.\",\n    \"statements\": [\n        \"John is majoring in Biology.\",\n        \"John is taking a course on Artificial Intelligence.\",\n        \"John is a dedicated student.\",\n        \"John has a part-time job.\"\n    ]\n}\nOutput: {\n    \"statements\": [\n        {\n            \"statement\": \"John is majoring in Biology.\",\n            \"reason\": \"John's major is explicitly stated as Computer Science, not Biology.\",\n            \"verdict\": 0\n        },\n        {\n            \"statement\": \"John is taking a course on Artificial Intelligence.\",\n            \"reason\": \"The context mentions courses in Data Structures, Algorithms, and Database Management, but does not mention Artificial Intelligence.\",\n            \"verdict\": 0\n        },\n        {\n            \"statement\": \"John is a dedicated student.\",\n            \"reason\": \"The context states that John is a diligent student who spends a significant amount of time studying and completing assignments.\",\n            \"verdict\": 1\n        },\n        {\n            \"statement\": \"John has a part-time job.\",\n            \"reason\": \"There is no information in the context about John having a part-time job.\",\n            \"verdict\": 0\n        }\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"context\": \"[chunk:proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud#0] (report \\\"OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign\\\", proofpoint, 2022-01-27)\\nOiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign\\nJanuary 27, 2022\\n### **Key Findings**\\n**Campaign highlights:**\\n* Beginning January 18, 2022, Proofpoint researchers observed a new malicious hybrid cloud campaign named OiVaVoii.\\n* This campaign uses hijacked Office 365 tenants and a sophisticated combination of cleverly-crafted lures, malicious OAuth apps and targeted phishing threats.\\n**Potential Impact:** We have seen account takeovers (through malicious OAuth apps stealing OAuth tokens and through credential theft).\\nThere are other potential risks after account takeovers, chiefly: persistent DLP risks, continued phishing, lateral movement, brand abuse and malware proliferation.\\n**People impact:** Successfully taken over many C-level executives’ accounts, including CEOs, general managers, former board members and presidents.\\n**Advised remediation actions:**\\n* Microsoft has blocked many of the apps.\\n* However, while original publishers’ accounts remain compromised, the campaign stays alive - new apps can be created and authorized.\\n(Microsoft response times and solutions not sufficient for blocking all attempts).\\n* Currently, active malicious apps will be detected and can be revoked/deleted through Proofpoint CASB.\\n### **Attack Chain of OiVaVoii Campaign**\\nBy analyzing monitored email traffic and cloud users’ activities, Proofpoint researchers have so far uncovered five malicious OAuth applications attributed to the campaign (nicknamed “*OiVaVoii*” by analysts due to its associated domain).\\nBelow are examples of malicious apps created by a “verified” organization (\\\"Yuma Counseling Services\\\") and by a non-verified organization as part of the same campaign.\\nAt least three of these condemned third-party apps were created by two different “verified publishers,” meaning the app’s owner was likely a compromised admin user-account within a legitimate Office tenant.\\nOut of the remaining two apps, at least one was created by a non-verified organization, which could imply leveraging a (third) hijacked cloud environment or using a dedicated malicious Office tenant.\\nOnce these apps were created, authorization requests were then sent, via email, to numerous targeted users, including high-level executives.\\nThe seemingly benign identity of the publishing organization was a substantial advantage, causing multiple unsuspecting victims to authorize these applications.\\nThis enables the attackers to generate OAuth tokens on the compromised user’s behalf and complete the account takeover.\\nThis modus-operandi is similar to the one previously covered in our [recent blog](/us/blog/email-and-cloud-threats/how-attackers-use-compromised-accounts-create-and-distribute-malicious \\\"How Attackers Use Compromised Accounts to Create and Distribute Malicious OAuth Apps\\\").\\n### **Highlights from this campaign**\\n* **Reply URL manipulation:**attackers use the Reply URL to redirect back to the consent screen autonomously.\\nThis means that clicking “Cancel” simply reloads the same page, keeping the user in a loop.\\n* **Microsoft logo:**Some apps impersonate Microsoft software, using icon impersonation.\\n* **MITM:** apps potentially use MITM proxy attacks.\\nThis means that credential theft could take place as part of the attack flow, greatly increasing the risk of a complete account takeover and prolonged persistency.\\n* **C-level executives targeted:**a high percentage of targeted and compromised C-level executives was seen.\\nAmongst detected affected titleholders are CEOs, presidents, board members, VPs and other high-profile users.\\n* **Application scopes:** all detected apps requested similar permissions, pertaining mainly to mailbox access (read and write), allowing them to send internal and external malicious email messages, steal valuable information, and create mailbox rules (applied for data leakage and persistency purposes).\\n### **Detected malicious applications**\\n| **App name** | **App id** | **Published Type** | **Creation Date** | **Status** |\\n| *Upgr\\n[chunk:proofpoint_2022-01-27_oivavoii-active-malicious-hybrid-cloud#1] (report \\\"OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign\\\", proofpoint, 2022-01-27)\\ned apps requested similar permissions, pertaining mainly to mailbox access (read and write), allowing them to send internal and external malicious email messages, steal valuable information, and create mailbox rules (applied for data leakage and persistency purposes).\\n### **Detected malicious applications**\\n| **App name** | **App id** | **Published Type** | **Creation Date** | **Status** |\\n| *Upgrade* | 01d33e0a-83c1-4e5c-98be-096bc270eabf | Verified | 16/11/21 | Blocked |\\n| *Upgrade* | f9b75e84-5235-48d3-b745-37c99c056b64 | Verified | 23/1/22 | Blocked |\\n| *Document* | c517e6b9-a1d5-4f7e-8081-dfb2142c056a | Verified | 26/1/22 | Blocked |\\n| *Shared* | b2710450-6cec-4e4f-989f-c16f3041620a | Unverified | 27/1/22| Available |\\n| *UserInfo* | 32fc064d-d4ea-43f9-ae7f-e90da936053f | Unknown | 27/1/22 | Blocked |\\nAssociated Reply URLs:\\n* hxxps://queues[.]me/callback\\n* hxxps://voii[.]at/callback\\n* hxxps://viox[.]dev/callback\\n### **Screenshots of malicious third party OAuth apps used in this campaign**\\n![MSFT](/sites/default/files/inline-images/Screen%20Shot%202022-01-27%20at%204.33.19%20PM.png)\\n![MSFT](/sites/default/files/inline-images/Screen%20Shot%202022-01-27%20at%204.33.39%20PM.png)\\n![MSFT](/sites/default/files/inline-images/Screen%20Shot%202022-01-27%20at%204.34.02%20PM.png)\\n![MSFT](/sites/default/files/inline-images/Screen%20Shot%202022-01-27%20at%204.34.32%20PM.png)\\n### **Protecting against this campaign**\\nIt is important to note that although Microsoft eventually blocked further authorizations, existing instances of these apps still pose a threat to impacted organizations until they’re revoked or deleted.\\nAs we monitor the threat, we expect to see new apps being created and proliferated.\\nTherefore, we advise taking immediate prevention measures, such as limiting app authorization by users’ and using layered defense solutions for early detection and remediation.\\nIn case of confirmed impact, we advise immediate revocation and deletion of malicious apps, along with suspicious mailbox rules, hosted files, and messages.\\nThis ongoing campaign was automatically surfaced to [Proofpoint CASB](/us/products/cloud-security/cloud-app-security-broker \\\"Cloud App Security Broker\\\"), \\n[Proofpoint Targeted Attack Protection](/us/products/advanced-threat-protection/targeted-attack-protection \\\"Targeted Attack Protection\\\") and \\n[Proofpoint Emerging Threats Intelligence](/us/products/advanced-threat-protection/et-intelligence \\\"ET Intelligence\\\") customers thanks to the integrated visibility across cloud and email threats enriched by internal threat intelligence.\",\n    \"statements\": [\n        \"The provided context does not include MITRE ATT&CK records linking threat groups to the techniques described in the January 2022 Proofpoint report “OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign”.\",\n        \"The provided context cannot establish the threat groups recorded by MITRE ATT&CK as using every technique described in the January 2022 Proofpoint report “OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign”.\"\n    ]\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-Ebaeqbb8as8d6I6IGJzxx7Sc0CR7C",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"statements\": [\n    {\n      \"statement\": \"The provided context does not include MITRE ATT&CK records linking threat groups to the techniques described in the January 2022 Proofpoint report “OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign”.\",\n      \"reason\": \"The context describes the campaign, its techniques, malicious applications, and remediation measures, but includes no MITRE ATT&CK records or mappings between threat groups and techniques.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"The provided context cannot establish the threat groups recorded by MITRE ATT&CK as using every technique described in the January 2022 Proofpoint report “OiVaVoii – An Active Malicious Hybrid Cloud Threats Campaign”.\",\n      \"reason\": \"The context provides neither MITRE ATT&CK threat-group records nor group-to-technique mappings, so it cannot establish which recorded threat groups use every described technique.\",\n      \"verdict\": 1\n    }\n  ]\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627756,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 218,
+   "prompt_tokens": 2790,
+   "total_tokens": 3008,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 2787,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

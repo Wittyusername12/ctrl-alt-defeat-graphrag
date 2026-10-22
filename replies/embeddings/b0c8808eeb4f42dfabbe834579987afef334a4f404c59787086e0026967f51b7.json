@@ -1,0 +1,19 @@
+{
+ "key": "b0c8808eeb4f42dfabbe834579987afef334a4f404c59787086e0026967f51b7",
+ "kind": "embeddings",
+ "label": {
+  "use": "RAGAS answer relevancy"
+ },
+ "created": "2026-10-22T00:09:22+00:00",
+ "seconds": 0.57,
+ "model_requested": "text-embedding-3-small",
+ "models": [
+  "text-embedding-3-small"
+ ],
+ "count": 3,
+ "text_sha256": [
+  "a0a1f1f942b8ef9ed6ef3d33e5c5b7dbb879bca618c2a67e57cf41c8c940837b",
+  "a0a1f1f942b8ef9ed6ef3d33e5c5b7dbb879bca618c2a67e57cf41c8c940837b",
+  "3d9821c2f51682246e42b4c8bfd19c93b6e3d3911ef751b1eabb8240b746df14"
+ ]
+}

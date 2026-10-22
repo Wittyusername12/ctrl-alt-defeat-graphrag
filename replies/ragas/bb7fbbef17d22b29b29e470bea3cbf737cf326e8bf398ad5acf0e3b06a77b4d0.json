@@ -1,0 +1,79 @@
+{
+ "key": "bb7fbbef17d22b29b29e470bea3cbf737cf326e8bf398ad5acf0e3b06a77b4d0",
+ "kind": "ragas",
+ "scope": "Q21 graph",
+ "created": "2026-10-22T00:08:11+00:00",
+ "seconds": 4.19,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 854,
+  "completion_tokens": 303,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for statement generation.\",\n  \"properties\": {\n    \"statements\": {\n      \"description\": \"The generated statements from the answer\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"title\": \"Statements\",\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"statements\"\n  ],\n  \"title\": \"StatementGeneratorOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Given a question and an answer, analyze the complexity of each sentence in the answer. Break down each sentence into one or more fully understandable statements. Ensure that no pronouns are used in any statement.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for statement generation.\", \"properties\": {\"statements\": {\"description\": \"The generated statements from the answer\", \"items\": {\"type\": \"string\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"StatementGeneratorOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"question\": \"Who was Albert Einstein and what is he best known for?\",\n    \"answer\": \"He was a German-born theoretical physicist, widely acknowledged to be one of the greatest and most influential physicists of all time. He was best known for developing the theory of relativity, he also made important contributions to the development of the theory of quantum mechanics.\"\n}\nOutput: {\n    \"statements\": [\n        \"Albert Einstein was a German-born theoretical physicist.\",\n        \"Albert Einstein is recognized as one of the greatest and most influential physicists of all time.\",\n        \"Albert Einstein was best known for developing the theory of relativity.\",\n        \"Albert Einstein made important contributions to the development of the theory of quantum mechanics.\"\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"question\": \"Which MITRE ATT&CK techniques are described in both Intel 471's December 2021 report “How the new Emotet differs from previous versions” and Zscaler's November 2021 report “Return of Emotet malware”?\",\n    \"answer\": \"Both reports describe these MITRE ATT&CK techniques:\\n\\n- **Process Injection (T1055)** [edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#2/m12][edge:text:MENTIONS:zscaler_2021-11-16_return-emotet-malware#0/m26]\\n- **Process Discovery (T1057)** [edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#2/m2][edge:text:MENTIONS:zscaler_2021-11-16_return-emotet-malware#0/m28]\\n- **Rundll32 (T1218.011)**, a sub-technique of System Binary Proxy Execution [edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m44][edge:text:MENTIONS:zscaler_2021-11-16_return-emotet-malware#0/m34]\\n- **Spearphishing Attachment (T1566.001)**, a sub-technique of Phishing [edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m19][edge:text:MENTIONS:zscaler_2021-11-16_return-emotet-malware#0/m22]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-Ebadi5MQU9lxeZN8YjEI6hSIZxzjp",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"statements\": [\n    \"The December 2021 Intel 471 report \\\"How the new Emotet differs from previous versions\\\" and the November 2021 Zscaler report \\\"Return of Emotet malware\\\" describe the MITRE ATT&CK technique Process Injection (T1055).\",\n    \"The December 2021 Intel 471 report \\\"How the new Emotet differs from previous versions\\\" and the November 2021 Zscaler report \\\"Return of Emotet malware\\\" describe the MITRE ATT&CK technique Process Discovery (T1057).\",\n    \"The December 2021 Intel 471 report \\\"How the new Emotet differs from previous versions\\\" and the November 2021 Zscaler report \\\"Return of Emotet malware\\\" describe the MITRE ATT&CK sub-technique Rundll32 (T1218.011).\",\n    \"Rundll32 (T1218.011) is a sub-technique of System Binary Proxy Execution.\",\n    \"The December 2021 Intel 471 report \\\"How the new Emotet differs from previous versions\\\" and the November 2021 Zscaler report \\\"Return of Emotet malware\\\" describe the MITRE ATT&CK sub-technique Spearphishing Attachment (T1566.001).\",\n    \"Spearphishing Attachment (T1566.001) is a sub-technique of Phishing.\"\n  ]\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627686,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 303,
+   "prompt_tokens": 854,
+   "total_tokens": 1157,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

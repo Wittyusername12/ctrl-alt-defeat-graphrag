@@ -1,0 +1,79 @@
+{
+ "key": "1de358a23a4032395a2c3643fe130dd037ddfec53cfcfd515a0166c35e2816bc",
+ "kind": "ragas",
+ "scope": "Q10 text",
+ "created": "2026-10-21T23:59:27+00:00",
+ "seconds": 3.69,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 725,
+  "completion_tokens": 52,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"The report names **APT-C-36 (Blind Eagle)** and mentions **LimeRAT** and **njRAT**, but the provided context contains no MITRE ATT&CK records showing which of those tools ATT&CK attributes to the group. [chunk:lab52_2021-05-17_literature-lover-targeting-colombia-with#0][chunk:lab52_2021-05-17_literature-lover-targeting-colombia-with#1]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbaVGC1TAUZYlhMlWPzayfXCU0f4q",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Which of the tools LimeRAT and njRAT does MITRE ATT&CK attribute to APT-C-36 (Blind Eagle)?\",\n  \"noncommittal\": 1\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627162,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 52,
+   "prompt_tokens": 725,
+   "total_tokens": 777,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

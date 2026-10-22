@@ -1,0 +1,79 @@
+{
+ "key": "786905ee15a98c2e6a396695bf9b4f6fda06b8b670cb4ff089a0c1580e20c16a",
+ "kind": "ragas",
+ "scope": "Q05 text",
+ "created": "2026-10-21T23:57:47+00:00",
+ "seconds": 4.9,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 2871,
+  "completion_tokens": 318,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"$defs\": {\n    \"StatementFaithfulnessAnswer\": {\n      \"description\": \"Individual statement with reason and verdict for NLI evaluation.\",\n      \"properties\": {\n        \"statement\": {\n          \"description\": \"the original statement, word-by-word\",\n          \"title\": \"Statement\",\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"the reason of the verdict\",\n          \"title\": \"Reason\",\n          \"type\": \"string\"\n        },\n        \"verdict\": {\n          \"description\": \"the verdict(0/1) of the faithfulness\",\n          \"title\": \"Verdict\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"statement\",\n        \"reason\",\n        \"verdict\"\n      ],\n      \"title\": \"StatementFaithfulnessAnswer\",\n      \"type\": \"object\"\n    }\n  },\n  \"description\": \"Structured output for NLI statement evaluation.\",\n  \"properties\": {\n    \"statements\": {\n      \"description\": \"Evaluated statements with verdicts\",\n      \"items\": {\n        \"$ref\": \"#/$defs/StatementFaithfulnessAnswer\"\n      },\n      \"title\": \"Statements\",\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"statements\"\n  ],\n  \"title\": \"NLIStatementOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Your task is to judge the faithfulness of a series of statements based on a given context. For each statement you must return verdict as 1 if the statement can be directly inferred based on the context or 0 if the statement can not be directly inferred based on the context.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"$defs\": {\"StatementFaithfulnessAnswer\": {\"description\": \"Individual statement with reason and verdict for NLI evaluation.\", \"properties\": {\"statement\": {\"description\": \"the original statement, word-by-word\", \"title\": \"Statement\", \"type\": \"string\"}, \"reason\": {\"description\": \"the reason of the verdict\", \"title\": \"Reason\", \"type\": \"string\"}, \"verdict\": {\"description\": \"the verdict(0/1) of the faithfulness\", \"title\": \"Verdict\", \"type\": \"integer\"}}, \"required\": [\"statement\", \"reason\", \"verdict\"], \"title\": \"StatementFaithfulnessAnswer\", \"type\": \"object\"}}, \"description\": \"Structured output for NLI statement evaluation.\", \"properties\": {\"statements\": {\"description\": \"Evaluated statements with verdicts\", \"items\": {\"$ref\": \"#/$defs/StatementFaithfulnessAnswer\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"NLIStatementOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"context\": \"John is a student at XYZ University. He is pursuing a degree in Computer Science. He is enrolled in several courses this semester, including Data Structures, Algorithms, and Database Management. John is a diligent student and spends a significant amount of time studying and completing assignments. He often stays late in the library to work on his projects.\",\n    \"statements\": [\n        \"John is majoring in Biology.\",\n        \"John is taking a course on Artificial Intelligence.\",\n        \"John is a dedicated student.\",\n        \"John has a part-time job.\"\n    ]\n}\nOutput: {\n    \"statements\": [\n        {\n            \"statement\": \"John is majoring in Biology.\",\n            \"reason\": \"John's major is explicitly stated as Computer Science, not Biology.\",\n            \"verdict\": 0\n        },\n        {\n            \"statement\": \"John is taking a course on Artificial Intelligence.\",\n            \"reason\": \"The context mentions courses in Data Structures, Algorithms, and Database Management, but does not mention Artificial Intelligence.\",\n            \"verdict\": 0\n        },\n        {\n            \"statement\": \"John is a dedicated student.\",\n            \"reason\": \"The context states that John is a diligent student who spends a significant amount of time studying and completing assignments.\",\n            \"verdict\": 1\n        },\n        {\n            \"statement\": \"John has a part-time job.\",\n            \"reason\": \"There is no information in the context about John having a part-time job.\",\n            \"verdict\": 0\n        }\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"context\": \"[chunk:zscaler_2021-10-15_atomsilo-ransomware-enters-league-double#0] (report \\\"AtomSilo Ransomware Enters the League of Double Extortion\\\", zscaler, 2021-10-15)\\nAtomSilo Ransomware Enters the League of Double Extortion\\nOctober 15, 2021\\nRansomware is used widely in cyberattacks to disrupt the victim's organization.\\nOver the last two years, many attackers have evolved their ransomware tactics to include data exfiltration.\\nThis tactic is known as \\\"double-extortion\\\": attackers demand ransom for the data decryption in addition to the ransom to prevent public release of the stolen data.\\nThreatLabz monitors these threat actors and analyzes the attack sequences of double extortion attacks.\\nAtomSilo is a new player on the scene, and in this blog, we'll break down the details of their attacks.\\nIntroduction\\n------------\\nAtomSilo ransomware emerged around September 2021, with their tactics including exfiltrating and publishing their first victim's data.\\nWe'll break down one of their attacks, which started with initial access through exploiting a vulnerability in [Atlassian’s Confluence collaboration software](https://news.sophos.com/en-us/2021/10/04/atom-silo-ransomware-actors-use-confluence-exploit-dll-side-load-for-stealthy-attack/).\\nThe ransomware operators planted a back door using legitimate software via a dll side loading technique.\\nThe backdoor allowed remote code execution of Windows Shell commands through WMI (Windows Management Interface), which operators exploited using compromised administrative accounts before dropping AtomSilo.\\nTechnical Analysis\\n------------------\\nThe AtomSilo payload is 64-bit and packed with a modified UPX packer.\\nOnce executed, it enumerates each drive and drops a ransom note in each folder except the few listed in *Table1*.\\nThe ransom note is named “README-FILE-{COMPUTER\\\\_Name}-{DateTime}.hta”.\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/Ransom%20note%20new%20edited.PNG)\\n*Figure 1: AtomSilo ransom note*\\nIt enumerates each file and encrypts all folders and files EXCEPT those that contain the below names:\\n| Folder name | File name |\\n| --- | --- |\\n| Boot | autorun.inf |\\n| Windows | index.html |\\n| Windows.old | boot.ini |\\n| Tor Browser | bootfont.bin |\\n| Internet Explorer | bootsect.bak |\\n| Google | bootmgr |\\n| Opera | bootmgr.efi |\\n| Opera Software | bootmgfw.efi |\\n| Mozilla | desktop.ini |\\n| Mozilla Firefox | iconcache.db |\\n| $recycle.Bin | ntldr |\\n| ProgramData | ntuser.dat |\\n| All Users | ntuser.dat.log |\\n|  | #recycle |\\n|  | thumbs.db |\\n|  | ntuser.ini |\\n*Table1: List of files and folders*\\nIt also does not encrypt files with the following extensions:\\n| .hta | .idx |\\n| .hlp | .ini |\\n| .html | .sys |\\n| .icl | .cab |\\n| .exe | .spl |\\n| .icns | .cur |\\n| .dll | .ocx |\\n| .ico | .cpl |\\n| .cpl | .drv |\\n*Table2: List of extensions*\\n### **File Encryption**\\nRansomware appends  “.atomsilo” extensions to files after encryption.\\nRansomware uses “CreateFileMappingA” and “MapViewOfFile” APIs to map the file in memory and moves the pointer to the start of the mapped file.\\nAtomSilo uses XOR and AES Encryption algorithms to encrypt files.\\nIt generates AES round keys using the “AESKEYGENASSIST”  instruction as shown in the below figure.\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/Generating%20key-%20edited-1.png)\\n*Figure 2: AtomSilo generates encryption keys using*AESKEYGENASSIST\\nThe encryption key is 240 bytes.\\nThe first 32 bytes are randomly generated by the payload, and other 208 bytes are generated using the “AESKEYGENASSIST” instruction.\\nIn the file , it takes 16 bytes of plain text  and does XOR as a first stage encryption.\\nThen, it encrypts it with 14 rounds of AES encryption.\\nIt uses “AESENC” instruction for the first 13 rounds and the last round uses  “AESENCLAST” instruction.\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/Encrypt_aesenc-final%20edited.png)\\n*Figure 3: Encrypting data using AES algorithm*\\nIt encrypts chunks of the file, not the complete file.\\nIt encrypts the first 16 bytes, leaves the next 32 bytes as-is, encrypts the next 16 bytes, an\\n[chunk:zscaler_2021-10-15_atomsilo-ransomware-enters-league-double#1] (report \\\"AtomSilo Ransomware Enters the League of Double Extortion\\\", zscaler, 2021-10-15)\\nuction for the first 13 rounds and the last round uses  “AESENCLAST” instruction.\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/Encrypt_aesenc-final%20edited.png)\\n*Figure 3: Encrypting data using AES algorithm*\\nIt encrypts chunks of the file, not the complete file.\\nIt encrypts the first 16 bytes, leaves the next 32 bytes as-is, encrypts the next 16 bytes, and so on.\\nThe below screenshot shows the comparison of the normal file and encrypted file, where we can see that chunks of files are not encrypted.\\nThe encryption key and other information are encrypted and appended at the end of the encrypted file.\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/File%20comparision-edited-2.png)\\n*Figure 4: Original vs Encrypted file*\\n### **Data Leak site**\\nAccording to their leak sites, AtomSilo actors won't attack the following types of organizations:\\n* Hospitals.\\n* Critical infrastructure facilities (nuclear power plants, power plants, water treatment facilities).\\n* Oil and gas industry (pipelines, oil refineries).\\n* Educational unit.\\n* Non-profit companies.\\nThey also promise to provide free decryption if the victim company is on the above list.\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/Atom-leak%20page-1%20edited.png)\\n*Figure 5: Data leak site*\\nThe first data leak was from a Brazilian Pharmaceutical company.\\nAtomSilo published around 900 GB data as shown in the below screenshot:\\n![](/cdn-cgi/image/format=auto/sites/default/files/images/blogs/AtomSilo%20Ransomware/Atom-leak%20page-2%20edited.png)\\n*Figure 6: Victim data published on data leak site*\\nCloud Sandbox Detection\\n-----------------------\\n*Figure 7: Zscaler Cloud Sandbox detection of AtomSilo ransomware*\\nIn addition to sandbox detections, Zscaler’s multilayered cloud security platform detects indicators at various levels.\\n[Win64.Ransom.AtomSilo](https://threatlibrary.zscaler.com/?threatname=win64.ransom.atomsilo)\\n**IOC**\\n-------\\n**Md5**\\n04a8307259478245cbae49940b6d655a\",\n    \"statements\": [\n        \"The provided context describes the techniques used by AtomSilo.\",\n        \"The provided context does not include MITRE ATT&CK mitigation mappings for the techniques used by AtomSilo.\",\n        \"The provided context does not include counts of AtomSilo techniques addressed by MITRE ATT&CK mitigations.\",\n        \"The provided context does not establish the MITRE ATT&CK mitigations addressing the largest number of techniques described in the October 2021 Zscaler report titled \\\"AtomSilo Ransomware Enters the League of Double Extortion\\\".\"\n    ]\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbaTeYJ1co8jJzflr5TGAy3eImLp6",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"statements\": [\n    {\n      \"statement\": \"The provided context describes the techniques used by AtomSilo.\",\n      \"reason\": \"The report describes exploitation of a Confluence vulnerability, DLL side loading, WMI command execution, data exfiltration, and file encryption used by AtomSilo.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"The provided context does not include MITRE ATT&CK mitigation mappings for the techniques used by AtomSilo.\",\n      \"reason\": \"The context describes attack techniques and Zscaler detection capabilities but provides no MITRE ATT&CK mitigation mappings.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"The provided context does not include counts of AtomSilo techniques addressed by MITRE ATT&CK mitigations.\",\n      \"reason\": \"No MITRE ATT&CK mitigations or counts of techniques addressed by those mitigations appear in the context.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"The provided context does not establish the MITRE ATT&CK mitigations addressing the largest number of techniques described in the October 2021 Zscaler report titled \\\"AtomSilo Ransomware Enters the League of Double Extortion\\\".\",\n      \"reason\": \"The report provides neither MITRE ATT&CK mitigation mappings nor comparative technique coverage counts, so it does not establish which mitigations address the largest number of techniques.\",\n      \"verdict\": 1\n    }\n  ]\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627062,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 318,
+   "prompt_tokens": 2871,
+   "total_tokens": 3189,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 2868,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

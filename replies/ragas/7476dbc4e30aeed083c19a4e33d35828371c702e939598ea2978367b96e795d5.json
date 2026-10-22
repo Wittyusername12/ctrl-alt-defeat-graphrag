@@ -1,0 +1,79 @@
+{
+ "key": "7476dbc4e30aeed083c19a4e33d35828371c702e939598ea2978367b96e795d5",
+ "kind": "ragas",
+ "scope": "Q15 text",
+ "created": "2026-10-22T00:05:51+00:00",
+ "seconds": 3.03,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 628,
+  "completion_tokens": 146,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for statement generation.\",\n  \"properties\": {\n    \"statements\": {\n      \"description\": \"The generated statements from the answer\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"title\": \"Statements\",\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"statements\"\n  ],\n  \"title\": \"StatementGeneratorOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Given a question and an answer, analyze the complexity of each sentence in the answer. Break down each sentence into one or more fully understandable statements. Ensure that no pronouns are used in any statement.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for statement generation.\", \"properties\": {\"statements\": {\"description\": \"The generated statements from the answer\", \"items\": {\"type\": \"string\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"StatementGeneratorOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"question\": \"Who was Albert Einstein and what is he best known for?\",\n    \"answer\": \"He was a German-born theoretical physicist, widely acknowledged to be one of the greatest and most influential physicists of all time. He was best known for developing the theory of relativity, he also made important contributions to the development of the theory of quantum mechanics.\"\n}\nOutput: {\n    \"statements\": [\n        \"Albert Einstein was a German-born theoretical physicist.\",\n        \"Albert Einstein is recognized as one of the greatest and most influential physicists of all time.\",\n        \"Albert Einstein was best known for developing the theory of relativity.\",\n        \"Albert Einstein made important contributions to the development of the theory of quantum mechanics.\"\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"question\": \"Which of the threat groups named in QuoIntelligence's June 2021 report “E.K.P. & Agent Tesla: The Daily Operations of a Nigerian eCrime Gang” does MITRE ATT&CK record as using the largest number of the techniques the report describes?\",\n    \"answer\": \"The context names FIN6, Cobalt, and Evilnum, but it does not provide MITRE ATT&CK’s technique-use records for those groups or the report’s complete technique list. Therefore, it is not possible to determine which group has the largest overlap. [chunk:quoteintelligence_2021-06-30_daily-operations-of-a-nigerian#3]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbabTUccgHbvSWgryPWgYYKJ9qjsT",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"statements\": [\n    \"The provided context names the threat groups FIN6, Cobalt, and Evilnum.\",\n    \"The provided context does not include MITRE ATT&CK technique-use records for FIN6, Cobalt, or Evilnum.\",\n    \"The provided context does not include the complete technique list from the June 2021 QuoIntelligence report “E.K.P. & Agent Tesla: The Daily Operations of a Nigerian eCrime Gang”.\",\n    \"The provided context is insufficient to determine the threat group with the largest overlap between MITRE ATT&CK technique-use records and the techniques described in the June 2021 QuoIntelligence report.\"\n  ]\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627547,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 146,
+   "prompt_tokens": 628,
+   "total_tokens": 774,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

@@ -1,0 +1,79 @@
+{
+ "key": "6fdacff3ca7771392f550112cd0f9cdd20878a754db99bfd4f0e143bd13394d3",
+ "kind": "ragas",
+ "scope": "Q03 graph",
+ "created": "2026-10-21T23:56:46+00:00",
+ "seconds": 2.66,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 1010,
+  "completion_tokens": 54,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"**Three mitigations tie for the largest coverage: three of the report’s four named parent techniques each.** [edge:text:MENTIONS:proofpoint_2021-10-28_ta575-uses-squid-game-lures#0/m8][edge:text:MENTIONS:proofpoint_2021-10-28_ta575-uses-squid-game-lures#0/m22][edge:text:MENTIONS:proofpoint_2021-10-28_ta575-uses-squid-game-lures#0/m26][edge:text:MENTIONS:proofpoint_2021-10-28_ta575-uses-squid-game-lures#0/m20]\\n\\n- **Audit (M1047):** Command and Scripting Interpreter (T1059), User Execution (T1204), and Phishing (T1566). [edge:attack:MITIGATES:M1047:T1059][edge:attack:MITIGATES:M1047:T1204.003][edge:attack:MITIGATES:M1047:T1566]\\n- **Network Intrusion Prevention (M1031):** Ingress Tool Transfer (T1105), User Execution (T1204), and Phishing (T1566). [edge:attack:MITIGATES:M1031:T1105][edge:attack:MITIGATES:M1031:T1204][edge:attack:MITIGATES:M1031:T1566]\\n- **Restrict Web-Based Content (M1021):** Command and Scripting Interpreter (T1059), User Execution (T1204), and Phishing (T1566). [edge:attack:MITIGATES:M1021:T1059][edge:attack:MITIGATES:M1021:T1204][edge:attack:MITIGATES:M1021:T1566]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbaSh4YOh6SKv5kVmddkhO4LfoDto",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Which mitigations cover the most named parent techniques in the Proofpoint report on TA575 using Squid Game lures, and which techniques does each cover?\",\n  \"noncommittal\": 0\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627003,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 54,
+   "prompt_tokens": 1010,
+   "total_tokens": 1064,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 0,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

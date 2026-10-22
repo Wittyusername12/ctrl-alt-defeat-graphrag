@@ -1,0 +1,79 @@
+{
+ "key": "a221db70637e42a7882f3d8a08265b199dcca8cc84c38465502b74933a7ae975",
+ "kind": "ragas",
+ "scope": "Q19 graph",
+ "created": "2026-10-22T00:07:15+00:00",
+ "seconds": 2.74,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 1448,
+  "completion_tokens": 59,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"description\": \"Structured output for answer relevance question generation.\",\n  \"properties\": {\n    \"question\": {\n      \"description\": \"Question that can be answered from the response\",\n      \"title\": \"Question\",\n      \"type\": \"string\"\n    },\n    \"noncommittal\": {\n      \"description\": \"1 if the response is evasive/vague, 0 if it is substantive\",\n      \"title\": \"Noncommittal\",\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"question\",\n    \"noncommittal\"\n  ],\n  \"title\": \"AnswerRelevanceOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Generate a question for the given answer and identify if the answer is noncommittal.\nGive noncommittal as 1 if the answer is noncommittal (evasive, vague, or ambiguous) and 0 if the answer is substantive.\nExamples of noncommittal answers: \"I don't know\", \"I'm not sure\", \"It depends\".\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"description\": \"Structured output for answer relevance question generation.\", \"properties\": {\"question\": {\"description\": \"Question that can be answered from the response\", \"title\": \"Question\", \"type\": \"string\"}, \"noncommittal\": {\"description\": \"1 if the response is evasive/vague, 0 if it is substantive\", \"title\": \"Noncommittal\", \"type\": \"integer\"}}, \"required\": [\"question\", \"noncommittal\"], \"title\": \"AnswerRelevanceOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"response\": \"Albert Einstein was born in Germany.\"\n}\nOutput: {\n    \"question\": \"Where was Albert Einstein born?\",\n    \"noncommittal\": 0\n}\n\nExample 2\nInput: {\n    \"response\": \"The capital of France is Paris, a city known for its architecture and culture.\"\n}\nOutput: {\n    \"question\": \"What is the capital of France?\",\n    \"noncommittal\": 0\n}\n\nExample 3\nInput: {\n    \"response\": \"I don't know about the groundbreaking feature of the smartphone invented in 2023 as I am unaware of information beyond 2022.\"\n}\nOutput: {\n    \"question\": \"What was the groundbreaking feature of the smartphone invented in 2023?\",\n    \"noncommittal\": 1\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"response\": \"At the **technique-family level, none**: all 14 technique families identified in the Intel 471 report have a corresponding Emotet *USES* relationship in the supplied MITRE ATT&CK facts. [edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#1/m11][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#2/m3][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#2/m12][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#1/m22][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m33][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m27][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m16][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m30][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#2/m14][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#3/m10][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#3/m9][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m14][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m19][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m5][edge:attack:USES:S0367:T1027.001][edge:attack:USES:S0367:T1041][edge:attack:USES:S0367:T1055.001][edge:attack:USES:S0367:T1057][edge:attack:USES:S0367:T1059.001][edge:attack:USES:S0367:T1105][edge:attack:USES:S0367:T1110.001][edge:attack:USES:S0367:T1204.002][edge:attack:USES:S0367:T1218.010][edge:attack:USES:S0367:T1543.003][edge:attack:USES:S0367:T1547.001][edge:attack:USES:S0367:T1555.003][edge:attack:USES:S0367:T1566.001][edge:attack:USES:S0367:T1573]\\n\\nAt the **specific sub-technique level**, the report describes **Visual Basic/macros (T1059.005)** and **Rundll32 (T1218.011)**, while the supplied Emotet *USES* list names PowerShell (T1059.001) and Regsvr32 (T1218.010), respectively, but not those two sub-techniques. [edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#0/m32][edge:text:MENTIONS:intel471_2021-12-09_emotet-returns-december-2021#2/m16][edge:attack:USES:S0367:T1059.001][edge:attack:USES:S0367:T1218.010]\"\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbacqCm8gd5rC7MoFt9Wmjxbqv3uQ",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"question\": \"Which technique families or specific sub-techniques described in the Intel 471 Emotet report lack corresponding Emotet USES relationships in the supplied MITRE ATT&CK facts?\",\n  \"noncommittal\": 0\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627632,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 59,
+   "prompt_tokens": 1448,
+   "total_tokens": 1507,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 1445,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}

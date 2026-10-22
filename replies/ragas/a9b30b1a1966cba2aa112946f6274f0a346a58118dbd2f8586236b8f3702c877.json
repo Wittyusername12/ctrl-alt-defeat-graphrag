@@ -1,0 +1,79 @@
+{
+ "key": "a9b30b1a1966cba2aa112946f6274f0a346a58118dbd2f8586236b8f3702c877",
+ "kind": "ragas",
+ "scope": "Q16 text",
+ "created": "2026-10-22T00:06:15+00:00",
+ "seconds": 5.49,
+ "model_requested": "gpt-6-astra",
+ "model": "gpt-6-astra",
+ "finish_reason": "stop",
+ "usage": {
+  "prompt_tokens": 2514,
+  "completion_tokens": 376,
+  "reasoning_tokens": 0,
+  "cached_tokens": 0
+ },
+ "request": {
+  "messages": [
+   {
+    "role": "system",
+    "content": "\n            As a genius expert, your task is to understand the content and provide\n            the parsed objects in json that match the following json_schema:\n\n\n            {\n  \"$defs\": {\n    \"StatementFaithfulnessAnswer\": {\n      \"description\": \"Individual statement with reason and verdict for NLI evaluation.\",\n      \"properties\": {\n        \"statement\": {\n          \"description\": \"the original statement, word-by-word\",\n          \"title\": \"Statement\",\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"the reason of the verdict\",\n          \"title\": \"Reason\",\n          \"type\": \"string\"\n        },\n        \"verdict\": {\n          \"description\": \"the verdict(0/1) of the faithfulness\",\n          \"title\": \"Verdict\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"statement\",\n        \"reason\",\n        \"verdict\"\n      ],\n      \"title\": \"StatementFaithfulnessAnswer\",\n      \"type\": \"object\"\n    }\n  },\n  \"description\": \"Structured output for NLI statement evaluation.\",\n  \"properties\": {\n    \"statements\": {\n      \"description\": \"Evaluated statements with verdicts\",\n      \"items\": {\n        \"$ref\": \"#/$defs/StatementFaithfulnessAnswer\"\n      },\n      \"title\": \"Statements\",\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"statements\"\n  ],\n  \"title\": \"NLIStatementOutput\",\n  \"type\": \"object\"\n}\n\n            Make sure to return an instance of the JSON, not the schema itself\n"
+   },
+   {
+    "role": "user",
+    "content": "Your task is to judge the faithfulness of a series of statements based on a given context. For each statement you must return verdict as 1 if the statement can be directly inferred based on the context or 0 if the statement can not be directly inferred based on the context.\nPlease return the output in a JSON format that complies with the following schema as specified in JSON Schema:\n{\"$defs\": {\"StatementFaithfulnessAnswer\": {\"description\": \"Individual statement with reason and verdict for NLI evaluation.\", \"properties\": {\"statement\": {\"description\": \"the original statement, word-by-word\", \"title\": \"Statement\", \"type\": \"string\"}, \"reason\": {\"description\": \"the reason of the verdict\", \"title\": \"Reason\", \"type\": \"string\"}, \"verdict\": {\"description\": \"the verdict(0/1) of the faithfulness\", \"title\": \"Verdict\", \"type\": \"integer\"}}, \"required\": [\"statement\", \"reason\", \"verdict\"], \"title\": \"StatementFaithfulnessAnswer\", \"type\": \"object\"}}, \"description\": \"Structured output for NLI statement evaluation.\", \"properties\": {\"statements\": {\"description\": \"Evaluated statements with verdicts\", \"items\": {\"$ref\": \"#/$defs/StatementFaithfulnessAnswer\"}, \"title\": \"Statements\", \"type\": \"array\"}}, \"required\": [\"statements\"], \"title\": \"NLIStatementOutput\", \"type\": \"object\"}Do not use single quotes in your response but double quotes,properly escaped with a backslash.\n\n--------EXAMPLES-----------\nExample 1\nInput: {\n    \"context\": \"John is a student at XYZ University. He is pursuing a degree in Computer Science. He is enrolled in several courses this semester, including Data Structures, Algorithms, and Database Management. John is a diligent student and spends a significant amount of time studying and completing assignments. He often stays late in the library to work on his projects.\",\n    \"statements\": [\n        \"John is majoring in Biology.\",\n        \"John is taking a course on Artificial Intelligence.\",\n        \"John is a dedicated student.\",\n        \"John has a part-time job.\"\n    ]\n}\nOutput: {\n    \"statements\": [\n        {\n            \"statement\": \"John is majoring in Biology.\",\n            \"reason\": \"John's major is explicitly stated as Computer Science, not Biology.\",\n            \"verdict\": 0\n        },\n        {\n            \"statement\": \"John is taking a course on Artificial Intelligence.\",\n            \"reason\": \"The context mentions courses in Data Structures, Algorithms, and Database Management, but does not mention Artificial Intelligence.\",\n            \"verdict\": 0\n        },\n        {\n            \"statement\": \"John is a dedicated student.\",\n            \"reason\": \"The context states that John is a diligent student who spends a significant amount of time studying and completing assignments.\",\n            \"verdict\": 1\n        },\n        {\n            \"statement\": \"John has a part-time job.\",\n            \"reason\": \"There is no information in the context about John having a part-time job.\",\n            \"verdict\": 0\n        }\n    ]\n}\n-----------------------------\n\nNow perform the same with the following input\ninput: {\n    \"context\": \"[chunk:intel471_2021-09-30_public-sector-cybersecurity-threats-2021#0] (report \\\"The public sector is a juicy target for cybercriminals\\\", intel471, 2021-09-30)\\nThe public sector is a juicy target for cybercriminals\\nSep 30, 2021\\nThe public sector is an extremely high-value target for cybercrime due to the wealth of valuable information it possesses, such as PII and confidential and sensitive documents.\\nIntel 471 has observed government-run systems being exploited in multiple ways for both financial gain or in politically motivated cyberattacks.\\nBy analyzing and distinguishing the common threats and underlying threat actor motivations, we identified how actor’s intentions can give hints on what government organizations threat actors like to target.\\nWhile attacks on national or international institutions tend to earn the most attention, Intel 471 has observed a greater number of compromises in government institutions at the regional, local and municipal level.\\nBelow is an overview of the common threats we have identified.\\n### **Ransomware attacks**\\nRansomware and RaaS groups have plagued organizations across different industry vectors.\\nGovernment entities are no different.\\nFrom January 2021 to August 2021, we observed about 50 possible breach events for international government, national and regional governments that were ransomware-related, with about half of those incidents tied to RaaS programs.\\nBelow is a graph that tallies the attacks and the RaaS affiliates tied to them:\\n![](https://lh5.googleusercontent.com/8H7kJzvdlCu6g5EeWxRyvr0kw2eL1n9PG7X24yHUu1zciDmVVokUP41oAaRoPGr1pKj6IK\\\\_dbPRTymb5r8HTEUIxQ5rNkmj\\\\_y4nyia1OemRIYq421ncZP4yoRYaB\\\\_2tCjTS8ALjb=s0)\\nThe most attack of the measured time period was the DarkSide ransomware attack against Colonial Pipeline in May 2021.\\nThat attack drew heavy attention to the impact these services could have on government organizations and supply chains.\\nAs a result of the attention gained from this event, Intel 471 observed RaaS groups adjust their operations, which included new regulations on operators or affiliates targeting government entities.\\nOperators of several RaaS programs retreated from additional public focus, opting to maintain a low profile and prohibited their affiliates from targeting government organizations.\\nThese changes were short lived: by June 2021 the REvil RaaS operators lifted previous bans and promised additional benefits to affiliates who were willing to attack any U.S.-based company or organization, which likely included government entities.\\n### **Social Engineering**\\nFrom January 2021 to August 2021, Intel 471 observed multiple social engineering tactics used against the government sectors including call centers, which allowed scammers to leverage multilingual threat actors to defeat and bypass phone-based anti-fraud measures.Threat actors typically fueled call centers with an array of compromised PII that could be used to answer challenge questions such as date of birth, national identification numbers and more.\\nOperators at call centers then could impersonate an account holder and manipulate employees to perform authorized account activity, approve transactions, open new accounts and transfer funds\\nAdditionally, we observed increased sophistication in phishing pages over the same time period.\\nParticularly, pages designed to look like COVID-19 pandemic relief programs from several different countries were discovered, ranging from debt forgiveness to tax payments.\\n### **Vulnerabilities**\\nIntel 471 has observed three particular vulnerability types used as initial access vectors to compromise public sector networks: remote code execution (RCE), structured query language-injection (SQLi) and cross-site scripting (XSS).\\nThese methods, which were used to gain initial access, were observed in breach events conducted by individual threat actors and RaaS operators.\\nIn March 2021, an Italian-linked actor claimed on a popular cybercrime forum that they obtained access to a VMware ESXi cloud virtualization server that would grant someone access to municipalities in Eastern Europe.\\nIn April 2021, we observed another actor offer to sell\\n[chunk:intel471_2021-09-30_public-sector-cybersecurity-threats-2021#1] (report \\\"The public sector is a juicy target for cybercriminals\\\", intel471, 2021-09-30)\\nwhich were used to gain initial access, were observed in breach events conducted by individual threat actors and RaaS operators.\\nIn March 2021, an Italian-linked actor claimed on a popular cybercrime forum that they obtained access to a VMware ESXi cloud virtualization server that would grant someone access to municipalities in Eastern Europe.\\nIn April 2021, we observed another actor offer to sell information about an SQLi vulnerability allegedly impacting resources belonging to a U.S.-based government entity in Colorado.\\nAlso in April, an actor was advertising a compromised database stolen from a city in Turkey, allegedly containing about 1 million records including names, passwords, permissions, phone numbers, user IDs and usernames.\\n### **Looking Ahead**\\nGovernment entities at all levels should remain vigilant in order to defend against the aforementioned threats as cybercriminals continue to improve and refine their TTPs.\\nThe public sector will need to improve their defensive and detection capabilities, shifting from individual indicators of compromise (IoCs) to proactive threat intelligence that offers insight and visibility into key trends in the cybercrime underground.\\nIntel 471's range of intelligence products can help security teams defend against threats and mitigate risks from the underground.\\nOur Adversary Intelligence provides security teams with visibility into the cybercrime underground, including insight into actor TTPs, motivations and operations.\\nUsers also can monitor for compromised credentials proactively via Intel 471's Credential Intelligence service, track weaponized malware via our Malware Intelligence and determine patch prioritization of vulnerabilities via our Vulnerability Dashboard.\\n[![Intel 471 Periscope Newsletter](https://no-cache.hubspot.com/cta/default/8813571/4fc6dfd2-c5df-4a7a-9cec-c81feb7ef387.png)](https://cta-redirect.hubspot.com/cta/redirect/8813571/4fc6dfd2-c5df-4a7a-9cec-c81feb7ef387)\",\n    \"statements\": [\n        \"Intel 471’s September 2021 report “The public sector is a juicy target for cybercriminals” describes ransomware attacks.\",\n        \"Intel 471’s September 2021 report “The public sector is a juicy target for cybercriminals” describes phishing pages.\",\n        \"Intel 471’s September 2021 report “The public sector is a juicy target for cybercriminals” describes exploitation of vulnerabilities for initial access.\",\n        \"The provided context does not include MITRE ATT&CK records of REvil’s techniques.\",\n        \"The provided context is insufficient to determine the techniques described in Intel 471’s September 2021 report recorded by MITRE ATT&CK as techniques used by REvil.\"\n    ]\n}\nOutput: "
+   }
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "max_completion_tokens": 16000,
+  "response_format": {
+   "type": "json_object"
+  }
+ },
+ "response": {
+  "id": "chatcmpl-EbabptFzDkpwoNI5jq7G3UeHvWp4V",
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "content": "{\n  \"statements\": [\n    {\n      \"statement\": \"Intel 471’s September 2021 report “The public sector is a juicy target for cybercriminals” describes ransomware attacks.\",\n      \"reason\": \"The report includes a ransomware section describing approximately 50 possible ransomware-related government breach events and discussing DarkSide and REvil.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"Intel 471’s September 2021 report “The public sector is a juicy target for cybercriminals” describes phishing pages.\",\n      \"reason\": \"The social engineering section describes increasingly sophisticated phishing pages imitating COVID-19 relief programs.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"Intel 471’s September 2021 report “The public sector is a juicy target for cybercriminals” describes exploitation of vulnerabilities for initial access.\",\n      \"reason\": \"The report explicitly identifies RCE, SQL injection, and cross-site scripting as initial access vectors used to compromise public sector networks.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"The provided context does not include MITRE ATT&CK records of REvil’s techniques.\",\n      \"reason\": \"The context discusses REvil affiliate targeting policies but contains no MITRE ATT&CK records or technique mappings.\",\n      \"verdict\": 1\n    },\n    {\n      \"statement\": \"The provided context is insufficient to determine the techniques described in Intel 471’s September 2021 report recorded by MITRE ATT&CK as techniques used by REvil.\",\n      \"reason\": \"The context neither provides MITRE ATT&CK records nor specifically attributes the described technical methods to REvil, so the requested correspondence cannot be established.\",\n      \"verdict\": 1\n    }\n  ]\n}",
+     "refusal": null,
+     "role": "assistant",
+     "annotations": [],
+     "audio": null,
+     "function_call": null,
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1792627569,
+  "model": "gpt-6-astra",
+  "object": "chat.completion",
+  "metadata": null,
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 376,
+   "prompt_tokens": 2514,
+   "total_tokens": 2890,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": 0,
+    "text_tokens": null
+   },
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 2511,
+    "cached_tokens": 0,
+    "image_tokens": null,
+    "text_tokens": null
+   }
+  }
+ }
+}
