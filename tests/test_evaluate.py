@@ -5,6 +5,8 @@ import json
 import os
 import re
 
+import numpy as np
+
 import pytest
 
 import evaluate
@@ -395,3 +397,75 @@ def test_extraction_rows_keep_the_system_name_beside_the_fact_count():
 def test_a_token_median_halfway_between_two_counts_keeps_its_half():
     assert evaluate.spread([100, 107, 108, 324], 0) == "median 107.5, max 324"
     assert evaluate.spread([1.234, 2.0], 2) == "median 1.62, max 2.00"
+
+
+# ---------------------------------------------------------------- hallucination rate and bootstrap intervals
+
+def verdict_record(scope: str, verdicts: list[int], prompt: str = evaluate.VERDICT_PROMPT) -> dict:
+    statements = [{"statement": f"statement {i}", "reason": "r", "verdict": v} for i, v in enumerate(verdicts)]
+    return {"scope": scope, "request": {"messages": [{"role": "user", "content": f"... {prompt} ..."}]},
+            "response": {"choices": [{"message": {"content": json.dumps({"statements": statements})}}]}}
+
+
+@pytest.fixture
+def judge_files(tmp_path, monkeypatch):
+    monkeypatch.setattr(evaluate, "RESULTS", tmp_path)
+    monkeypatch.setattr(evaluate, "RAGAS_FILE", tmp_path / "ragas_scores.json")
+    monkeypatch.setattr(evaluate, "HALLUCINATION_FILE", tmp_path / "hallucination.csv")
+    monkeypatch.setattr(evaluate, "load_questions", lambda: SHEET_QUESTIONS)
+    monkeypatch.setattr(llm, "REPLIES", tmp_path / "replies")
+    folder = tmp_path / "replies" / "ragas"
+    folder.mkdir(parents=True)
+    verdicts = {"Q01 graph": [1, 1, 0, 1], "Q01 text": [1], "Q02 graph": [1, 1], "Q02 text": [0, 1, 1]}
+    for number, (scope, values) in enumerate(verdicts.items()):
+        (folder / f"{number}.json").write_text(json.dumps(verdict_record(scope, values)), encoding="utf-8")
+    (folder / "other.json").write_text(json.dumps(verdict_record("Q01 graph", [0, 0], "Break down each sentence")),
+                                       encoding="utf-8")
+    faithfulness = {scope: sum(values) / len(values) for scope, values in verdicts.items()}
+    scores = {"questions": {qid: {mode: {"faithfulness": faithfulness[f"{qid} {mode}"]} for mode in evaluate.MODES}
+                            for qid in ("Q01", "Q02")}}
+    (tmp_path / "ragas_scores.json").write_text(json.dumps(scores), encoding="utf-8")
+    return tmp_path
+
+
+def test_the_hallucination_rate_counts_the_unsupported_verdicts(judge_files, capsys):
+    assert evaluate.main(["hallucination"]) == 0
+    out = capsys.readouterr().out
+    assert "GraphRAG  2 answers, 6 statements, 1 unsupported: pooled rate 0.1667; mean per answer 0.1250" in out
+    assert "baseline  2 answers, 4 statements, 1 unsupported: pooled rate 0.2500; mean per answer 0.1667" in out
+    rows = list(csv.DictReader((judge_files / "hallucination.csv").open(encoding="utf-8")))
+    assert [(r["question"], r["system"], r["statements"], r["unsupported"]) for r in rows][:2] == [
+        ("Q01", "GraphRAG", "4", "1"), ("Q01", "baseline", "1", "0")]
+    assert 'unsupported  Q01 GraphRAG: "statement 2"' in out
+
+
+def test_verdicts_that_disagree_with_the_saved_faithfulness_are_a_problem(judge_files, capsys):
+    scores = json.loads((judge_files / "ragas_scores.json").read_text(encoding="utf-8"))
+    scores["questions"]["Q02"]["text"]["faithfulness"] = 1.0
+    (judge_files / "ragas_scores.json").write_text(json.dumps(scores), encoding="utf-8")
+    assert evaluate.main(["hallucination"]) == 1
+    assert "Q02 text: verdicts give 0.6666666666666666, ragas_scores.json holds faithfulness 1.0" in \
+        capsys.readouterr().out
+
+
+def test_question_intervals_hold_the_paired_means():
+    rng = np.random.default_rng(1)
+    draws = rng.integers(0, 4, size=(evaluate.RESAMPLES, 4))
+    values = {"GraphRAG": [1.0, 2.0, 3.0, 4.0], "baseline": [1.0, 1.0, 1.0, 1.0]}
+    rows = {row["system"]: row for row in evaluate.question_intervals("m", values, draws, rng)}
+    assert rows["GraphRAG"]["estimate"] == "2.5000" and rows[evaluate.DIFFERENCE]["estimate"] == "1.5000"
+    assert rows["baseline"]["low"] == rows["baseline"]["high"] == "1.0000"
+    assert float(rows["GraphRAG"]["low"]) <= 2.5 <= float(rows["GraphRAG"]["high"])
+    values["baseline"][3] = None                                  # a missing number: new draws over 3 questions
+    rows = {row["system"]: row for row in evaluate.question_intervals("m", values, draws, rng)}
+    assert rows["GraphRAG"]["n"] == 3 and rows["GraphRAG"]["estimate"] == "2.0000"
+
+
+def test_report_intervals_pool_the_counts_of_the_resampled_reports():
+    table = [{"system": system, "level": "parent", "report": report, "tp": tp, "fp": fp, "fn": fn}
+             for system, report, tp, fp, fn in (("ours", "r1", 3, 1, 1), ("ours", "r2", 1, 1, 2),
+                                                ("base", "r1", 2, 4, 2), ("base", "r2", 0, 2, 3))]
+    rows = evaluate.report_intervals(table, "parent", np.random.default_rng(1))
+    f1 = {row["system"]: row for row in rows if row["measure"].endswith("F1")}
+    assert f1["ours"]["estimate"] == f"{2 * 4 / (2 * 4 + 2 + 3):.4f}" and f1["base"]["estimate"] == f"{4 / 15:.4f}"
+    assert f1["ours - base"]["estimate"] == f"{8 / 13 - 4 / 15:.4f}" and f1["ours"]["n"] == 2

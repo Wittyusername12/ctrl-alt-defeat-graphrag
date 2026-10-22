@@ -45,6 +45,14 @@ Subcommands:
            reference is the question's reference answer. Question IDs limit the run (the trial: Q01 Q02). Stop rule:
            the run stops after 3 answers in a row without a score, or once its new judge calls pass $40 at list
            price. results/ragas_scores.json and results/ragas_scores.csv.
+  hallucination  The hallucination rate: the share of answer statements that RAGAS Faithfulness's judge found
+           unsupported by the answer's context, read from the saved verdict replies (replies/ragas); every answer's
+           verdicts must give its saved faithfulness score. Pooled over statements and averaged over answers, with
+           every unsupported statement and the judge's reason printed; results/hallucination.csv. No OpenAI call.
+  intervals  95% bootstrap intervals (10,000 resamples, numpy seed 7, the 2.5th and 97.5th percentiles) for each
+           system's mean and the GraphRAG-minus-baseline difference: human ratings, answer accuracy, RAGAS and the
+           pooled hallucination rate resample the 24 questions (both systems on the same draws); extraction resamples
+           the 34 test reports (pooled counts; facts within a report are not independent); results/intervals.csv.
 """
 from __future__ import annotations
 
@@ -61,6 +69,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
+import numpy as np
 from neo4j.exceptions import DriverError, Neo4jError
 
 import annoctr
@@ -1060,6 +1069,7 @@ def operations(argv: list[str]) -> int:
 # ---------------------------------------------------------------- extraction against the exact-name baseline
 
 EXTRACTION_FILE = RESULTS / "extraction_test.csv"
+EXTRACTION_REPORTS_FILE = RESULTS / "extraction_test_reports.csv"   # per report, for the bootstrap intervals
 # The AnnoCTR paper's best document-level F1 on its test split, sub-techniques collapsed to parents (Lange et al.,
 # LREC-COLING 2024), quoted for context: its setting differs from this project's.
 PAPER_F1 = {"Technique": 56.6, "Tactic": 47.7}
@@ -1137,7 +1147,7 @@ def extraction(argv: list[str]) -> int:
     found = {report_id: baseline_facts(annoctr.text(report_id), names) for report_id in sorted(gold_facts)}
     theirs = {report_id: set().union(*by_name.values()) if by_name else set() for report_id, by_name in found.items()}
     systems = {"extraction and linking (gpt-6-sol)": ours, "exact-name baseline": theirs}
-    rows = []
+    rows, report_rows = [], []
     print(f"Extraction and linking on the {len(gold_facts)} test reports ({sum(map(len, gold_facts.values()))} gold "
           f"facts) beside the exact-name baseline (every ATT&CK name or alias found in the text as a whole word, "
           f"ignoring case; {len(names):,} names)")
@@ -1147,6 +1157,12 @@ def extraction(argv: list[str]) -> int:
         rows += extraction_rows(name, results)
         print(f"\n{name}:")
         score.show(results)
+        for report_id in sorted(gold_facts):
+            for parent_of in (None, attack.parent):
+                one = score.score({report_id: gold_facts[report_id]}, {report_id: facts[report_id]}, attack.label,
+                                  parent_of)
+                report_rows.append({"system": name, "level": one["level"], "report": report_id,
+                                    **{key: one[key] for key in ("tp", "fp", "fn")}})
     false_names: Counter = Counter()
     for report_id, by_name in found.items():
         wanted = {attack.up(attack_id) for attack_id in gold_facts[report_id]}
@@ -1159,11 +1175,13 @@ def extraction(argv: list[str]) -> int:
     print("AnnoCTR paper, best document-level F1 on its test split (sub-techniques collapsed to parents), for context: "
           + ", ".join(f"{kind} {value}" for kind, value in PAPER_F1.items()))
     RESULTS.mkdir(exist_ok=True)
-    with EXTRACTION_FILE.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
-        writer.writeheader()
-        writer.writerows(rows)
-    print(f"\nRESULT: OK - {EXTRACTION_FILE.relative_to(EXTRACTION_FILE.parent.parent)} written")
+    for path, table in ((EXTRACTION_FILE, rows), (EXTRACTION_REPORTS_FILE, report_rows)):
+        with path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(table[0]), lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(table)
+    print(f"\nRESULT: OK - {EXTRACTION_FILE.relative_to(EXTRACTION_FILE.parent.parent)} and "
+          f"{EXTRACTION_REPORTS_FILE.name} (per report) written")
     return 0
 
 
@@ -1320,8 +1338,213 @@ def ragas(argv: list[str]) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- hallucination rate
+
+HALLUCINATION_FILE = RESULTS / "hallucination.csv"
+VERDICT_PROMPT = "judge the faithfulness of a series of statements"     # RAGAS Faithfulness's second call
+
+
+def verdict_replies() -> dict[str, list[list[dict]]]:
+    """scope ("Q01 graph") -> the statement lists of the saved judge replies to RAGAS Faithfulness's verdict call
+    (each statement with its verdict: 1 when the answer's context supports it, 0 when not)."""
+    found: dict[str, list[list[dict]]] = {}
+    for path in sorted((llm.REPLIES / "ragas").glob("*.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if VERDICT_PROMPT not in record["request"]["messages"][-1]["content"]:
+            continue
+        content = record["response"]["choices"][0]["message"]["content"]
+        found.setdefault(record["scope"], []).append(
+            json.loads(content[content.index("{"):content.rindex("}") + 1])["statements"])
+    return found
+
+
+def hallucination(argv: list[str]) -> int:
+    argparse.ArgumentParser(prog="evaluate.py hallucination",
+                            description="The hallucination rate, from the saved RAGAS faithfulness verdicts."
+                            ).parse_args(argv)
+    questions, replies = load_questions(), verdict_replies()
+    scores = read_ragas()["questions"]
+    rows, problems, unsupported_lines = [], [], []
+    for question in questions:
+        for mode in MODES:
+            scope = f"{question['id']} {mode}"
+            lists = replies.get(scope, [])
+            if len(lists) != 1:
+                problems.append(f"{scope}: {len(lists)} saved verdict replies, expected 1")
+                continue
+            statements = lists[0]
+            unsupported = [item for item in statements if item.get("verdict") != 1]
+            faithfulness = scores.get(question["id"], {}).get(mode, {}).get("faithfulness")
+            supported_share = (len(statements) - len(unsupported)) / len(statements) if statements else None
+            if faithfulness is None or supported_share is None or abs(supported_share - faithfulness) > 1e-9:
+                problems.append(f"{scope}: verdicts give {supported_share}, ragas_scores.json holds faithfulness "
+                                f"{faithfulness}")
+            rows.append({"question": question["id"], "pattern": question["pattern"], "system": MODE_NAMES[mode],
+                         "statements": len(statements), "unsupported": len(unsupported),
+                         "hallucination_rate": rounded(len(unsupported) / len(statements) if statements else None)})
+            unsupported_lines += [f"{question['id']} {MODE_NAMES[mode]}: \"{item['statement']}\" (judge: "
+                                  f"{item.get('reason', '')})" for item in unsupported]
+    print("Hallucination rate: the share of answer statements that the judge found unsupported by the answer's "
+          "context (RAGAS Faithfulness's verdicts, from the saved judge replies; no OpenAI call)")
+    for system in MODE_NAMES.values():
+        mine = [row for row in rows if row["system"] == system]
+        statements, unsupported = sum(r["statements"] for r in mine), sum(r["unsupported"] for r in mine)
+        per_answer = [r["unsupported"] / r["statements"] for r in mine if r["statements"]]
+        print(f"  {system:9} {len(mine)} answers, {statements} statements, {unsupported} unsupported: pooled rate "
+              f"{unsupported / statements if statements else 0:.4f}; mean per answer "
+              f"{statistics.mean(per_answer) if per_answer else 0:.4f}")
+    for line in unsupported_lines:
+        print(f"  unsupported  {line}")
+    if rows:
+        RESULTS.mkdir(exist_ok=True)
+        with HALLUCINATION_FILE.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+    if problems:
+        print(f"\nRESULT: {len(problems)} problem(s)")
+        for text in problems:
+            print(f"  - {text}")
+        return 1
+    print(f"\nRESULT: OK - {len(rows)} answers; every answer's verdicts give its saved faithfulness; "
+          f"{HALLUCINATION_FILE.relative_to(HALLUCINATION_FILE.parent.parent)} written")
+    return 0
+
+
+# ---------------------------------------------------------------- bootstrap intervals
+
+INTERVALS_FILE = RESULTS / "intervals.csv"
+RESAMPLES = 10_000
+INTERVAL_SEED = 7
+DIFFERENCE = "GraphRAG - baseline"
+
+
+def read_table(path: Path) -> list[dict]:
+    with path.open(encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def by_question(rows: list[dict], column: str, questions: list[str]) -> dict[str, list[float | None]]:
+    """system -> one value per question (None when the table has no number), in question order."""
+    values = {(row["question"], row["system"]): row[column] for row in rows}
+
+    def number(text):
+        return None if text in (None, "") else float(text)
+    return {system: [number(values.get((qid, system))) for qid in questions] for system in MODE_NAMES.values()}
+
+
+def interval_rows(measure: str, unit: str, estimates: dict[str, float], samples: dict[str, np.ndarray],
+                  n: int) -> list[dict]:
+    return [{"measure": measure, "unit": unit, "n": n, "system": name, "estimate": f"{estimates[name]:.4f}",
+             "low": f"{np.percentile(samples[name], 2.5):.4f}", "high": f"{np.percentile(samples[name], 97.5):.4f}"}
+            for name in estimates]
+
+
+def question_intervals(measure: str, values: dict[str, list[float | None]], draws: np.ndarray,
+                       rng: np.random.Generator) -> list[dict]:
+    """Means per system and the paired mean difference, over the questions where both systems have a number,
+    with 95% percentile intervals from the same resampled sets of questions (the shared draws when every question
+    has both numbers, otherwise new draws over the questions that do)."""
+    keep = [i for i, (g, b) in enumerate(zip(values["GraphRAG"], values["baseline"]))
+            if g is not None and b is not None]
+    g = np.array([values["GraphRAG"][i] for i in keep])
+    b = np.array([values["baseline"][i] for i in keep])
+    picks = draws if len(keep) == draws.shape[1] else rng.integers(0, len(keep), size=(RESAMPLES, len(keep)))
+    estimates = {"GraphRAG": g.mean(), "baseline": b.mean(), DIFFERENCE: (g - b).mean()}
+    samples = {"GraphRAG": g[picks].mean(axis=1), "baseline": b[picks].mean(axis=1),
+               DIFFERENCE: (g - b)[picks].mean(axis=1)}
+    return interval_rows(measure, "questions", estimates, samples, len(keep))
+
+
+def pooled_rate_intervals(measure: str, numerators: dict[str, list[float]], denominators: dict[str, list[float]],
+                          draws: np.ndarray) -> list[dict]:
+    """A rate pooled over questions (sum of numerators / sum of denominators) per system and its difference."""
+    num = {s: np.array(v) for s, v in numerators.items()}
+    den = {s: np.array(v) for s, v in denominators.items()}
+    estimates = {s: num[s].sum() / den[s].sum() for s in MODE_NAMES.values()}
+    estimates[DIFFERENCE] = estimates["GraphRAG"] - estimates["baseline"]
+    samples = {s: num[s][draws].sum(axis=1) / den[s][draws].sum(axis=1) for s in MODE_NAMES.values()}
+    samples[DIFFERENCE] = samples["GraphRAG"] - samples["baseline"]
+    return interval_rows(measure, "questions", estimates, samples, len(num["GraphRAG"]))
+
+
+def report_intervals(report_rows: list[dict], level: str, rng: np.random.Generator) -> list[dict]:
+    """Pooled precision, recall and F1 of extraction and linking and of the exact-name baseline, resampling the test
+    reports (facts within one report are not independent), and the paired F1 difference."""
+    systems = list(dict.fromkeys(row["system"] for row in report_rows))
+    reports = sorted({row["report"] for row in report_rows})
+    counts = {system: np.array([[int(row[k]) for k in ("tp", "fp", "fn")] for report in reports for row in report_rows
+                                if row["system"] == system and row["level"] == level and row["report"] == report])
+              for system in systems}
+    draws = rng.integers(0, len(reports), size=(RESAMPLES, len(reports)))
+
+    def rates(tally: np.ndarray) -> dict[str, np.ndarray]:
+        tp, fp, fn = tally[..., 0], tally[..., 1], tally[..., 2]
+        return {"precision": tp / (tp + fp), "recall": tp / (tp + fn), "F1": 2 * tp / (2 * tp + fp + fn)}
+    rows = []
+    point = {system: rates(counts[system].sum(axis=0)) for system in systems}
+    sampled = {system: rates(counts[system][draws].sum(axis=1)) for system in systems}
+    for name in ("precision", "recall", "F1"):
+        estimates = {system: float(point[system][name]) for system in systems}
+        samples = {system: sampled[system][name] for system in systems}
+        if name == "F1":
+            label = f"{systems[0]} - {systems[1]}"
+            estimates[label] = estimates[systems[0]] - estimates[systems[1]]
+            samples[label] = samples[systems[0]] - samples[systems[1]]
+        rows += interval_rows(f"extraction {level} level {name}", "reports", estimates, samples, len(reports))
+    return rows
+
+
+def intervals(argv: list[str]) -> int:
+    argparse.ArgumentParser(prog="evaluate.py intervals",
+                            description="95% bootstrap intervals for the evaluation's means and differences."
+                            ).parse_args(argv)
+    needed = [HUMAN_FILE, ACCURACY_FILE, RAGAS_TABLE, HALLUCINATION_FILE, EXTRACTION_REPORTS_FILE]
+    missing = [path.name for path in needed if not path.is_file()]
+    if missing:
+        print(f"RESULT: FAILED - missing {', '.join(missing)}; run the subcommands that write them first")
+        return 1
+    question_ids = [question["id"] for question in load_questions()]
+    rng = np.random.default_rng(INTERVAL_SEED)
+    draws = rng.integers(0, len(question_ids), size=(RESAMPLES, len(question_ids)))
+    human, accuracy_table = read_table(HUMAN_FILE), read_table(ACCURACY_FILE)
+    ragas_table, hallucination_table = read_table(RAGAS_TABLE), read_table(HALLUCINATION_FILE)
+    rows = []
+    for criterion in CRITERIA:
+        rows += question_intervals(f"human {criterion} (1-5)", by_question(human, criterion, question_ids), draws,
+                                   rng)
+    for row in human:
+        row["sum"] = str(sum(int(row[criterion]) for criterion in CRITERIA))
+    rows += question_intervals("human sum of the three (3-15)", by_question(human, "sum", question_ids), draws, rng)
+    for column in ("f1", "recall"):
+        rows += question_intervals(f"answer accuracy {column}", by_question(accuracy_table, column, question_ids),
+                                   draws, rng)
+    for metric in ("faithfulness", "answer_relevancy", "context_recall"):
+        rows += question_intervals(f"RAGAS {metric}", by_question(ragas_table, metric, question_ids), draws, rng)
+    rows += pooled_rate_intervals("hallucination rate (pooled over statements)",
+                                  by_question(hallucination_table, "unsupported", question_ids),
+                                  by_question(hallucination_table, "statements", question_ids), draws)
+    report_rows = read_table(EXTRACTION_REPORTS_FILE)
+    for level in ("parent", "sub-technique"):
+        rows += report_intervals(report_rows, level, rng)
+    RESULTS.mkdir(exist_ok=True)
+    with INTERVALS_FILE.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"95% bootstrap intervals ({RESAMPLES:,} resamples, numpy seed {INTERVAL_SEED}; the 2.5th and 97.5th "
+          f"percentiles): questions resampled for answer measures (GraphRAG and the baseline on the same draws), "
+          f"test reports for extraction")
+    width = max(len(row["system"]) for row in rows)
+    for row in rows:
+        print(f"  {row['measure']:46} {row['system']:{width}} {row['estimate']:>8}  [{row['low']}, {row['high']}]  "
+              f"n={row['n']} {row['unit']}")
+    print(f"\nRESULT: OK - {len(rows)} intervals; {INTERVALS_FILE.relative_to(INTERVALS_FILE.parent.parent)} written")
+    return 0
+
+
 COMMANDS = {"answers": answers, "sheet": sheet, "ratings": ratings, "accuracy": accuracy, "operations": operations,
-            "extraction": extraction, "ragas": ragas}
+            "extraction": extraction, "ragas": ragas, "hallucination": hallucination, "intervals": intervals}
 
 
 def main(argv: list[str] | None = None) -> int:
