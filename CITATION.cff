@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "CTRL ALT DEFEAT: GraphRAG over cyber threat reports"
+authors:
+  - family-names: Waldrop
+    given-names: Shane
+    email: swaldrop2@angelo.edu
+    affiliation: Angelo State University
+repository-code: "https://github.com/Wittyusername12/ctrl-alt-defeat-graphrag"
+date-released: 2026-10-22
+license: AGPL-3.0-only
+abstract: >-
+  A GraphRAG system that joins MITRE ATT&CK v20.0 (Enterprise) to the AnnoCTR
+  threat reports in a Neo4j knowledge graph, extracts and links ATT&CK mentions
+  with evidence sentences, and answers multi-hop questions with a citation after
+  every statement. Term project for CS 6338 Knowledge Engineering, Angelo State
+  University, October 2026.
+preferred-citation:
+  type: report
+  title: "GraphRAG over Cyber Threat Reports: Grounding Language-Model Answers in a Neo4j Knowledge Graph of AnnoCTR and MITRE ATT&CK"
+  authors:
+    - family-names: Waldrop
+      given-names: Shane
+  institution:
+    name: Angelo State University
+  year: 2026
+  month: 10
+  notes: "Final report, CS 6338 Knowledge Engineering; docs/final/ in the repository."
