@@ -6,6 +6,12 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 
 **Status:** built and evaluated; the measured results are summarized in `results/README.md`, and the final technical report, with the scripts behind its numbers, is in `docs/final/`. Every stage runs: ATT&CK loading, extraction, linking and loading, graph analytics, scoring, and question answering with and without the graph, from Command Prompt or from a chat page. Extraction, linking and scoring take one report or a whole split (`--split dev`, `--split test`). A question that names a report by its title is answered from that report, with summary lines that count the report's links in ATT&CK. The benchmark (gold triples, evaluation questions) and the scorer are in place, `evaluate.py` answers the 24 benchmark questions with both systems and measures them: answer accuracy, operations (citation validity, tokens, cost, seconds per stage), extraction beside an exact-name baseline, RAGAS scores from a judge model, and a blind human rating. On 22 Oct 2026 a fresh clone, set up from this README alone, passed the tests and rebuilt the graph in an empty database with the same counts and scores and the same answers to the tracer question (`docs/fresh-clone.md`).
 
+## Licence
+
+Copyright (c) 2026 Shane Waldrop.
+
+The code and documentation in this repository are licensed under the GNU Affero General Public License, version 3 only (AGPL-3.0-only); the full text is in `LICENSE`. In short: you may use, study, change and share this software, but if you distribute it, or let others use a modified version over a network, you must make the corresponding source available under the same licence. Other terms, including use in a product that is not distributed under the AGPL, are available from the copyright holder. The data files keep their own licences, which the AGPL does not change: MITRE ATT&CK under MITRE's terms and AnnoCTR under CC BY-SA 4.0 (see `data/README.md`); the AnnoCTR text that appears inside the saved model replies under `replies/` carries that same CC BY-SA 4.0 licence. To cite this work, see `CITATION.cff`.
+
 ## Repository layout
 
 | Path | What it is |
@@ -42,6 +48,8 @@ The system answers questions about cyber threat reports. A knowledge graph in Ne
 | `docs/final/` | the final technical report (PDF and LaTeX source) and the scripts behind its numbers |
 | `docs/fresh-clone.md` | the fresh-clone check of 22 Oct 2026: README steps 1–13 in a new folder and an empty database, with every result line |
 | `docs/chat-page.png` | the chat page screenshot shown in step 14 |
+| `LICENSE` | the GNU Affero General Public License v3.0, the licence of the code and documentation |
+| `CITATION.cff` | how to cite this software and the final report |
 
 ## What you need
 
